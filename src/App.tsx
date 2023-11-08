@@ -1,11 +1,12 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
-import React from 'react'
+import React, { FC, ReactNode, useEffect } from 'react'
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native'
 import { Provider } from 'react-redux'
 import { User } from './components/User'
 import { useActions } from './hooks/useActions'
 import { useTypedSelector } from './hooks/useTypedSelector'
-import { ISettings } from './store/settings/settings.slice'
+import { startAppListening } from './store/listenerMiddleware'
+import { ISettings, setupSettingsListeners } from './store/settings/settings.slice'
 import { store } from './store/store'
 
 GoogleSignin.configure({
@@ -82,23 +83,43 @@ GoogleSignin.configure({
 // 	}
 // ]
 
-const Temp: React.FC = () => {
-	const { getSettings, saveSettings } = useActions()
+const Temp: FC = () => {
+	const { getSettings, saveSettings, removeItem, setItem } = useActions()
+
+	const setTestItem = () => {
+		setItem({ key: 'test:123:qwerty', value: { id: 123, title: '123' } })
+	}
+
+	const removeTestItem = () => {
+		removeItem({ key: 'test:123:qwerty' })
+	}
 
 	return (
 		<>
-			<Pressable onPress={getSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginTop: 10 }}>
-				<Text style={{ color: '#fff' }}>getSettings</Text>
-			</Pressable>
+			<View style={{ flexDirection: 'row', marginTop: 10 }}>
+				<Pressable onPress={getSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginRight: 2, flex: 1 }}>
+					<Text style={{ color: '#fff' }}>getSettings</Text>
+				</Pressable>
 
-			<Pressable onPress={saveSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginTop: 10 }}>
-				<Text style={{ color: '#fff' }}>saveSettings</Text>
-			</Pressable>
+				<Pressable onPress={saveSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginLeft: 2, flex: 1 }}>
+					<Text style={{ color: '#fff' }}>saveSettings</Text>
+				</Pressable>
+			</View>
+
+			<View style={{ flexDirection: 'row', marginTop: 10 }}>
+				<Pressable onPress={setTestItem} style={{ backgroundColor: 'rgba(255,255,0,0.2)', padding: 10, marginRight: 2, flex: 1 }}>
+					<Text style={{ color: '#fff' }}>setItem</Text>
+				</Pressable>
+
+				<Pressable onPress={removeTestItem} style={{ backgroundColor: 'rgba(255,255,0,0.2)', padding: 10, marginLeft: 2, flex: 1 }}>
+					<Text style={{ color: '#fff' }}>removeItem</Text>
+				</Pressable>
+			</View>
 		</>
 	)
 }
 
-const MyInput: React.FC<{ item: keyof ISettings }> = ({ item }) => {
+const MyInput: FC<{ item: keyof ISettings }> = ({ item }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item]) as string
 
@@ -118,7 +139,7 @@ const MyInput: React.FC<{ item: keyof ISettings }> = ({ item }) => {
 	)
 }
 
-const MySwitch: React.FC<{ item: keyof ISettings }> = ({ item }) => {
+const MySwitch: FC<{ item: keyof ISettings }> = ({ item }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item]) as boolean
 
@@ -136,7 +157,7 @@ const MySwitch: React.FC<{ item: keyof ISettings }> = ({ item }) => {
 	)
 }
 
-const Settings: React.FC = () => {
+const Settings: FC = () => {
 	return (
 		<View style={{ flex: 1 }}>
 			<ScrollView>
@@ -147,7 +168,7 @@ const Settings: React.FC = () => {
 	)
 }
 
-const LoadingSettings: React.FC = () => {
+const LoaderSettings: FC = () => {
 	const isLoading = useTypedSelector(state => state.settings.isLoading)
 
 	if (!isLoading) {
@@ -163,17 +184,51 @@ const LoadingSettings: React.FC = () => {
 	)
 }
 
-const App: React.FC = () => {
+interface LoadingAppSettingsProps {
+	children: ReactNode
+}
+const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
+	const isLoaded = useTypedSelector(state => state.settings.isLoaded)
+
+	if (isLoaded) {
+		return children
+	}
+
+	return (
+		<View style={{ flex: 1, backgroundColor: '#333', alignItems: 'center', justifyContent: 'center' }}>
+			<View style={{ backgroundColor: '#999', borderRadius: 50, paddingHorizontal: 5 }}>
+				<Text style={{ color: '#fff', textAlign: 'center' }}>Loading...</Text>
+			</View>
+		</View>
+	)
+}
+
+const App: FC = () => {
+	useEffect(() => setupSettingsListeners(startAppListening), [])
+
 	return (
 		<Provider store={store}>
-			<View style={{ flex: 1, backgroundColor: '#333', padding: 16 }}>
-				<LoadingSettings />
-				<User />
-				<Temp />
-				<Settings />
-			</View>
+			<LoadingAppSettings>
+				<View style={{ flex: 1, backgroundColor: '#333', padding: 16 }}>
+					<LoaderSettings />
+					<User />
+					<Temp />
+					<Settings />
+				</View>
+			</LoadingAppSettings>
 		</Provider>
 	)
 }
 
 export default App
+
+// tsrnfs
+
+// TODO can help
+// movie-view https://github.com/bamlab/react-native-image-header-scroll-view/tree/master
+// image-view https://github.com/zachgibson/react-native-parallax-swiper/tree/master | https://github.com/merryjs/photo-viewer | https://github.com/leecade/react-native-swiper
+// network-logger https://github.com/alexbrazier/react-native-network-logger
+// console.time https://github.com/MaxGraey/react-native-console-time-polyfill
+// splash-screens https://blog.logrocket.com/building-splash-screens-react-native/
+
+// https://reactnavigation.org/docs/deep-linking

@@ -1,12 +1,11 @@
+import { FC } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useActions } from '../hooks/useActions'
 import { useAuth } from '../hooks/useAuth'
 
-export const User: React.FC = () => {
-	const auth = useAuth()
+export const User: FC = () => {
+	const { user, isAllScopeAllowed, isLoading } = useAuth()
 	const { signInGoogleUser, signOutGoogleUser, addScopeGoogleUser } = useActions()
-
-	const { user, isAllScopeAllowed, isLoading } = auth
 
 	if (isLoading) {
 		return (

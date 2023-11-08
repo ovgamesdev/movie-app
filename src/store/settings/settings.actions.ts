@@ -2,12 +2,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { GDrive, ListQueryBuilder, MimeTypes } from '@robinbobin/react-native-google-drive-api-wrapper'
+import { AppDispatch, RootState } from '../store'
 import { ISettings } from './settings.slice'
 
 const KEY = 'settings'
 
-const onDriveError = (from: string, error: any) => {
-	console.error(from, error?.__json?.error ?? error)
+let drive: { fileId: string; accessToken: string } = { fileId: '', accessToken: '' }
+
+const onDriveError = async (from: string, error: any) => {
+	console.error(from, { ...error })
+
+	try {
+		// TODO error?.__json?.error.code === ???
+		await GoogleSignin.clearCachedAccessToken(drive.accessToken)
+		drive.accessToken = (await GoogleSignin.getTokens()).accessToken
+	} catch (e) {
+		console.error(from, 'onDriveError', e)
+	}
 }
 
 // createAsyncThunk<ISettings | null>('settings/get-cloud-settings', async (_, thunkAPI) =>
@@ -17,16 +28,23 @@ const getCloudSettings = async (): Promise<ISettings | null> => {
 			return null
 		}
 
-		const tokens = await GoogleSignin.getTokens()
+		if (drive.accessToken.length === 0) {
+			drive.accessToken = (await GoogleSignin.getTokens()).accessToken
+		}
+
 		const gdrive = new GDrive()
-		gdrive.accessToken = tokens.accessToken
+		gdrive.accessToken = drive.accessToken
 		gdrive.fetchTimeout = 15000
 
-		const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
+		if (drive.fileId.length === 0) {
+			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
+			if (list?.files?.length > 0) {
+				drive.fileId = list.files[0].id
+			}
+		}
 
-		if (list?.files?.length > 0) {
-			const data = await gdrive.files.getJson(list.files[0].id)
-			return data as ISettings
+		if (drive.fileId.length > 0) {
+			return (await gdrive.files.getJson(drive.fileId)) as ISettings
 		} else {
 			return null
 		}
@@ -45,17 +63,26 @@ const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 			return false
 		}
 
-		const tokens = await GoogleSignin.getTokens()
+		if (drive.accessToken.length === 0) {
+			drive.accessToken = (await GoogleSignin.getTokens()).accessToken
+		}
+
 		const gdrive = new GDrive()
-		gdrive.accessToken = tokens.accessToken
+		gdrive.accessToken = drive.accessToken
 		gdrive.fetchTimeout = 15000
 
-		const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
+		if (drive.fileId.length === 0) {
+			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
+			if (list?.files?.length > 0) {
+				drive.fileId = list.files[0].id
+			}
+		}
 
-		if (list?.files?.length > 0) {
-			const file = await gdrive.files.newMultipartUploader().setData(value, MimeTypes.JSON_UTF8).setIdOfFileToUpdate(list.files[0].id).execute()
+		if (drive.fileId.length > 0) {
+			const file = await gdrive.files.newMultipartUploader().setData(value, MimeTypes.JSON_UTF8).setIdOfFileToUpdate(drive.fileId).execute()
 
-			return true //file.id as string
+			drive.fileId = file.id as string
+			return true
 		} else {
 			const file = await gdrive.files
 				.newMultipartUploader()
@@ -63,7 +90,8 @@ const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 				.setRequestBody({ name: KEY, parents: ['appDataFolder'] })
 				.execute()
 
-			return true //file.id as string
+			drive.fileId = file.id as string
+			return true
 		}
 	} catch (error) {
 		onDriveError('saveCloudSettings', error)
@@ -98,7 +126,12 @@ const saveLocalSettings = async (_value: ISettings): Promise<boolean> => {
 	}
 }
 
-export const getSettings = createAsyncThunk<{ local: ISettings | null; server: ISettings | null }>('settings/get-settings', async () => {
+export const createAppAsyncThunk = createAsyncThunk.withTypes<{
+	state: RootState
+	dispatch: AppDispatch
+}>()
+
+export const getSettings = createAppAsyncThunk<{ local: ISettings | null; server: ISettings | null }>('settings/get-settings', async () => {
 	try {
 		return {
 			local: await getLocalSettings(),
@@ -110,10 +143,10 @@ export const getSettings = createAsyncThunk<{ local: ISettings | null; server: I
 	}
 })
 
-export const saveSettings = createAsyncThunk<{ local: boolean; server: boolean }>('settings/save-settings', async (_, thunkAPI) => {
+export const saveSettings = createAppAsyncThunk<{ local: boolean; server: boolean }>('settings/save-settings', async (_, thunkAPI) => {
 	try {
-		const state = thunkAPI.getState() as any
-		const settings = (state.settings.settings as ISettings) ?? {}
+		const state = thunkAPI.getState()
+		const settings = state.settings.settings ?? {}
 
 		return {
 			local: await saveLocalSettings(settings),
@@ -123,12 +156,4 @@ export const saveSettings = createAsyncThunk<{ local: boolean; server: boolean }
 		console.error('saveSettings', error)
 		return { local: false, server: false }
 	}
-})
-
-export const setItem = createAsyncThunk('settings/set-item-settings', async ({ key, value }: { key: keyof ISettings; value: unknown }, thunkAPI) => {
-	// TODO https://stackoverflow.com/a/75894898
-
-	thunkAPI.dispatch(saveSettings())
-
-	return { key, value }
 })
