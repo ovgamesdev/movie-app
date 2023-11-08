@@ -106,9 +106,9 @@ const settingsSlice = createSlice({
 			})
 			.addCase(saveSettings.fulfilled, (state, { payload }) => {
 				state.isLoading = false
-				if (!payload.local || !payload.server) {
-					console.warn(`Ошибка сохранения настроек: ${payload.server ? 'Local' : 'Server'}`)
-				}
+				// if (!payload.local || !payload.server) {
+				// 	console.warn(`Ошибка сохранения настроек: ${payload.server ? 'Local' : 'Server'}`)
+				// }
 			})
 	}
 })

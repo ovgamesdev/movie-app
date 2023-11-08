@@ -7,21 +7,8 @@ import { ISettings } from './settings.slice'
 
 const KEY = 'settings'
 
-let drive: { fileId: string; accessToken: string } = { fileId: '', accessToken: '' }
+const drive: { fileId: string; accessToken: string } = { fileId: '', accessToken: '' }
 
-const onDriveError = async (from: string, error: any) => {
-	console.error(from, { ...error })
-
-	try {
-		// TODO error?.__json?.error.code === ???
-		await GoogleSignin.clearCachedAccessToken(drive.accessToken)
-		drive.accessToken = (await GoogleSignin.getTokens()).accessToken
-	} catch (e) {
-		console.error(from, 'onDriveError', e)
-	}
-}
-
-// createAsyncThunk<ISettings | null>('settings/get-cloud-settings', async (_, thunkAPI) =>
 const getCloudSettings = async (): Promise<ISettings | null> => {
 	try {
 		if (!(await GoogleSignin.isSignedIn())) {
@@ -48,13 +35,24 @@ const getCloudSettings = async (): Promise<ISettings | null> => {
 		} else {
 			return null
 		}
-	} catch (error) {
-		onDriveError('getCloudSettings', error)
+	} catch (error: any) {
+		console.error('getCloudSettings', { ...error })
+		// TODO ???
+		try {
+			if (error?.__json?.error?.code === 401) {
+				await GoogleSignin.clearCachedAccessToken(drive.accessToken)
+				drive.accessToken = (await GoogleSignin.getTokens()).accessToken
+
+				return await getCloudSettings()
+			}
+		} catch (error2) {
+			console.error('getCloudSettings refreshToken', error2)
+			return null
+		}
 		return null
 	}
 }
 
-// createAsyncThunk<object | null>('settings/save-cloud-settings', async (_, thunkAPI) =>
 const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 	try {
 		const value = JSON.stringify(_value)
@@ -93,8 +91,41 @@ const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 			drive.fileId = file.id as string
 			return true
 		}
-	} catch (error) {
-		onDriveError('saveCloudSettings', error)
+	} catch (error: any) {
+		console.error('saveCloudSettings', { ...error })
+		//  /*
+		//  	{
+		//  		"__json": {
+		//  			"error": {
+		//  					"code": 401,
+		//  					"message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+		//  					"errors": [
+		//  							{
+		//  									"message": "Invalid Credentials",
+		//  									"domain": "global",
+		//  									"reason": "authError",
+		//  									"location": "Authorization",
+		//  									"locationType": "header"
+		//  							}
+		//  					],
+		//  					"status": "UNAUTHENTICATED"
+		//  			}
+		//  		}
+		//  	}
+		//  */
+
+		// TODO ???
+		try {
+			if (error?.__json?.error?.code === 401) {
+				await GoogleSignin.clearCachedAccessToken(drive.accessToken)
+				drive.accessToken = (await GoogleSignin.getTokens()).accessToken
+
+				return await saveCloudSettings(_value)
+			}
+		} catch (error2) {
+			console.error('saveCloudSettings refreshToken', error2)
+			return false
+		}
 		return false
 	}
 }
