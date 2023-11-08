@@ -4,11 +4,14 @@ import { getCurrentGoogleUser } from './auth/auth.actions'
 import { reducer as authReducer } from './auth/auth.slice'
 import { listenerMiddleware } from './listenerMiddleware'
 import { reducer as settingsReducer } from './settings/settings.slice'
+import { getApkVersion } from './update/update.actions'
+import { reducer as updateReducer } from './update/update.slice'
 
 const reducers = combineReducers({
 	auth: authReducer,
 	settings: settingsReducer,
-	network
+	network,
+	update: updateReducer
 })
 
 export const store = configureStore({
@@ -21,4 +24,7 @@ export type RootState = ReturnType<typeof store.getState>
 
 export type AppDispatch = typeof store.dispatch
 
-store.dispatch(dispatch => dispatch(getCurrentGoogleUser()))
+store.dispatch(dispatch => {
+	dispatch(getCurrentGoogleUser())
+	dispatch(getApkVersion())
+})

@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getSettings } from '../settings/settings.actions'
 import { AppDispatch, RootState } from '../store'
 
-export const createAppAsyncThunk = createAsyncThunk.withTypes<{
+const createAppAsyncThunk = createAsyncThunk.withTypes<{
 	state: RootState
 	dispatch: AppDispatch
 }>()

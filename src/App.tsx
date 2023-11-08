@@ -1,15 +1,18 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import { Unsubscribe } from '@reduxjs/toolkit'
 import React, { FC, ReactNode, useEffect } from 'react'
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { Provider } from 'react-redux'
 import { NetInfo } from './components/NetInfo'
+import { UpdateApkProgress } from './components/UpdateApkProgress'
 import { User } from './components/User'
 import { useActions } from './hooks/useActions'
 import { useTypedSelector } from './hooks/useTypedSelector'
 import { startAppListening } from './store/listenerMiddleware'
 import { ISettings, setupSettingsListeners } from './store/settings/settings.slice'
 import { store } from './store/store'
+import { setupUpdateListeners } from './store/update/update.slice'
 
 GoogleSignin.configure({
 	scopes: ['https://www.googleapis.com/auth/drive.appdata']
@@ -206,7 +209,11 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 }
 
 const App: FC = () => {
-	useEffect(() => setupSettingsListeners(startAppListening), [])
+	useEffect(() => {
+		const subscriptions: Unsubscribe[] = [setupSettingsListeners(startAppListening), setupUpdateListeners(startAppListening)]
+
+		return () => subscriptions.forEach(unsubscribe => unsubscribe())
+	}, [])
 
 	return (
 		<Provider store={store}>
@@ -217,6 +224,7 @@ const App: FC = () => {
 							<LoaderSettings />
 							<User />
 							<Temp />
+							<UpdateApkProgress />
 							<Settings />
 						</View>
 						<NetInfo />

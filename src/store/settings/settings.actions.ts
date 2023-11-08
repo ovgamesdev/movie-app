@@ -157,7 +157,7 @@ const saveLocalSettings = async (_value: ISettings): Promise<boolean> => {
 	}
 }
 
-export const createAppAsyncThunk = createAsyncThunk.withTypes<{
+const createAppAsyncThunk = createAsyncThunk.withTypes<{
 	state: RootState
 	dispatch: AppDispatch
 }>()
