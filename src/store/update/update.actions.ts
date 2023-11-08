@@ -17,13 +17,20 @@ const createAppAsyncThunk = createAsyncThunk.withTypes<{
 
 export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async (_, thunkAPI) => {
 	const { apkVersionUrl } = thunkAPI.getState().update.options
+	let apkSize: number | null = null
 
 	// TODO remove it
-	// return thunkAPI.dispatch(actions.getApkVersionSuccess({ versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] }))
+	// return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
 
 	if (__DEV__ === true) return console.log('RNUpdateAPK::getApkVersion - disabled in dev mode.')
 
 	if (apkVersionUrl.length === 0) return console.log("RNUpdateAPK::getApkVersion - apkVersionUrl doesn't exist.")
+
+	try {
+		const response = await fetch(apkVersionUrl, { method: 'HEAD' })
+		const size = Number(response.headers.get('content-length')) / (1024 * 1024)
+		apkSize = isNaN(size) ? null : Math.round(size)
+	} catch (error: any) {}
 
 	try {
 		const data: IRemote = await fetch(apkVersionUrl)
@@ -41,7 +48,7 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 			})
 			.then(response => response.json())
 
-		return thunkAPI.dispatch(actions.getApkVersionSuccess(data))
+		return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: apkSize, remote: data }))
 	} catch (error: any) {
 		console.error('RNUpdateAPK::getApkVersion', error)
 		Alert.alert('Произошла ошибка', error.toString())

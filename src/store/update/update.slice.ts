@@ -11,6 +11,7 @@ interface IInitialStateUpdate {
 	remote: IRemote | null
 	canUpdate: boolean
 	download: IDownload | null
+	size: number | null
 }
 
 const initialState: IInitialStateUpdate = {
@@ -20,7 +21,8 @@ const initialState: IInitialStateUpdate = {
 	},
 	remote: null,
 	canUpdate: false,
-	download: null
+	download: null,
+	size: null
 }
 
 const updateSlice = createSlice({
@@ -30,22 +32,23 @@ const updateSlice = createSlice({
 		setDownloadProgress: (state, { payload }: PayloadAction<IDownload | null>) => {
 			state.download = payload
 		},
-		getApkVersionSuccess: (state, { payload }: PayloadAction<IRemote>) => {
-			state.remote = payload
+		getApkVersionSuccess: (state, { payload }: PayloadAction<{ size: number | null; remote: IRemote }>) => {
+			state.remote = payload.remote
+			state.size = payload.size
 
 			try {
 				// TODO switch this to versionCode
 				let outdated = false
 
-				if (payload.versionCode > RNUpdateAPK.versionCode) {
-					console.log('RNUpdateAPK::getApkVersionSuccess - outdated based on code, local/remote: ' + RNUpdateAPK.versionCode + '/' + payload.versionCode)
+				if (payload.remote.versionCode > RNUpdateAPK.versionCode) {
+					console.log('RNUpdateAPK::getApkVersionSuccess - outdated based on code, local/remote: ' + RNUpdateAPK.versionCode + '/' + payload.remote.versionCode)
 					outdated = true
 				}
 				const installVersionName = semver.valid(semver.coerce(RNUpdateAPK.versionName))
-				const remoteVersionName = semver.valid(semver.coerce(payload.versionName))
+				const remoteVersionName = semver.valid(semver.coerce(payload.remote.versionName))
 
 				if (installVersionName !== null && remoteVersionName !== null && semver.lt(installVersionName, remoteVersionName)) {
-					console.log('RNUpdateAPK::getApkVersionSuccess - APK outdated based on version name, local/remote: ' + RNUpdateAPK.versionName + '/' + payload.versionName)
+					console.log('RNUpdateAPK::getApkVersionSuccess - APK outdated based on version name, local/remote: ' + RNUpdateAPK.versionName + '/' + payload.remote.versionName)
 					outdated = true
 				}
 

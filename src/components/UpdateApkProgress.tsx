@@ -4,7 +4,7 @@ import { useActions } from '../hooks/useActions'
 import { useTypedSelector } from '../hooks/useTypedSelector'
 
 export const UpdateApkProgress: FC = () => {
-	const { canUpdate, download, remote } = useTypedSelector(store => store.update)
+	const { canUpdate, download, remote, size } = useTypedSelector(store => store.update)
 	const { downloadApk, installDownloadedApk } = useActions()
 
 	if (!remote || !canUpdate) return null
@@ -58,7 +58,7 @@ export const UpdateApkProgress: FC = () => {
 	// 			))}
 	// 		</View>
 	// 		<Pressable style={{ padding: 10, marginTop: 10, backgroundColor: 'green' }}>
-	// 			<Text style={{ color: '#fff' }}>Загрузить • 999 МБ</Text>
+	// 			<Text style={{ color: '#fff' }}>Загрузить • {size} МБ</Text>
 	// 		</Pressable>
 	// 	</View>
 	// )
