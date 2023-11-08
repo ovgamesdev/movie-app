@@ -1,7 +1,9 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import React, { FC, ReactNode, useEffect } from 'react'
 import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native'
+import { ReduxNetworkProvider } from 'react-native-offline'
 import { Provider } from 'react-redux'
+import { NetInfo } from './components/NetInfo'
 import { User } from './components/User'
 import { useActions } from './hooks/useActions'
 import { useTypedSelector } from './hooks/useTypedSelector'
@@ -208,14 +210,19 @@ const App: FC = () => {
 
 	return (
 		<Provider store={store}>
-			<LoadingAppSettings>
-				<View style={{ flex: 1, backgroundColor: '#333', padding: 16 }}>
-					<LoaderSettings />
-					<User />
-					<Temp />
-					<Settings />
-				</View>
-			</LoadingAppSettings>
+			<ReduxNetworkProvider pingTimeout={10000} pingServerUrl='https://www.google.com/' shouldPing={true} pingInterval={30000} pingOnlyIfOffline={false} pingInBackground={false} httpMethod={'HEAD'}>
+				<LoadingAppSettings>
+					<View style={{ flex: 1, backgroundColor: '#333' }}>
+						<View style={{ flex: 1, padding: 16 }}>
+							<LoaderSettings />
+							<User />
+							<Temp />
+							<Settings />
+						</View>
+						<NetInfo />
+					</View>
+				</LoadingAppSettings>
+			</ReduxNetworkProvider>
 		</Provider>
 	)
 }
