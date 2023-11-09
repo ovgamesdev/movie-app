@@ -20,9 +20,10 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 	let apkSize: number | null = null
 
 	// TODO remove it
-	// return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
-
-	if (__DEV__ === true) return console.log('RNUpdateAPK::getApkVersion - disabled in dev mode.')
+	if (__DEV__ === true) {
+		// return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
+		return console.log('RNUpdateAPK::getApkVersion - disabled in dev mode.')
+	}
 
 	if (apkVersionUrl.length === 0) return console.log("RNUpdateAPK::getApkVersion - apkVersionUrl doesn't exist.")
 

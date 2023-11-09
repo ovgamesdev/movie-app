@@ -1,9 +1,11 @@
 import React, { FC, useEffect, useRef, useState } from 'react'
 import { Animated, Pressable, Text } from 'react-native'
+import { useTheme } from '../hooks/useTheme'
 import { useTypedSelector } from '../hooks/useTypedSelector'
 
 export const NetInfo: FC = () => {
 	const isConnected = useTypedSelector(state => state.network.isConnected)
+	const { colors } = useTheme()
 
 	// TODO useSafeAreaInsets
 	const bottom = 0
@@ -59,9 +61,9 @@ export const NetInfo: FC = () => {
 	if (!isShowConnectedStatus) return null
 
 	return (
-		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? '#2ca641' : '#ff0000' }}>
+		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? colors.success : colors.warning }}>
 			<Pressable onPress={hideAnimation}>
-				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: '#fff', height: 24, marginBottom: bottom }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
+				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: colors.primary300, height: 24, marginBottom: bottom }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
 			</Pressable>
 		</Animated.View>
 	)

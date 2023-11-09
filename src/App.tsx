@@ -9,6 +9,7 @@ import UpdateApkModal from './components/UpdateApkModal'
 import { UpdateApkProgress } from './components/UpdateApkProgress'
 import { User } from './components/User'
 import { useActions } from './hooks/useActions'
+import { useTheme } from './hooks/useTheme'
 import { useTypedSelector } from './hooks/useTypedSelector'
 import { startAppListening } from './store/listenerMiddleware'
 import { ISettings, setupSettingsListeners } from './store/settings/settings.slice'
@@ -91,6 +92,7 @@ GoogleSignin.configure({
 
 const Temp: FC = () => {
 	const { getSettings, saveSettings, removeItem, setItem } = useActions()
+	const { colors } = useTheme()
 
 	const setTestItem = () => {
 		setItem({ key: 'test:123:qwerty', value: { id: 123, title: '123' } })
@@ -103,22 +105,22 @@ const Temp: FC = () => {
 	return (
 		<>
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
-				<Pressable onPress={getSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginRight: 2, flex: 1 }}>
-					<Text style={{ color: '#fff' }}>getSettings</Text>
+				<Pressable onPress={getSettings} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginRight: 2, flex: 1 }}>
+					<Text style={{ color: colors.text100 }}>getSettings</Text>
 				</Pressable>
 
-				<Pressable onPress={saveSettings} style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, marginLeft: 2, flex: 1 }}>
-					<Text style={{ color: '#fff' }}>saveSettings</Text>
+				<Pressable onPress={saveSettings} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginLeft: 2, flex: 1 }}>
+					<Text style={{ color: colors.text100 }}>saveSettings</Text>
 				</Pressable>
 			</View>
 
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
-				<Pressable onPress={setTestItem} style={{ backgroundColor: 'rgba(255,255,0,0.2)', padding: 10, marginRight: 2, flex: 1 }}>
-					<Text style={{ color: '#fff' }}>setItem</Text>
+				<Pressable onPress={setTestItem} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginRight: 2, flex: 1 }}>
+					<Text style={{ color: colors.text100 }}>setItem</Text>
 				</Pressable>
 
-				<Pressable onPress={removeTestItem} style={{ backgroundColor: 'rgba(255,255,0,0.2)', padding: 10, marginLeft: 2, flex: 1 }}>
-					<Text style={{ color: '#fff' }}>removeItem</Text>
+				<Pressable onPress={removeTestItem} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginLeft: 2, flex: 1 }}>
+					<Text style={{ color: colors.text100 }}>removeItem</Text>
 				</Pressable>
 			</View>
 		</>
@@ -128,38 +130,98 @@ const Temp: FC = () => {
 const MyInput: FC<{ item: keyof ISettings }> = ({ item }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item]) as string
+	const { colors } = useTheme()
 
 	return (
-		<View style={{ marginVertical: 5, marginTop: 10, backgroundColor: 'rgba(22,64,14,0.5)', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-			<Text style={{ color: '#fff' }}>{item}</Text>
-			<TextInput
-				onChange={e => {
-					setItem({ key: item, value: e.nativeEvent.text })
-				}}
-				value={value}
-				placeholder='Settings value'
-				style={{ padding: 5, backgroundColor: 'rgba(0,0,0,0.5)', color: '#fff', width: '50%' }}
-				placeholderTextColor={'#999'}
-			/>
-		</View>
+		<>
+			<View style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+				<Text style={{ color: colors.text100 }}>{item}</Text>
+				<TextInput
+					onChange={e => {
+						setItem({ key: item, value: e.nativeEvent.text })
+					}}
+					value={value}
+					placeholder='Settings value'
+					style={{ padding: 5, paddingLeft: 10, backgroundColor: colors.bg200, color: colors.text100, width: '50%', borderRadius: 6 }}
+					placeholderTextColor={colors.text200}
+				/>
+			</View>
+			<View style={{ borderBlockColor: colors.bg300, borderBottomWidth: 1 }} />
+		</>
 	)
 }
 
 const MySwitch: FC<{ item: keyof ISettings }> = ({ item }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item]) as boolean
+	const { colors } = useTheme()
 
 	return (
-		<View style={{ marginVertical: 5, marginTop: 10, backgroundColor: 'rgba(22,64,14,0.5)', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-			<Text style={{ color: '#fff' }}>{item}</Text>
-			<Switch
-				onValueChange={e => {
-					setItem({ key: item, value: e })
-				}}
-				value={value}
-				thumbColor={value ? 'white' : '#666'}
-			/>
-		</View>
+		<>
+			<View style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+				<Text style={{ color: colors.text100 }}>{item}</Text>
+				<Switch
+					onValueChange={e => {
+						setItem({ key: item, value: e })
+					}}
+					value={value}
+					thumbColor={value ? colors.accent100 : colors.text200}
+					trackColor={{ false: colors.bg200, true: colors.bg300 }}
+				/>
+			</View>
+			<View style={{ borderBlockColor: colors.bg300, borderBottomWidth: 1 }} />
+		</>
+	)
+}
+
+const MySelect: FC<{ item: keyof ISettings; options: { value: unknown; title: string }[] }> = ({ item, options }) => {
+	const { setItem } = useActions()
+	const value = useTypedSelector(state => state.settings.settings[item]) as any
+	const { colors } = useTheme()
+
+	return (
+		<>
+			<View style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+				<Text style={{ color: colors.text100 }}>theme: {value}</Text>
+				<View style={{ flexDirection: 'row', borderRadius: 6 }}>
+					{options.map((option, i) => {
+						const isEnd = options.length - 1 === i
+						const isStart = 0 === i
+						const isActive = value === option.value
+
+						return (
+							<Pressable
+								key={i}
+								onPress={() => setItem({ key: item, value: option.value })}
+								style={{
+									paddingHorizontal: 10,
+									paddingVertical: 5,
+									backgroundColor: isActive ? colors.primary100 : colors.bg200,
+
+									borderTopLeftRadius: isStart ? 10 : 0,
+									borderBottomLeftRadius: isStart ? 10 : 0,
+
+									borderTopRightRadius: isEnd ? 10 : 0,
+									borderBottomRightRadius: isEnd ? 10 : 0,
+
+									borderRightColor: isActive && isEnd ? colors.primary200 : colors.bg300,
+									borderLeftColor: isActive && isStart ? colors.primary200 : colors.bg300,
+									borderTopColor: isActive ? colors.primary200 : colors.bg300,
+									borderBottomColor: isActive ? colors.primary200 : colors.bg300,
+
+									borderTopWidth: 1,
+									borderBottomWidth: 1,
+									borderRightWidth: 1,
+									borderLeftWidth: isStart ? 1 : 0
+								}}>
+								<Text style={{ color: isActive ? colors.primary300 : colors.text100, fontSize: 14, lineHeight: 14 }}>{option.title}</Text>
+							</Pressable>
+						)
+					})}
+				</View>
+			</View>
+			<View style={{ borderBlockColor: colors.bg300, borderBottomWidth: 1 }} />
+		</>
 	)
 }
 
@@ -167,6 +229,15 @@ const Settings: FC = () => {
 	return (
 		<View style={{ flex: 1 }}>
 			<ScrollView>
+				<View></View>
+				<MySelect
+					item='theme'
+					options={[
+						{ value: 'light', title: 'light' },
+						{ value: 'dark', title: 'dark' },
+						{ value: null, title: 'default' }
+					]}
+				/>
 				<MyInput item='testValue' />
 				<MySwitch item='showDevOptions' />
 			</ScrollView>
@@ -176,6 +247,7 @@ const Settings: FC = () => {
 
 const LoaderSettings: FC = () => {
 	const isLoading = useTypedSelector(state => state.settings.isLoading)
+	const { colors } = useTheme()
 
 	if (!isLoading) {
 		return null
@@ -183,8 +255,8 @@ const LoaderSettings: FC = () => {
 
 	return (
 		<View style={{ position: 'absolute', top: 10, left: 0, right: 0, zIndex: 10, alignItems: 'center' }}>
-			<View style={{ backgroundColor: '#999', borderRadius: 50, paddingHorizontal: 5 }}>
-				<Text style={{ color: '#fff', textAlign: 'center' }}>Loading...</Text>
+			<View style={{ backgroundColor: colors.bg200, borderRadius: 50, paddingHorizontal: 5 }}>
+				<Text style={{ color: colors.text100, textAlign: 'center' }}>Loading...</Text>
 			</View>
 		</View>
 	)
@@ -195,16 +267,41 @@ interface LoadingAppSettingsProps {
 }
 const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 	const isLoaded = useTypedSelector(state => state.settings.isLoaded)
+	const { colors } = useTheme()
 
 	if (isLoaded) {
 		return children
 	}
 
 	return (
-		<View style={{ flex: 1, backgroundColor: '#333', alignItems: 'center', justifyContent: 'center' }}>
-			<View style={{ backgroundColor: '#999', borderRadius: 50, paddingHorizontal: 5 }}>
-				<Text style={{ color: '#fff', textAlign: 'center' }}>Loading...</Text>
+		<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+			<View style={{ backgroundColor: colors.bg200, borderRadius: 50, paddingHorizontal: 5 }}>
+				<Text style={{ color: colors.text100, textAlign: 'center' }}>Loading...</Text>
 			</View>
+		</View>
+	)
+}
+
+const AppContent: FC = () => {
+	const { colors } = useTheme()
+
+	return (
+		<View style={{ flex: 1, backgroundColor: colors.bg100 }}>
+			<LoadingAppSettings>
+				<View style={{ flex: 1 }}>
+					<View style={{ flex: 1, padding: 16 }}>
+						<LoaderSettings />
+						<User />
+						<Temp />
+						<UpdateApkProgress />
+						<Settings />
+					</View>
+					<NetInfo />
+				</View>
+				<View>
+					<UpdateApkModal />
+				</View>
+			</LoadingAppSettings>
 		</View>
 	)
 }
@@ -219,21 +316,7 @@ const App: FC = () => {
 	return (
 		<Provider store={store}>
 			<ReduxNetworkProvider pingTimeout={10000} pingServerUrl='https://www.google.com/' shouldPing={true} pingInterval={30000} pingOnlyIfOffline={false} pingInBackground={false} httpMethod={'HEAD'}>
-				<LoadingAppSettings>
-					<View style={{ flex: 1, backgroundColor: '#333' }}>
-						<View style={{ flex: 1, padding: 16 }}>
-							<LoaderSettings />
-							<User />
-							<Temp />
-							<UpdateApkProgress />
-							<Settings />
-						</View>
-						<NetInfo />
-					</View>
-					<View>
-						<UpdateApkModal />
-					</View>
-				</LoadingAppSettings>
+				<AppContent />
 			</ReduxNetworkProvider>
 		</Provider>
 	)

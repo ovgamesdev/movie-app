@@ -8,7 +8,7 @@ export interface ISettings {
 	_settings_time: number
 	_settings_version: number
 	testValue: string
-	theme: null | true
+	theme: null | 'light' | 'dark'
 	showDevOptions: boolean
 }
 
@@ -28,7 +28,7 @@ const initialState: IInitialStateSettings = {
 		_settings_time: 0,
 		_settings_version: 1,
 		testValue: '',
-		theme: true,
+		theme: null,
 		showDevOptions: false
 	},
 	isLoading: true,
