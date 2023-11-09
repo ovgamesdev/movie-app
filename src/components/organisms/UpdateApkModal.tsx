@@ -1,12 +1,11 @@
+import { Button } from '@components/atoms'
+import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { ExpandMoreIcon } from '@icons'
 import React, { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import Modal from 'react-native-modal'
-import { useActions } from '../hooks/useActions'
-import { useTheme } from '../hooks/useTheme'
-import { useTypedSelector } from '../hooks/useTypedSelector'
-import { ExpandMoreIcon } from '../icons'
 
-const UpdateApkModal = () => {
+export const UpdateApkModal = () => {
 	const { canUpdate, remote, size, isVisibleModal } = useTypedSelector(store => store.update)
 	const { setIsVisibleModal, downloadApk } = useActions()
 	const [isExpand, setIsExpand] = useState(false)
@@ -29,10 +28,10 @@ const UpdateApkModal = () => {
 				<View style={{ backgroundColor: colors.bg300, width: 30, height: 4, margin: 6, alignSelf: 'center', borderRadius: 10 }} />
 				<Text style={{ color: colors.text100, fontSize: 16, fontWeight: '700', paddingTop: 5 }}>Доступно обновление</Text>
 
-				<Pressable onPress={() => setIsExpand(is => !is)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}>
+				<Button onPress={() => setIsExpand(is => !is)} padding={0} paddingVertical={7} transparent flexDirection='row'>
 					<Text style={{ color: colors.primary100 }}>Что нового в {remote.versionName}</Text>
-					<ExpandMoreIcon width={20} height={20} fill={colors.primary100} rotation={isExpand ? 180 : 0} />
-				</Pressable>
+					<ExpandMoreIcon width={18} height={18} fill={colors.primary100} rotation={isExpand ? 180 : 0} />
+				</Button>
 
 				{isExpand && (
 					<View style={{ paddingTop: 10 }}>
@@ -52,12 +51,8 @@ const UpdateApkModal = () => {
 					</View>
 				)}
 
-				<Pressable onPress={onStart} style={{ padding: 15, marginTop: 10, backgroundColor: colors.primary100, borderRadius: 10 }}>
-					<Text style={{ color: colors.primary300, textAlign: 'center' }}>Загрузить • {size} МБ</Text>
-				</Pressable>
+				<Button text={`Загрузить • ${size} МБ`} onPress={onStart} alignItems='center' padding={12} buttonColor={colors.primary100} pressedButtonColor={colors.primary200} style={{ marginTop: 10 }} />
 			</View>
 		</Modal>
 	)
 }
-
-export default UpdateApkModal

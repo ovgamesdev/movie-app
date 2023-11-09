@@ -1,16 +1,13 @@
+import { Button } from '@components/atoms'
+import { NetInfo, UpdateApk, User } from '@components/molecules'
+import { UpdateApkModal } from '@components/organisms'
+import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import React, { FC, ReactNode, useEffect } from 'react'
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native'
+import { ScrollView, Switch, Text, TextInput, View } from 'react-native'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { Provider } from 'react-redux'
-import { NetInfo } from './components/NetInfo'
-import UpdateApkModal from './components/UpdateApkModal'
-import { UpdateApkProgress } from './components/UpdateApkProgress'
-import { User } from './components/User'
-import { useActions } from './hooks/useActions'
-import { useTheme } from './hooks/useTheme'
-import { useTypedSelector } from './hooks/useTypedSelector'
 import { startAppListening } from './store/listenerMiddleware'
 import { ISettings, setupSettingsListeners } from './store/settings/settings.slice'
 import { store } from './store/store'
@@ -92,7 +89,6 @@ GoogleSignin.configure({
 
 const Temp: FC = () => {
 	const { getSettings, saveSettings, removeItem, setItem } = useActions()
-	const { colors } = useTheme()
 
 	const setTestItem = () => {
 		setItem({ key: 'test:123:qwerty', value: { id: 123, title: '123' } })
@@ -105,23 +101,13 @@ const Temp: FC = () => {
 	return (
 		<>
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
-				<Pressable onPress={getSettings} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginRight: 2, flex: 1 }}>
-					<Text style={{ color: colors.text100 }}>getSettings</Text>
-				</Pressable>
-
-				<Pressable onPress={saveSettings} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginLeft: 2, flex: 1 }}>
-					<Text style={{ color: colors.text100 }}>saveSettings</Text>
-				</Pressable>
+				<Button text='getSettings' onPress={getSettings} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
+				<Button text='saveSettings' onPress={saveSettings} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
 			</View>
 
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
-				<Pressable onPress={setTestItem} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginRight: 2, flex: 1 }}>
-					<Text style={{ color: colors.text100 }}>setItem</Text>
-				</Pressable>
-
-				<Pressable onPress={removeTestItem} style={{ backgroundColor: colors.bg200, borderRadius: 6, padding: 10, marginLeft: 2, flex: 1 }}>
-					<Text style={{ color: colors.text100 }}>removeItem</Text>
-				</Pressable>
+				<Button text='setItem' onPress={setTestItem} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
+				<Button text='removeItem' onPress={removeTestItem} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
 			</View>
 		</>
 	)
@@ -190,32 +176,35 @@ const MySelect: FC<{ item: keyof ISettings; options: { value: unknown; title: st
 						const isActive = value === option.value
 
 						return (
-							<Pressable
+							<Button
 								key={i}
+								text={option.title}
 								onPress={() => setItem({ key: item, value: option.value })}
-								style={{
-									paddingHorizontal: 10,
-									paddingVertical: 5,
-									backgroundColor: isActive ? colors.primary100 : colors.bg200,
-
+								justifyContent='center'
+								padding={0}
+								paddingHorizontal={10}
+								isActive={isActive}
+								textColor={colors.text100}
+								activeTextColor={colors.primary300}
+								buttonColor={colors.bg200}
+								activeButtonColor={colors.primary100}
+								pressedButtonColor={colors.bg300}
+								activePressedButtonColor={colors.primary200}
+								borderStyle={{
 									borderTopLeftRadius: isStart ? 10 : 0,
 									borderBottomLeftRadius: isStart ? 10 : 0,
-
 									borderTopRightRadius: isEnd ? 10 : 0,
 									borderBottomRightRadius: isEnd ? 10 : 0,
-
-									borderRightColor: isActive && isEnd ? colors.primary200 : colors.bg300,
-									borderLeftColor: isActive && isStart ? colors.primary200 : colors.bg300,
 									borderTopColor: isActive ? colors.primary200 : colors.bg300,
 									borderBottomColor: isActive ? colors.primary200 : colors.bg300,
-
+									borderRightColor: isActive && isEnd ? colors.primary200 : colors.bg300,
+									borderLeftColor: isActive && isStart ? colors.primary200 : colors.bg300,
 									borderTopWidth: 1,
 									borderBottomWidth: 1,
 									borderRightWidth: 1,
 									borderLeftWidth: isStart ? 1 : 0
-								}}>
-								<Text style={{ color: isActive ? colors.primary300 : colors.text100, fontSize: 14, lineHeight: 14 }}>{option.title}</Text>
-							</Pressable>
+								}}
+							/>
 						)
 					})}
 				</View>
@@ -229,7 +218,6 @@ const Settings: FC = () => {
 	return (
 		<View style={{ flex: 1 }}>
 			<ScrollView>
-				<View></View>
 				<MySelect
 					item='theme'
 					options={[
@@ -293,7 +281,7 @@ const AppContent: FC = () => {
 						<LoaderSettings />
 						<User />
 						<Temp />
-						<UpdateApkProgress />
+						<UpdateApk />
 						<Settings />
 					</View>
 					<NetInfo />

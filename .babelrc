@@ -1,31 +1,29 @@
 {
 	"presets": ["module:metro-react-native-babel-preset"],
 	"plugins": [
-		[
-			"@babel/plugin-proposal-decorators",
-			{
-				"legacy": true
-			}
-		],
+		["@babel/plugin-proposal-decorators", { "legacy": true }],
 		[
 			"module-resolver",
 			{
 				"extensions": [".ios.js", ".android.js", ".ios.jsx", ".android.jsx", ".js", ".jsx", ".json", ".ts", ".tsx", ".svg", ".png"],
 				"root": ["./src"],
 				"alias": {
-					"@src/*": "./src/*",
-					"@app": "./src/App"
-					// "@components": "./src/components/index",
+					// "@src/*": "./src/*",
+					"@app": "./src/App",
+					"@components/atoms": "./src/components/atoms/index",
+					"@components/molecules": "./src/components/molecules/index",
+					"@components/organisms": "./src/components/organisms/index",
+					"@components/templates": "./src/components/templates/index",
 					// "@api": "./src/api/index",
 					// "@context": "./src/context/index",
-					// "@hooks": "./src/hooks/index",
+					"@hooks": "./src/hooks/index",
 					// "@provider": "./src/provider/index",
 					// "@screens": "./src/screens/index",
 					// "@store": "./src/store/index",
 					// "@types": "./src/types/index",
 					// "@types/*": "./src/types/*",
 					// "@utils": "./src/utils/index",
-					// "@icons": "./src/icons/index"
+					"@icons": "./src/assets/icons/index"
 				}
 			}
 		]

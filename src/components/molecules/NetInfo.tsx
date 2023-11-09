@@ -1,7 +1,6 @@
+import { useTheme, useTypedSelector } from '@hooks'
 import React, { FC, useEffect, useRef, useState } from 'react'
 import { Animated, Pressable, Text } from 'react-native'
-import { useTheme } from '../hooks/useTheme'
-import { useTypedSelector } from '../hooks/useTypedSelector'
 
 export const NetInfo: FC = () => {
 	const isConnected = useTypedSelector(state => state.network.isConnected)
@@ -58,7 +57,7 @@ export const NetInfo: FC = () => {
 		animationRef.current.start()
 	}
 
-	if (!isShowConnectedStatus) return null
+	if (!isShowConnectedStatus || isConnected === null) return null
 
 	return (
 		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? colors.success : colors.warning }}>

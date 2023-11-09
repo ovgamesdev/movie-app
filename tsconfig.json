@@ -2,10 +2,16 @@
 	"extends": "@tsconfig/react-native/tsconfig.json",
 	"compilerOptions": {
 		"experimentalDecorators": true,
-		"baseUrl": "."
-		// "paths": {
-		// 	"@src/*": ["src/*"],
-		// 	"@app": ["src/App"],
-		// }
+		"baseUrl": ".",
+		"paths": {
+			// "@src/*": ["src/*"],
+			"@app": ["src/App"],
+			"@components/atoms": ["src/components/atoms/index"],
+			"@components/molecules": ["src/components/molecules/index"],
+			"@components/organisms": ["src/components/organisms/index"],
+			"@components/templates": ["src/components/templates/index"],
+			"@hooks": ["src/hooks/index"],
+			"@icons": ["src/assets/icons/index"]
+		}
 	}
 }
