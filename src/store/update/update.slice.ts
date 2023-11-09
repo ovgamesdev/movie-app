@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction, Unsubscribe } from '@reduxjs/toolkit'
+import { PayloadAction, Unsubscribe, createSlice } from '@reduxjs/toolkit'
 import { Alert, NativeModules } from 'react-native'
 import semver from 'semver'
 import { AppStartListening } from '../listenerMiddleware'
@@ -12,6 +12,7 @@ interface IInitialStateUpdate {
 	canUpdate: boolean
 	download: IDownload | null
 	size: number | null
+	isVisibleModal: boolean
 }
 
 const initialState: IInitialStateUpdate = {
@@ -22,7 +23,8 @@ const initialState: IInitialStateUpdate = {
 	remote: null,
 	canUpdate: false,
 	download: null,
-	size: null
+	size: null,
+	isVisibleModal: false
 }
 
 const updateSlice = createSlice({
@@ -31,6 +33,9 @@ const updateSlice = createSlice({
 	reducers: {
 		setDownloadProgress: (state, { payload }: PayloadAction<IDownload | null>) => {
 			state.download = payload
+		},
+		setIsVisibleModal: (state, { payload }: PayloadAction<boolean>) => {
+			state.isVisibleModal = payload
 		},
 		getApkVersionSuccess: (state, { payload }: PayloadAction<{ size: number | null; remote: IRemote }>) => {
 			state.remote = payload.remote
@@ -54,23 +59,24 @@ const updateSlice = createSlice({
 
 				state.canUpdate = outdated
 
-				// if (outdated) {
-				//
-				// 	if (remote.forceUpdate) {
-				// 		options.forceUpdateApp?.()
+				if (outdated) {
+					// TODO show modal every day is can update
+					state.isVisibleModal = true
+					//
+					// 	if (remote.forceUpdate) {
+					// 		options.forceUpdateApp?.()
 
-				// 		downloadApk(remote)
-				// 	} else if (options.needUpdateApp) {
-				// TODO open modal
-				// 		options.needUpdateApp(isUpdate => {
-				// 			if (isUpdate) {
-				// 				downloadApk(remote)
-				// 			}
-				// 		}, remote.whatsNew)
-				// 	}
-				// } else if (options.notNeedUpdateApp) {
-				// 	options.notNeedUpdateApp()
-				// }
+					// 		downloadApk(remote)
+					// 	} else if (options.needUpdateApp) {
+					// 		options.needUpdateApp(isUpdate => {
+					// 			if (isUpdate) {
+					// 				downloadApk(remote)
+					// 			}
+					// 		}, remote.whatsNew)
+					// 	}
+					// } else if (options.notNeedUpdateApp) {
+					// 	options.notNeedUpdateApp()
+				}
 			} catch (error) {
 				console.error('RNUpdateAPK::getApkVersionSuccess - Unknown error:', error)
 				Alert.alert('Произошла ошибка', 'Unknown error')

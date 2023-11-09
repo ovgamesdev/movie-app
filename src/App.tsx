@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-nati
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { Provider } from 'react-redux'
 import { NetInfo } from './components/NetInfo'
+import UpdateApkModal from './components/UpdateApkModal'
 import { UpdateApkProgress } from './components/UpdateApkProgress'
 import { User } from './components/User'
 import { useActions } from './hooks/useActions'
@@ -228,6 +229,9 @@ const App: FC = () => {
 							<Settings />
 						</View>
 						<NetInfo />
+					</View>
+					<View>
+						<UpdateApkModal />
 					</View>
 				</LoadingAppSettings>
 			</ReduxNetworkProvider>
