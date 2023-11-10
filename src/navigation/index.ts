@@ -3,7 +3,8 @@ export * from './TabNavigator'
 
 export type RootStackParamList = {
 	Home: undefined
-	Movie: { id: number }
+	Movie: { data: { id: number } }
+	Watch: { data: { id: number } }
 }
 
 export type HomeTabParamList = {

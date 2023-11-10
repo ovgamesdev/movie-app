@@ -1,11 +1,11 @@
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { Text, TextInput, View } from 'react-native'
-import { ISettings } from 'src/store/settings/settings.slice'
+import { InputSettingsKey } from 'src/store/settings/types'
 
-export const Input: FC<{ item: keyof ISettings }> = ({ item }) => {
+export const Input: FC<{ item: InputSettingsKey }> = ({ item }) => {
 	const { setItem } = useActions()
-	const value = useTypedSelector(state => state.settings.settings[item]) as string
+	const value = useTypedSelector(state => state.settings.settings[item])
 	const { colors } = useTheme()
 
 	return (
@@ -14,7 +14,7 @@ export const Input: FC<{ item: keyof ISettings }> = ({ item }) => {
 				<Text style={{ color: colors.text100 }}>{item}</Text>
 				<TextInput
 					onChange={e => {
-						setItem({ key: item, value: e.nativeEvent.text })
+						setItem({ [item]: e.nativeEvent.text })
 					}}
 					value={value}
 					placeholder='Settings value'
