@@ -14,6 +14,7 @@
 					"@components/molecules": "./src/components/molecules/index",
 					"@components/organisms": "./src/components/organisms/index",
 					"@components/templates": "./src/components/templates/index",
+					"@navigation": "./src/navigation/index",
 					// "@api": "./src/api/index",
 					// "@context": "./src/context/index",
 					"@hooks": "./src/hooks/index",

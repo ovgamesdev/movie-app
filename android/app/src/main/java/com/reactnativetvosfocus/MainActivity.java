@@ -38,7 +38,7 @@ public class MainActivity extends ReactActivity {
         );
   }
 
-  // OVG 
+  // NOTE 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
