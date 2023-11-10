@@ -1,11 +1,11 @@
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { Switch as RNSwitch, Text, View } from 'react-native'
-import { ISettings } from 'src/store/settings/settings.slice'
+import { SwitchSettingsKey } from 'src/store/settings/types'
 
-export const Switch: FC<{ item: keyof ISettings }> = ({ item }) => {
+export const Switch: FC<{ item: SwitchSettingsKey }> = ({ item }) => {
 	const { setItem } = useActions()
-	const value = useTypedSelector(state => state.settings.settings[item]) as boolean
+	const value = useTypedSelector(state => state.settings.settings[item])
 	const { colors } = useTheme()
 
 	return (
@@ -14,7 +14,7 @@ export const Switch: FC<{ item: keyof ISettings }> = ({ item }) => {
 				<Text style={{ color: colors.text100 }}>{item}</Text>
 				<RNSwitch
 					onValueChange={e => {
-						setItem({ key: item, value: e })
+						setItem({ [item]: e })
 					}}
 					value={value}
 					thumbColor={value ? colors.accent100 : colors.text200}

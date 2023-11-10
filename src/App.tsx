@@ -5,7 +5,7 @@ import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
-import React, { FC, ReactNode, useEffect } from 'react'
+import { FC, ReactNode, useEffect } from 'react'
 import { Text, View } from 'react-native'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -24,7 +24,7 @@ const Temp: FC = () => {
 	const { getSettings, saveSettings, removeItem, setItem } = useActions()
 
 	const setTestItem = () => {
-		setItem({ key: 'test:123:qwerty', value: { id: 123, title: '123' } })
+		setItem({ 'test:123:qwerty': { id: 123, name: '123' } })
 	}
 
 	const removeTestItem = () => {
@@ -111,8 +111,6 @@ const App: FC = () => {
 }
 
 export default App
-
-// tsrnfs
 
 // TODO can help
 // movie-view https://github.com/bamlab/react-native-image-header-scroll-view/tree/master

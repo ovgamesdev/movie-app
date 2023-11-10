@@ -3,7 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { GDrive, ListQueryBuilder, MimeTypes } from '@robinbobin/react-native-google-drive-api-wrapper'
 import { AppDispatch, RootState } from '../store'
-import { ISettings } from './settings.slice'
+import { ISettings } from './types'
 
 const KEY = 'settings'
 
@@ -79,7 +79,7 @@ const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 		if (drive.fileId.length > 0) {
 			const file = await gdrive.files.newMultipartUploader().setData(value, MimeTypes.JSON_UTF8).setIdOfFileToUpdate(drive.fileId).execute()
 
-			drive.fileId = file.id as string
+			drive.fileId = file.id
 			return true
 		} else {
 			const file = await gdrive.files
@@ -88,7 +88,7 @@ const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
 				.setRequestBody({ name: KEY, parents: ['appDataFolder'] })
 				.execute()
 
-			drive.fileId = file.id as string
+			drive.fileId = file.id
 			return true
 		}
 	} catch (error: any) {

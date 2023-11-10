@@ -2,11 +2,16 @@ import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { Text, View } from 'react-native'
-import { ISettings } from 'src/store/settings/settings.slice'
+import { ISettings, SelectSettingsKey } from 'src/store/settings/types'
 
-export const Select: FC<{ item: keyof ISettings; options: { value: unknown; title: string }[] }> = ({ item, options }) => {
+interface SelectProps<K extends SelectSettingsKey> {
+	item: K
+	options: { value: ISettings[K]; title: string }[]
+}
+
+export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) => {
 	const { setItem } = useActions()
-	const value = useTypedSelector(state => state.settings.settings[item]) as any
+	const value = useTypedSelector(state => state.settings.settings[item])
 	const { colors } = useTheme()
 
 	return (
@@ -23,7 +28,7 @@ export const Select: FC<{ item: keyof ISettings; options: { value: unknown; titl
 							<Button
 								key={i}
 								text={option.title}
-								onPress={() => setItem({ key: item, value: option.value })}
+								onPress={() => setItem({ [item]: option.value })}
 								justifyContent='center'
 								padding={0}
 								paddingHorizontal={10}

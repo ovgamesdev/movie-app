@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { ExpandMoreIcon } from '@icons'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 

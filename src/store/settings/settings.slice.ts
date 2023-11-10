@@ -2,26 +2,7 @@ import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolk
 import { ToastAndroid } from 'react-native'
 import { AppStartListening } from '../listenerMiddleware'
 import { getSettings, saveSettings } from './settings.actions'
-
-export interface ISettings {
-	[key: `test:${number}:${string}`]: { name: string; id: number }
-	_settings_time: number
-	_settings_version: number
-	testValue: string
-	theme: null | 'light' | 'dark'
-	showDevOptions: boolean
-}
-
-// type SettingsValueTypes = {
-// 	[key in keyof ISettings]: ISettings[key]
-// }
-
-interface IInitialStateSettings {
-	settings: ISettings
-	isLoading: boolean
-	isLoaded: boolean
-	lastSaveTime: number
-}
+import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey } from './types'
 
 const initialState: IInitialStateSettings = {
 	settings: {
@@ -40,12 +21,13 @@ const settingsSlice = createSlice({
 	name: 'settings',
 	initialState,
 	reducers: {
-		// TODO value: PayloadAction<{ key: keyof ISettings; value: SettingsValueTypes[keyof ISettings] }>
-		setItem: (state, { payload: { key, value } }: PayloadAction<{ key: keyof ISettings; value: unknown }>) => {
+		setItem: (state: IInitialStateSettings, { payload }: PayloadAction<AtLeastOneSettings>) => {
 			state.settings._settings_time = Date.now()
-			state.settings[key] = value as never
+			for (const option in payload) {
+				state.settings[option as SettingKey] = payload[option as SettingKey] as never
+			}
 		},
-		removeItem: (state, { payload: { key } }: PayloadAction<{ key: keyof ISettings }>) => {
+		removeItem: (state, { payload: { key } }: PayloadAction<{ key: SettingKey }>) => {
 			state.settings._settings_time = Date.now()
 			delete state.settings[key]
 		}

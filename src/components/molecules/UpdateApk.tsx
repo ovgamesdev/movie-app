@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { DownloadIcon } from '@icons'
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 
 export const UpdateApk: FC = () => {
