@@ -37,7 +37,7 @@ export const Watch = ({ navigation, route }: Props) => {
 		<View style={{ flex: 1, padding: 10 }}>
 			<Text style={{ color: colors.text100 }}>Watch</Text>
 
-			<Button text='back' onPress={() => navigation.pop()} />
+			<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
 		</View>
 	)
 }

@@ -1,3 +1,4 @@
+import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { HomeIcon, SettingsIcon } from '@icons'
 import { HomeTabParamList } from '@navigation'
@@ -18,6 +19,12 @@ export const TabNavigator = () => {
 				tabBarShowLabel: false,
 				tabBarHideOnKeyboard: true,
 
+				// tabBarBackground: () => <View style={{ backgroundColor: 'red', position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}></View>,
+				tabBarButton: ({ children, onPress, to }) => (
+					<Button onPress={onPress} padding={10} flex={1} transparent style={{ height: '100%' }}>
+						{children}
+					</Button>
+				),
 				tabBarIcon: ({ focused }) => <View style={{ backgroundColor: focused ? colors.primary100 : colors.bg200, width: 32, height: 32, borderRadius: 6, justifyContent: 'center', alignItems: 'center' }}>{route.name === 'Content' ? <HomeIcon width={20} height={20} fill={focused ? colors.primary300 : colors.text200} /> : <SettingsIcon width={24} height={24} fill={focused ? colors.primary300 : colors.text200} />}</View>
 			})}
 			// safeAreaInsets={{ bottom: 0, left: 0, right: 0, top: 0 }}

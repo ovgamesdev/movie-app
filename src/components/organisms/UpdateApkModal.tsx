@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { ExpandMoreIcon } from '@icons'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 
@@ -10,6 +10,8 @@ export const UpdateApkModal = () => {
 	const { setIsVisibleModal, downloadApk } = useActions()
 	const [isExpand, setIsExpand] = useState(false)
 	const { colors } = useTheme()
+
+	const buttonRef = useRef<View | null>(null)
 
 	const onClose = () => {
 		setIsVisibleModal(false)
@@ -20,10 +22,14 @@ export const UpdateApkModal = () => {
 		onClose()
 	}
 
+	const _onShow = () => {
+		buttonRef.current?.requestTVFocus()
+	}
+
 	if (!canUpdate || !remote) return null
 
 	return (
-		<Modal isVisible={isVisibleModal} onSwipeComplete={onClose} onBackdropPress={onClose} onBackButtonPress={onClose} swipeDirection={['down']} useNativeDriverForBackdrop style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+		<Modal isVisible={isVisibleModal} onShow={_onShow} onSwipeComplete={onClose} onBackdropPress={onClose} onBackButtonPress={onClose} swipeDirection={['down']} useNativeDriverForBackdrop style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
 			<View style={{ backgroundColor: colors.bg100, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 10, paddingTop: 0, paddingBottom: 35 }}>
 				<View style={{ backgroundColor: colors.bg300, width: 30, height: 4, margin: 6, alignSelf: 'center', borderRadius: 10 }} />
 				<Text style={{ color: colors.text100, fontSize: 16, fontWeight: '700', paddingTop: 5 }}>Доступно обновление</Text>
@@ -51,7 +57,7 @@ export const UpdateApkModal = () => {
 					</View>
 				)}
 
-				<Button text={`Загрузить • ${size} МБ`} onPress={onStart} alignItems='center' padding={12} buttonColor={colors.primary100} pressedButtonColor={colors.primary200} style={{ marginTop: 10 }} />
+				<Button ref={buttonRef} text={`Загрузить • ${size} МБ`} onPress={onStart} alignItems='center' padding={12} buttonColor={colors.primary100} pressedButtonColor={colors.primary200} textColor={colors.primary300} style={{ marginTop: 10 }} />
 			</View>
 		</Modal>
 	)

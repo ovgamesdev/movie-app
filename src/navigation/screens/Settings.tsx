@@ -1,7 +1,7 @@
-import { SettingsInput, SettingsSelect, SettingsSwitch, User } from '@components/molecules'
+import { SettingsInput, SettingsSelect, SettingsSwitch, UpdateApk, User } from '@components/molecules'
 import { useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
-import { Text, View } from 'react-native'
+import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const LoaderSettings: FC = () => {
@@ -25,8 +25,12 @@ export const Settings = () => {
 	const insets = useSafeAreaInsets()
 
 	return (
-		<View style={{ flex: 1, padding: 10, marginTop: insets.top }}>
+		<TVFocusGuideView style={{ flex: 1, padding: 10, marginTop: insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<LoaderSettings />
+
+			<View style={{ paddingBottom: 10 }}>
+				<UpdateApk />
+			</View>
 
 			<User />
 
@@ -40,6 +44,6 @@ export const Settings = () => {
 			/>
 			<SettingsInput item='testValue' />
 			<SettingsSwitch item='showDevOptions' />
-		</View>
+		</TVFocusGuideView>
 	)
 }

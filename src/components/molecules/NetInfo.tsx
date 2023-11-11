@@ -1,6 +1,7 @@
+import { Button } from '@components/atoms'
 import { useTheme, useTypedSelector } from '@hooks'
 import { FC, useEffect, useRef, useState } from 'react'
-import { Animated, Pressable, Text } from 'react-native'
+import { Animated, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const NetInfo: FC = () => {
@@ -60,9 +61,9 @@ export const NetInfo: FC = () => {
 
 	return (
 		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? colors.success : colors.warning }}>
-			<Pressable onPress={hideAnimation}>
+			<Button onPress={hideAnimation} transparent padding={0} justifyContent='center' style={{ height: 24, borderRadius: 0 }}>
 				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: colors.primary300, height: 24, marginBottom: insets.bottom }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
-			</Pressable>
+			</Button>
 		</Animated.View>
 	)
 }

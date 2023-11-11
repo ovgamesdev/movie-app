@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { DownloadIcon } from '@icons'
 import { FC } from 'react'
-import { Text, View } from 'react-native'
+import { TVFocusGuideView, Text, View } from 'react-native'
 
 export const UpdateApk: FC = () => {
 	const { canUpdate, download, remote } = useTypedSelector(store => store.update)
@@ -12,7 +12,7 @@ export const UpdateApk: FC = () => {
 	if (!remote || !canUpdate) return null
 
 	return (
-		<View style={{ marginTop: 10, backgroundColor: colors.bg200, borderRadius: 6 }}>
+		<TVFocusGuideView style={{ marginTop: 10, backgroundColor: colors.bg200, borderRadius: 6 }} trapFocusLeft trapFocusRight>
 			{download?.error ? (
 				<Button text='Повторить обновление' onPress={downloadApk} textColor={colors.primary100} />
 			) : download?.completed ? (
@@ -25,6 +25,6 @@ export const UpdateApk: FC = () => {
 			) : (
 				<Button text='Доступно обновление' onPress={() => setIsVisibleModal(true)} textColor={colors.primary100} />
 			)}
-		</View>
+		</TVFocusGuideView>
 	)
 }

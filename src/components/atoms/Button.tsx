@@ -1,5 +1,5 @@
 import { useTheme } from '@hooks'
-import { forwardRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Animated, FlexAlignType, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
 
 interface BorderProps {
@@ -44,7 +44,11 @@ interface Props extends PressableProps {
 	borderStyle?: BorderProps
 }
 
-export const Button = forwardRef<View, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
+type ButtonType = {
+	requestTVFocus: () => void
+}
+
+export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
 	const { colors } = useTheme()
 	const [scale] = useState(new Animated.Value(1))
 
@@ -61,10 +65,22 @@ export const Button = forwardRef<View, Props>(({ children, padding = 7, paddingH
 		}
 	}
 
+	const buttonRef = useRef<View | null>(null)
+
+	useEffect(() => {
+		if (props.hasTVPreferredFocus) {
+			setTimeout(() => buttonRef.current?.requestTVFocus(), 0)
+		}
+	}, [props.hasTVPreferredFocus])
+
+	useImperativeHandle(forwardRef, () => ({
+		requestTVFocus: () => buttonRef.current?.requestTVFocus()
+	}))
+
 	return (
 		<Animated.View style={{ transform: [{ scale }], flex, ...borderStyle }}>
 			<Pressable
-				ref={forwardRef}
+				ref={buttonRef}
 				onPressIn={handleOnPressIn}
 				onPressOut={handleOnPressOut}
 				style={state => [

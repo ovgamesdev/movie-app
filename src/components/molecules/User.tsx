@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useAuth, useTheme } from '@hooks'
 import { FC } from 'react'
-import { Text, View } from 'react-native'
+import { TVFocusGuideView, Text, View } from 'react-native'
 
 export const User: FC = () => {
 	const { user, isAllScopeAllowed, isLoading } = useAuth()
@@ -21,10 +21,10 @@ export const User: FC = () => {
 	}
 
 	return (
-		<View style={{ backgroundColor: colors.bg300, padding: 10, borderRadius: 6 }}>
+		<TVFocusGuideView style={{ backgroundColor: colors.bg300, padding: 10, borderRadius: 6 }} trapFocusLeft trapFocusRight>
 			<Text style={{ color: colors.text100, marginBottom: 10 }}>{user.user.name}</Text>
 			<Button text='signOut' onPress={signOutGoogleUser} buttonColor={colors.warning} pressedButtonColor={colors.warning + '99'} textColor={colors.primary300} />
 			{!isAllScopeAllowed ? <Button text='addScope' onPress={addScopeGoogleUser} style={{ marginTop: 5 }} /> : null}
-		</View>
+		</TVFocusGuideView>
 	)
 }

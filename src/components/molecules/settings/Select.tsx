@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
-import { Text, View } from 'react-native'
+import { TVFocusGuideView, Text, View } from 'react-native'
 import { ISettings, SelectSettingsKey } from 'src/store/settings/types'
 
 interface SelectProps<K extends SelectSettingsKey> {
@@ -18,7 +18,7 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 		<>
 			<View style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
 				<Text style={{ color: colors.text100 }}>theme: {value}</Text>
-				<View style={{ flexDirection: 'row', borderRadius: 6 }}>
+				<TVFocusGuideView style={{ flexDirection: 'row', borderRadius: 6 }} autoFocus trapFocusLeft trapFocusRight>
 					{options.map((option, i) => {
 						const isEnd = options.length - 1 === i
 						const isStart = 0 === i
@@ -56,7 +56,7 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 							/>
 						)
 					})}
-				</View>
+				</TVFocusGuideView>
 			</View>
 			<View style={{ borderBlockColor: colors.bg300, borderBottomWidth: 1 }} />
 		</>
