@@ -65,7 +65,7 @@ yarn-error.log
 .metro-health-check*
 
 # env
-.env
+.env*
 
 # IDE
 .vscode

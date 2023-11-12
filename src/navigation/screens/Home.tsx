@@ -1,7 +1,8 @@
 import { Button } from '@components/atoms'
-import { useNavigation } from '@hooks'
+import { useNavigation, useTheme } from '@hooks'
 import { useEffect, useRef, useState } from 'react'
 import { FlatList, Platform, TVFocusGuideView, Text } from 'react-native'
+import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface IData {
@@ -11,6 +12,7 @@ interface IData {
 export const Home = () => {
 	const navigation = useNavigation()
 	const insets = useSafeAreaInsets()
+	const { colors } = useTheme()
 
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
 	const [refreshFocusedItem, setRefreshFocusedItem] = useState(-1)
@@ -35,7 +37,9 @@ export const Home = () => {
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, padding: 10, marginTop: insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
-			<Text>focused: {refreshFocusedItem}</Text>
+			<Text style={{ color: colors.text100, paddingBottom: 10 }}>
+				focused: {refreshFocusedItem} | isTv: {String(Config.UI_MODE === 'tv')}
+			</Text>
 
 			<FlatList data={data} renderItem={_renderItem} keyExtractor={item => `movie_${item.id}`} contentContainerStyle={{ gap: 5 }} />
 		</TVFocusGuideView>
