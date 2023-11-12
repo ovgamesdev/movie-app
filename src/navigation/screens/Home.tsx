@@ -15,19 +15,19 @@ export const Home = () => {
 	const { colors } = useTheme()
 
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
-	const [refreshFocusedItem, setRefreshFocusedItem] = useState(-1)
+	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
 
 	const [data] = useState<IData[]>([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }])
 
 	const _renderItem = ({ item, index }: { item: IData; index: number }) => {
-		return <Button text={`to movie ${item.id}`} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={index === refreshFocusedItem} onFocus={() => (focusedItem.current = { index })} />
+		return <Button text={`to movie ${item.id}`} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} onFocus={() => (focusedItem.current = { index })} onBlur={() => (focusedItem.current = { index: -1 })} />
 	}
 
 	useEffect(() => {
 		if (!Platform.isTV) return
 
-		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(focusedItem.current.index))
-		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem(-1))
+		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(it => ({ focus: it.blur, blur: { index: -1 } })))
+		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem({ focus: { index: -1 }, blur: focusedItem.current }))
 
 		return () => {
 			listenerFocus()
@@ -38,7 +38,7 @@ export const Home = () => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, padding: 10, marginTop: insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<Text style={{ color: colors.text100, paddingBottom: 10 }}>
-				focused: {refreshFocusedItem} | isTv: {String(Config.UI_MODE === 'tv')}
+				focus: {refreshFocusedItem.focus.index} | blur: {refreshFocusedItem.blur.index} | isTv: {String(Config.UI_MODE === 'tv')}
 			</Text>
 
 			<FlatList data={data} renderItem={_renderItem} keyExtractor={item => `movie_${item.id}`} contentContainerStyle={{ gap: 5 }} />
