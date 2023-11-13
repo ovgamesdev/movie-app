@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { FC, ReactNode, useEffect } from 'react'
 import { Text, View } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
@@ -70,7 +71,7 @@ const AppContent: FC = () => {
 	const { colors } = useTheme()
 
 	return (
-		<View style={{ flex: 1, backgroundColor: colors.bg100 }}>
+		<GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg100 }}>
 			<LoadingAppSettings>
 				<SafeAreaProvider>
 					{/* <View style={{ flex: 1, padding: 16 }}>
@@ -90,7 +91,7 @@ const AppContent: FC = () => {
 					<UpdateApkModal />
 				</View>
 			</LoadingAppSettings>
-		</View>
+		</GestureHandlerRootView>
 	)
 }
 

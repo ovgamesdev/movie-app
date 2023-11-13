@@ -27,7 +27,8 @@
 					"@icons": "./src/assets/icons/index"
 				}
 			}
-		]
+		],
+		"react-native-reanimated/plugin"
 	],
 	"env": {
 		"production": {
