@@ -18,9 +18,9 @@ export const Input: FC<Props> = ({ item, ...props }) => {
 
 	return (
 		<>
-			<TVFocusGuideView style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} trapFocusLeft trapFocusRight>
-				<Text style={{ color: colors.text100 }}>{item}</Text>
-				<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} style={{}}>
+			<TVFocusGuideView style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', alignItems: 'center' }} trapFocusLeft trapFocusRight>
+				<Text style={{ color: colors.text100, flex: 1 }}>{item}</Text>
+				<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1}>
 					<TextInput
 						ref={textInputRef}
 						onChange={e => setItem({ [item]: e.nativeEvent.text })}

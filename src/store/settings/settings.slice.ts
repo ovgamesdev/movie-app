@@ -8,7 +8,7 @@ const initialState: IInitialStateSettings = {
 	settings: {
 		_settings_time: 0,
 		_settings_version: 1,
-		testValue: '',
+		kinopoiskToken: '',
 		theme: null,
 		showDevOptions: false
 	},

@@ -42,7 +42,7 @@ export const Settings = () => {
 					{ value: null, title: 'default' }
 				]}
 			/>
-			<SettingsInput item='testValue' />
+			<SettingsInput item='kinopoiskToken' />
 			<SettingsSwitch item='showDevOptions' />
 		</TVFocusGuideView>
 	)
