@@ -12,7 +12,7 @@ interface SelectProps<K extends SelectSettingsKey> {
 export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item])
-	const { colors } = useTheme()
+	const { colors, getColorForTheme } = useTheme()
 
 	return (
 		<>
@@ -28,7 +28,7 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 							<Button
 								key={i}
 								text={option.title}
-								onPress={() => setItem({ [item]: option.value })}
+								onPress={() => value !== option.value && setItem({ [item]: option.value })}
 								justifyContent='center'
 								padding={0}
 								paddingHorizontal={10}
@@ -36,23 +36,20 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 								textColor={colors.text100}
 								activeTextColor={colors.primary300}
 								buttonColor={colors.bg200}
-								activeButtonColor={colors.primary100}
-								pressedButtonColor={colors.bg300}
-								activePressedButtonColor={colors.primary200}
+								activeButtonColor={colors.accent100}
+								activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}
 								borderStyle={{
-									borderTopLeftRadius: isStart ? 10 : 0,
-									borderBottomLeftRadius: isStart ? 10 : 0,
-									borderTopRightRadius: isEnd ? 10 : 0,
-									borderBottomRightRadius: isEnd ? 10 : 0,
-									borderTopColor: isActive ? colors.primary200 : colors.bg300,
-									borderBottomColor: isActive ? colors.primary200 : colors.bg300,
-									borderRightColor: isActive && isEnd ? colors.primary200 : colors.bg300,
-									borderLeftColor: isActive && isStart ? colors.primary200 : colors.bg300,
+									borderTopLeftRadius: isStart ? 36.5 : 0,
+									borderBottomLeftRadius: isStart ? 36.5 : 0,
+									borderTopRightRadius: isEnd ? 36.5 : 0,
+									borderBottomRightRadius: isEnd ? 36.5 : 0,
+									borderColor: getColorForTheme({ dark: 'bg300', light: 'accent100' }),
 									borderTopWidth: 1,
 									borderBottomWidth: 1,
 									borderRightWidth: 1,
 									borderLeftWidth: isStart ? 1 : 0
 								}}
+								style={{ height: 24 + 4 }}
 							/>
 						)
 					})}

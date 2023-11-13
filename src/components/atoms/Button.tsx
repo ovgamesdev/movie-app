@@ -3,20 +3,17 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { Animated, FlexAlignType, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
 
 interface BorderProps {
-	borderTopColor?: string
+	borderColor?: string
+
 	borderTopWidth?: number
 	borderTopLeftRadius?: number
 	borderTopRightRadius?: number
 
-	borderBottomColor?: string
 	borderBottomWidth?: number
 	borderBottomLeftRadius?: number
 	borderBottomRightRadius?: number
 
-	borderRightColor?: string
 	borderRightWidth?: number
-
-	borderLeftColor?: string
 	borderLeftWidth?: number
 }
 
