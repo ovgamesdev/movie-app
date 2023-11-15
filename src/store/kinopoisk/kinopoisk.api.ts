@@ -132,7 +132,7 @@ export const kinopoiskApi = createApi({
 		}
 	}),
 	endpoints: build => ({
-		getListBySlug: build.query<{ error: any; data: { movieListBySlug: { movies: { items: { movie: IGraphqlMovie; positionDiff: number }[]; total: number } } } }, { slug: string; page?: number; limit?: number }>({
+		getListBySlug: build.query<{ docs: { movie: IGraphqlMovie; positionDiff: number }[]; total: number; limit: number; page: number; pages: number }, { slug: string; page?: number; limit?: number }>({
 			query: ({ slug, page = 1, limit = 25 }) => ({
 				url: '?operationName=MovieDesktopListPage',
 				method: 'post',
@@ -165,6 +165,16 @@ export const kinopoiskApi = createApi({
 					'Service-Id': '25'
 				}
 			}),
+			transformResponse: (response, meta, arg) => {
+				const movies = (response as any)?.data?.movieListBySlug?.movies ?? { items: [], total: 0 }
+
+				const total = movies.total
+				const limit = arg.limit ?? 25
+				const page = arg.page ?? 1
+				const pages = Math.ceil(total / limit)
+
+				return { docs: movies.items, total, limit, page, pages }
+			},
 			transformErrorResponse: (response: { status: number; data: any }, meta, arg) => {
 				console.log('transformErrorResponse', { response, meta, arg })
 

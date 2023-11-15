@@ -1,3 +1,4 @@
+import { Button } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
 import React, { useEffect, useRef, useState } from 'react'
@@ -8,10 +9,9 @@ import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 type Props = {
 	slug: string
 	title: string
-	onPress: ({ id }: { id: number }) => void
 }
 
-export const SlugItemList = ({ slug, title, onPress }: Props) => {
+export const SlugItemList = ({ slug, title }: Props) => {
 	const navigation = useNavigation()
 	const { colors } = useTheme()
 	const ref = useRef<FlatList>(null)
@@ -30,17 +30,14 @@ export const SlugItemList = ({ slug, title, onPress }: Props) => {
 		}
 	}, [focusedItem.current, navigation])
 
-	const { isFetching, data: res, isError, error } = useGetListBySlugQuery({ slug, page: 1, limit: 25 })
-
-	const items = res?.data?.movieListBySlug?.movies?.items ?? []
-	const isEmpty = res?.data?.movieListBySlug?.movies?.total ?? 0 > 0
-
-	if (isError) {
-		console.log(error)
-	}
+	const { isFetching, data: resData } = useGetListBySlugQuery({ slug, page: 1, limit: 25 })
+	const data = resData?.docs ?? []
+	const isEmpty = data.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {
-		ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+		if (index < data.length) {
+			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+		}
 
 		focusedItem.current = { index }
 	}
@@ -49,7 +46,7 @@ export const SlugItemList = ({ slug, title, onPress }: Props) => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const renderItem = ({ item, index }: { item: { movie: IGraphqlMovie; positionDiff: number }; index: number }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={onPress} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	const renderItem = ({ item, index }: { item: { movie: IGraphqlMovie; positionDiff: number }; index: number }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 
 	return (
 		<>
@@ -58,25 +55,32 @@ export const SlugItemList = ({ slug, title, onPress }: Props) => {
 				<FlatList
 					keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
 					ref={ref}
-					data={items}
+					data={data}
 					horizontal
 					showsHorizontalScrollIndicator={!false}
 					contentContainerStyle={{ flexGrow: 1 }}
 					renderItem={renderItem}
 					ListEmptyComponent={
 						isFetching ? null : (
-							<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: colors.bg200, borderRadius: 6, padding: 5, flexGrow: 1 }}>
+							<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: colors.bg200, borderRadius: 6, padding: 5 }}>
 								<Text style={{ textAlign: 'center', color: colors.text100 }}>Лист пуст</Text>
 								{/* <Text style={{ textAlign: 'center', color: colors.text200 }}></Text> */}
 							</View>
 						)
 					}
 					ListFooterComponent={
-						!isFetching ? null : (
-							<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-								<ActivityIndicator size={isEmpty ? 'large' : 'small'} color={colors.text200} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />
-							</View>
-						)
+						<>
+							{!isFetching ? null : (
+								<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
+									<ActivityIndicator size={data.length !== 0 ? 'large' : 'small'} color={colors.text200} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />
+								</View>
+							)}
+							{isEmpty ? null : (
+								<Button onFocus={() => handleOnFocus({ index: data.length })} onBlur={handleOnBlur} onPress={() => navigation.push('MovieListSlug', { data: { slug } })} hasTVPreferredFocus={data.length === refreshFocusedItem.focus.index} flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
+									<Text style={{ color: colors.text200, paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }}>More..</Text>
+								</Button>
+							)}
+						</>
 					}
 					ListFooterComponentStyle={{ flexGrow: 1 }}
 				/>

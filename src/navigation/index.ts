@@ -5,6 +5,7 @@ export type RootStackParamList = {
 	Home: undefined
 	Movie: { data: { id: number } }
 	Watch: { data: { id: number } }
+	MovieListSlug: { data: { slug: string } }
 }
 
 export type HomeTabParamList = {

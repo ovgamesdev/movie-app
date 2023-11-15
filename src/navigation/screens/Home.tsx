@@ -5,7 +5,6 @@ import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const Home = () => {
-	const navigation = useNavigation()
 	const insets = useSafeAreaInsets()
 	const { colors } = useTheme()
 
@@ -13,8 +12,8 @@ export const Home = () => {
 		<TVFocusGuideView style={{ flex: 1, padding: 10, marginTop: insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<Text style={{ color: colors.text100, paddingBottom: 10 }}>isTv: {String(Config.UI_MODE === 'tv')}</Text>
 
-			<SlugItemList slug='popular-films' title='Популярные фильмы' onPress={data => navigation.push('Movie', { data })} />
-			<SlugItemList slug='popular-series' title='Популярные сериалы' onPress={data => navigation.push('Movie', { data })} />
+			<SlugItemList slug='popular-films' title='Популярные фильмы' />
+			<SlugItemList slug='popular-series' title='Популярные сериалы' />
 		</TVFocusGuideView>
 	)
 }
