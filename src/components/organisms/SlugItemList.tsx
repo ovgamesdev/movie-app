@@ -4,7 +4,7 @@ import { useNavigation, useTheme } from '@hooks'
 import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { IGraphqlMovie } from 'src/store/kinopoisk/types'
-import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
+import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = {
 	slug: string
@@ -30,8 +30,16 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		}
 	}, [focusedItem.current, navigation])
 
-	const { isFetching, data: resData } = useGetListBySlugQuery({ slug, page: 1, limit: 25 })
-	const data = resData?.docs ?? []
+	const { isFetching, data } = useGetListBySlugQuery(
+		{ slug, page: 1, limit: 25 },
+		{
+			selectFromResult: ({ data, ...otherParams }) => ({
+				data: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()),
+				...otherParams
+			})
+		}
+	)
+
 	const isEmpty = data.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {

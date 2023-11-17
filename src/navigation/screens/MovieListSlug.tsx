@@ -1,11 +1,11 @@
 import { Button } from '@components/atoms'
-import { useInfiniteScroll, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
+import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IGraphqlMovie } from '../../store/kinopoisk/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
@@ -31,7 +31,16 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		}
 	}, [focusedItem.current, navigation])
 
-	const { isFetching, data, readMore } = useInfiniteScroll<{ movie: IGraphqlMovie; positionDiff: number }>(useGetListBySlugQuery, { limit: 50, slug })
+	const [page, setPage] = useState(1)
+	const { isFetching, data } = useGetListBySlugQuery(
+		{ slug, page, limit: 50 },
+		{
+			selectFromResult: ({ data, ...otherParams }) => ({
+				data: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()),
+				...otherParams
+			})
+		}
+	)
 	const isEmpty = data.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {
@@ -42,7 +51,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		focusedItem.current = { index }
 
 		if (!isFetching && index > data.length - 1 - 10) {
-			readMore()
+			setPage(page => page + 1)
 		}
 	}
 
@@ -52,12 +61,12 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	const handleScrollEnd = () => {
 		if (!isFetching) {
-			readMore()
+			setPage(page => page + 1)
 		}
 	}
 
 	const renderItem = ({ item, index }: { item: { movie: IGraphqlMovie; positionDiff: number }; index: number }) => {
-		return <Button text={`${index + 1} (${item.positionDiff}) ${item.movie.title.russian}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		return <Button style={{ height: 100 }} text={`${index + 1} (${item.positionDiff}) ${item.movie.title.russian}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		// return <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 	}
 
@@ -65,11 +74,12 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<FlatList
 				keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
+				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
 				ref={ref}
 				data={data}
 				showsHorizontalScrollIndicator={!false}
 				onEndReached={handleScrollEnd}
-				onEndReachedThreshold={1}
+				// onEndReachedThreshold={1}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
 				renderItem={renderItem}
 				ListEmptyComponent={

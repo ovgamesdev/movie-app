@@ -1,3 +1,4 @@
+import { EntityState, createEntityAdapter } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
 import { IGraphqlMovie } from './types'
@@ -117,6 +118,12 @@ import { IGraphqlMovie } from './types'
 // 	})
 // })
 
+const kinopoiskItemsAdapter = createEntityAdapter({
+	selectId: (item: { movie: IGraphqlMovie; positionDiff: number }) => item.movie.id
+})
+
+const kinopoiskItemsSelector = kinopoiskItemsAdapter.getSelectors()
+
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
 	refetchOnFocus: true,
@@ -132,7 +139,7 @@ export const kinopoiskApi = createApi({
 		}
 	}),
 	endpoints: build => ({
-		getListBySlug: build.query<{ docs: { movie: IGraphqlMovie; positionDiff: number }[]; total: number; limit: number; page: number; pages: number }, { slug: string; page?: number; limit?: number }>({
+		getListBySlug: build.query<{ docs: EntityState<{ movie: IGraphqlMovie; positionDiff: number }>; total: number; limit: number; page: number; pages: number }, { slug: string; page?: number; limit?: number }>({
 			query: ({ slug, page = 1, limit = 25 }) => ({
 				url: '?operationName=MovieDesktopListPage',
 				method: 'post',
@@ -173,15 +180,26 @@ export const kinopoiskApi = createApi({
 				const page = arg.page ?? 1
 				const pages = Math.ceil(total / limit)
 
-				return { docs: movies.items, total, limit, page, pages }
+				return { docs: kinopoiskItemsAdapter.addMany(kinopoiskItemsAdapter.getInitialState(), movies.items), total, limit, page, pages }
 			},
-			transformErrorResponse: (response: { status: number; data: any }, meta, arg) => {
+			transformErrorResponse: (response, meta, arg) => {
 				console.log('transformErrorResponse', { response, meta, arg })
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			},
+			forceRefetch: ({ currentArg, previousArg }) => {
+				return currentArg?.page !== previousArg?.page || currentArg?.limit !== previousArg?.limit
+			},
+			serializeQueryArgs: ({ endpointName, queryArgs }) => {
+				return `${endpointName}-${queryArgs.slug}-${queryArgs?.limit}`
+			},
+			merge: (currentState, incomingState) => {
+				kinopoiskItemsAdapter.addMany(currentState.docs, kinopoiskItemsSelector.selectAll(incomingState.docs))
 			}
 		})
 	})
 })
 
 export const { useGetListBySlugQuery } = kinopoiskApi
+
+export { kinopoiskItemsAdapter, kinopoiskItemsSelector }
