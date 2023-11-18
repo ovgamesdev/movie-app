@@ -1,12 +1,12 @@
-import { Button } from '@components/atoms'
+import { Button, Input, InputType } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useState } from 'react'
-import { ActivityIndicator, Image, ScrollView, TVFocusGuideView, Text, TextInput, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, Image, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson } from 'src/store/kinopoisk/types'
 import { useGetSuggestSearchQuery } from '../../store/kinopoisk/kinopoisk.api'
+import { IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson } from '../../store/kinopoisk/types'
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 
@@ -15,14 +15,14 @@ const Movie = ({ item, onPress }: { item: IGraphqlSuggestMovie; onPress: () => v
 
 	return (
 		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${item.id}.jpg` }} style={{ width: 50, height: 50 }} />
+			<Image source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
 					{item.title.russian ?? item.title.original}
 				</Text>
 				<Text style={{ color: colors.text200 }}>
-					{item.rating.kinopoisk ? <Text>{item.rating.kinopoisk.value?.toFixed(1)}</Text> : null}
-					{[item.__typename === 'TvSeries' ? ' сериал' : null, item.releaseYears && item.releaseYears?.length !== 0 ? (item.releaseYears?.[0]?.start === item.releaseYears?.[0]?.end ? (item.releaseYears?.[0]?.start === null ? '' : item.releaseYears?.[0]?.start) : item.releaseYears?.[0]?.start != null || item.releaseYears?.[0]?.end != null ? (item.releaseYears?.[0]?.start ?? '...') + ' - ' + (item.releaseYears?.[0]?.end ?? '...') : '') : item.productionYear].join(', ')}
+					{item.rating.kinopoisk ? <Text>{item.rating.kinopoisk.value?.toFixed(1)} </Text> : null}
+					{[item.__typename === 'TvSeries' ? ' сериал' : null, item.releaseYears && item.releaseYears?.length !== 0 ? (item.releaseYears?.[0]?.start === item.releaseYears?.[0]?.end ? (item.releaseYears?.[0]?.start === null ? '' : item.releaseYears?.[0]?.start) : item.releaseYears?.[0]?.start != null || item.releaseYears?.[0]?.end != null ? (item.releaseYears?.[0]?.start ?? '...') + ' - ' + (item.releaseYears?.[0]?.end ?? '...') : '') : item.productionYear].filter(it => it).join(', ')}
 				</Text>
 			</View>
 		</Button>
@@ -34,12 +34,12 @@ const Person = ({ item, onPress }: { item: IGraphqlSuggestPerson; onPress: () =>
 
 	return (
 		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: `https://st.kp.yandex.net/images/sm_actor/${item.id}.jpg` }} style={{ width: 50, height: 50 }} />
+			<Image source={{ uri: `https://st.kp.yandex.net/images/sm_actor/${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
 					{item.name ?? item.originalName}
 				</Text>
-				<Text style={{ color: colors.text200 }}>{[item.name ? item.originalName : null, item.birthDate ? new Date(item.birthDate).getFullYear() : null].join(', ')}</Text>
+				<Text style={{ color: colors.text200 }}>{[item.name ? item.originalName : null, item.birthDate ? new Date(item.birthDate).getFullYear() : null].filter(it => it).join(', ')}</Text>
 			</View>
 		</Button>
 	)
@@ -50,7 +50,7 @@ const MovieList = ({ item, onPress }: { item: IGraphqlSuggestMovieList; onPress:
 
 	return (
 		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: `https:${item.cover.avatarsUrl}/32x32` }} style={{ width: 50, height: 50 }} />
+			<Image source={{ uri: `https:${item.cover.avatarsUrl}/32x32` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
 					{item.name}
@@ -70,12 +70,16 @@ export const Search = ({ route }: Props) => {
 	const [keyword, setKeyword] = useState('')
 	const { isFetching, data } = useGetSuggestSearchQuery({ keyword })
 
-	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
-			<ScrollView contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom }}>
-				<View style={{ paddingTop: insets.top, paddingBottom: 5 }}>
-					<TextInput value={keyword} onChangeText={setKeyword} />
+	const ref = useRef<InputType>(null)
 
+	useEffect(() => navigation.addListener('focus', () => setTimeout(() => ref.current?.focus(), 0)), [navigation, ref])
+
+	return (
+		<TVFocusGuideView style={{ flex: 1, padding: 10, paddingBottom: 10 + insets.bottom, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
+			<Input ref={ref} value={keyword} onChangeText={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+
+			<ScrollView contentContainerStyle={{ paddingTop: 10 }}>
+				<View style={{ paddingBottom: 5 }}>
 					{isFetching && <ActivityIndicator />}
 
 					{data?.topResult?.global ? (

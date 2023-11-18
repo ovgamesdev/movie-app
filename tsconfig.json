@@ -12,7 +12,8 @@
 			"@components/templates": ["src/components/templates/index"],
 			"@navigation": ["src/navigation/index"],
 			"@hooks": ["src/hooks/index"],
-			"@icons": ["src/assets/icons/index"]
+			"@icons": ["src/assets/icons/index"],
+			"@utils": ["src/utils/index"]
 		}
 	}
 }

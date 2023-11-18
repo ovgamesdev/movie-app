@@ -23,7 +23,7 @@
 					// "@store": "./src/store/index",
 					// "@types": "./src/types/index",
 					// "@types/*": "./src/types/*",
-					// "@utils": "./src/utils/index",
+					"@utils": "./src/utils/index",
 					"@icons": "./src/assets/icons/index"
 				}
 			}
