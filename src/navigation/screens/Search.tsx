@@ -95,7 +95,7 @@ export const Search = ({ route }: Props) => {
 							<Text style={{ color: colors.text200 }}>Фильмы и сериалы</Text>
 
 							{data.movies.map(({ movie }) => (
-								<Movie onPress={() => navigation.push('Movie', { data: { id: movie.id } })} item={movie} />
+								<Movie key={movie.id} onPress={() => navigation.push('Movie', { data: { id: movie.id } })} item={movie} />
 							))}
 						</View>
 					) : null}
@@ -105,7 +105,7 @@ export const Search = ({ route }: Props) => {
 							<Text style={{ color: colors.text200 }}>Списки и подборки</Text>
 
 							{data.movieLists.map(({ movieList }) => (
-								<MovieList onPress={() => navigation.push('MovieListSlug', { data: { slug: movieList.url.split('/')[movieList.url.split('/').length - (movieList.url.endsWith('/') ? 2 : 1)] } })} item={movieList} />
+								<MovieList key={movieList.id} onPress={() => navigation.push('MovieListSlug', { data: { slug: movieList.url.split('/')[movieList.url.split('/').length - (movieList.url.endsWith('/') ? 2 : 1)] } })} item={movieList} />
 							))}
 						</View>
 					) : null}
@@ -115,7 +115,7 @@ export const Search = ({ route }: Props) => {
 							<Text style={{ color: colors.text200 }}>Персоны</Text>
 
 							{data.persons.map(({ person }) => (
-								<Person onPress={() => {}} item={person} />
+								<Person key={person.id} onPress={() => {}} item={person} />
 							))}
 						</View>
 					) : null}
