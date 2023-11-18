@@ -39,7 +39,7 @@ export interface IGraphqlMovie {
 	id: number
 	contentId: string | null
 	title: Title
-	poster: Poster
+	poster: Poster | null
 	countries: Country[]
 	genres: Country[]
 	cast: Cast
@@ -56,65 +56,97 @@ export interface IGraphqlMovie {
 	top250: number | null
 	__typename: string
 }
+export interface IGraphqlSuggestMovie {
+	contentId: string | null
+	id: number
+	poster: Poster | null
+	productionYear?: number
+	rating: Rating
+	releaseYears?: ReleaseYear[]
+	title: Title
+	type: string // TV_ONLY | NORMAL
+	viewOption: ViewOption | null
+	__typename: 'TvSeries' | 'Film'
+}
 
-export interface Cast {
+export interface IGraphqlSuggestPerson {
+	birthDate: string | null
+	id: number
+	name: string | null
+	originalName: string | null
+	poster: Poster | null
+	__typename: 'Person'
+}
+
+export interface IGraphqlSuggestMovieList {
+	cover: Pick<Poster, 'avatarsUrl'>
+	coverBackground: null
+	description: string | null
+	id: number
+	movies: { total: number }
+	name: string
+	url: string
+	__typename: string
+}
+
+interface Cast {
 	items: Item[]
 	__typename: string
 }
 
-export interface Item {
+interface Item {
 	details: null | string
 	person: Person
 	__typename: string
 }
 
-export interface Person {
+interface Person {
 	name: string | null
 	originalName: string | null
 	__typename: string
 }
 
-export interface Country {
+interface Country {
 	id: number
 	name: string
 	__typename: string
 }
 
-export interface MainTrailer {
+interface MainTrailer {
 	id: number
 	isEmbedded: boolean
 	__typename: string
 }
 
-export interface Poster {
+interface Poster {
 	avatarsUrl: string | null
 	fallbackUrl: string | null
 	__typename: string
 }
 
-export interface Rating {
+interface Rating {
 	kinopoisk: Expectation
 	expectation: Expectation
 	__typename: string
 }
 
-export interface Expectation {
+interface Expectation {
 	isActive: boolean
 	count: number
 	value: number | null
 	__typename: string
 }
 
-export interface ReleaseYear {
+interface ReleaseYear {
 	start: number
 	end: number
 	__typename: string
 }
 
-export interface Title {
+interface Title {
 	russian: string | null
 	original: string | null
 	__typename: string
 }
 
-export interface ViewOption {}
+interface ViewOption {}
