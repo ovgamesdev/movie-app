@@ -21,7 +21,7 @@ const animConfig = {
 }
 
 export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) => {
-	const switchTranslate = useSharedValue(0)
+	const switchTranslate = useSharedValue(value ? 21 : 0)
 	const { colors } = useTheme()
 
 	const memoizedOnSwitchPressCallback = useCallback(() => {

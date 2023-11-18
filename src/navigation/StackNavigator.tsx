@@ -7,7 +7,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export const StackNavigator = () => {
 	return (
-		<Stack.Navigator screenOptions={{ headerShown: false }}>
+		<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
 			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
 			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
 			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'landscape', statusBarHidden: true }} />

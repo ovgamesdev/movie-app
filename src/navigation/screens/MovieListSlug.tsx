@@ -79,7 +79,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				data={data}
 				showsHorizontalScrollIndicator={!false}
 				onEndReached={handleScrollEnd}
-				// onEndReachedThreshold={1}
+				onEndReachedThreshold={1}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
 				renderItem={renderItem}
 				ListEmptyComponent={
