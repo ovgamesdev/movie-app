@@ -3,7 +3,7 @@ import { useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IGraphqlMovie } from '../../store/kinopoisk/types'
@@ -11,7 +11,7 @@ import { IGraphqlMovie } from '../../store/kinopoisk/types'
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 
 export const MovieListSlug = ({ navigation, route }: Props) => {
-	const { slug } = route.params.data
+	const { slug, filters } = route.params.data
 
 	const insets = useSafeAreaInsets()
 	const { colors } = useTheme()
@@ -32,25 +32,26 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	}, [focusedItem.current, navigation])
 
 	const [page, setPage] = useState(1)
+	const [order, setOrder] = useState('POSITION_ASC')
 	const { isFetching, data } = useGetListBySlugQuery(
-		{ slug, page, limit: 50 },
+		{ slug, filters, order, page, limit: 50 },
 		{
 			selectFromResult: ({ data, ...otherParams }) => ({
-				data: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()),
+				data: { ...data, docs: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()) },
 				...otherParams
 			})
 		}
 	)
-	const isEmpty = data.length === 0
+	const isEmpty = data.docs.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {
-		if (index < data.length) {
+		if (index < data.docs.length) {
 			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
 		}
 
 		focusedItem.current = { index }
 
-		if (!isFetching && index > data.length - 1 - 10) {
+		if (!isFetching && index > data.docs.length - 1 - 10) {
 			setPage(page => page + 1)
 		}
 	}
@@ -65,7 +66,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		}
 	}
 
-	const renderItem = ({ item, index }: { item: { movie: IGraphqlMovie; positionDiff: number }; index: number }) => {
+	const renderItem: ListRenderItem<{ movie: IGraphqlMovie; positionDiff: number }> = ({ item, index }) => {
 		return <Button style={{ height: 100 }} text={`${index + 1}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		// return <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 	}
@@ -76,7 +77,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
 				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
 				ref={ref}
-				data={data}
+				data={data.docs}
 				showsHorizontalScrollIndicator={!false}
 				onEndReached={handleScrollEnd}
 				onEndReachedThreshold={1}
@@ -98,7 +99,13 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 					)
 				}
 				ListFooterComponentStyle={{ flexGrow: 1 }}
-				ListHeaderComponent={<Button text='back' onPress={() => navigation.pop()} />}
+				ListHeaderComponent={
+					<>
+						<Button text='back' onPress={() => navigation.pop()} />
+						{/* <Switch {setOrder} /> */}
+						{data.name && <Text style={{ color: colors.text100 }}>{data.name}</Text>}
+					</>
+				}
 				ListHeaderComponentStyle={{ marginTop: insets.top, marginBottom: 5 }}
 			/>
 		</TVFocusGuideView>

@@ -35,6 +35,17 @@
 
 // export type IResponse<T> = ISuccessResponse<T> & IErrorResponse
 
+export interface IListSlugFilter {
+	booleanFilterValues: BooleanFilterValues[]
+	intRangeFilterValues: []
+	singleSelectFilterValues: SingleSelectFilterValues[]
+	multiSelectFilterValues: []
+	realRangeFilterValues: []
+}
+
+type SingleSelectFilterValues = { filterId: string; value: string }
+type BooleanFilterValues = { filterId: string; value: boolean }
+
 export interface IGraphqlMovie {
 	id: number
 	contentId: string | null
@@ -86,7 +97,7 @@ export interface IGraphqlSuggestMovieList {
 	movies: { total: number }
 	name: string
 	url: string
-	__typename: string
+	__typename: 'MovieListMeta'
 }
 
 interface Cast {

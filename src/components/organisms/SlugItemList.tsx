@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
 import React, { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { IGraphqlMovie } from 'src/store/kinopoisk/types'
 import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
@@ -54,7 +54,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const renderItem = ({ item, index }: { item: { movie: IGraphqlMovie; positionDiff: number }; index: number }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	const renderItem: ListRenderItem<{ movie: IGraphqlMovie; positionDiff: number }> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 
 	return (
 		<>

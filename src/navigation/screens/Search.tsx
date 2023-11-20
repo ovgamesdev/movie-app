@@ -10,11 +10,11 @@ import { IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson }
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 
-const Movie = ({ item, onPress }: { item: IGraphqlSuggestMovie; onPress: () => void }) => {
+const Movie = ({ item, onPress }: { item: IGraphqlSuggestMovie; onPress: (id: number) => void }) => {
 	const { colors } = useTheme()
 
 	return (
-		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
+		<Button onPress={() => onPress(item.id)} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<Image source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
@@ -29,11 +29,11 @@ const Movie = ({ item, onPress }: { item: IGraphqlSuggestMovie; onPress: () => v
 	)
 }
 
-const Person = ({ item, onPress }: { item: IGraphqlSuggestPerson; onPress: () => void }) => {
+const Person = ({ item, onPress }: { item: IGraphqlSuggestPerson; onPress: (id: number) => void }) => {
 	const { colors } = useTheme()
 
 	return (
-		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
+		<Button onPress={() => onPress(item.id)} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<Image source={{ uri: `https://st.kp.yandex.net/images/sm_actor/${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
@@ -45,11 +45,27 @@ const Person = ({ item, onPress }: { item: IGraphqlSuggestPerson; onPress: () =>
 	)
 }
 
-const MovieList = ({ item, onPress }: { item: IGraphqlSuggestMovieList; onPress: () => void }) => {
+const MovieList = ({ item, onPress, onFilter }: { item: IGraphqlSuggestMovieList; onPress: (slug: string) => void; onFilter: (filter: string[][]) => void }) => {
 	const { colors } = useTheme()
 
+	const isFilter = item.url.includes('--') || item.url.includes('?ss_')
+	const slug = item.url.split('/')[item.url.split('/').length - (item.url.endsWith('/') ? 2 : 1)]
+
+	const stringFilters = item.url.split('movies/')[1]
+	const arrayStringFilters = stringFilters
+		.split('/')
+		.filter(filter => filter.length > 0)
+		.filter(it => !it.includes('?ss_'))
+	const arrayFilters = arrayStringFilters.map(filter => filter.split('--'))
+
+	const search =
+		item.url
+			.split('?')[1]
+			?.split('&')
+			.map(search => search.replace('ss_', '').split('=')) ?? []
+
 	return (
-		<Button onPress={onPress} transparent alignItems='center' flexDirection='row'>
+		<Button onPress={() => (isFilter ? onFilter([...arrayFilters, ...search]) : onPress(slug))} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<Image source={{ uri: `https:${item.cover.avatarsUrl}/32x32` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100 }}>
@@ -74,52 +90,68 @@ export const Search = ({ route }: Props) => {
 
 	useEffect(() => navigation.addListener('focus', () => setTimeout(() => ref.current?.focus(), 0)), [navigation, ref])
 
+	const onFilter = (filter: string[][]) => {
+		const singleSelectFilterValues = filter.map(filter => ({ filterId: filter[0], value: filter[1] }))
+
+		navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
+	}
+
+	const onMovieList = (slug: string) => {
+		navigation.push('MovieListSlug', { data: { slug } })
+	}
+
+	const onMovie = (id: number) => {
+		navigation.push('Movie', { data: { id } })
+	}
+
+	const onPerson = (id: number) => {
+		// navigation.push('Person', { data: { id } })
+	}
+
 	return (
 		<TVFocusGuideView style={{ flex: 1, padding: 10, paddingBottom: 10 + insets.bottom, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<Input ref={ref} value={keyword} onChangeText={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 
-			<ScrollView contentContainerStyle={{ paddingTop: 10 }}>
-				<View style={{ paddingBottom: 5 }}>
-					{isFetching && <ActivityIndicator />}
+			<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 5 }}>
+				{isFetching && <ActivityIndicator />}
 
-					{data?.topResult?.global ? (
-						<View>
-							<Text style={{ color: colors.text200 }}>Возможно, вы искали</Text>
+				{data?.topResult?.global ? (
+					<View>
+						<Text style={{ color: colors.text200 }}>Возможно, вы искали</Text>
 
-							{data.topResult.global.__typename === 'Person' ? <Person onPress={() => {}} item={data.topResult.global} /> : <Movie onPress={() => data.topResult && navigation.push('Movie', { data: { id: data.topResult.global.id } })} item={data.topResult.global} />}
-						</View>
-					) : null}
+						{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} onFilter={onFilter} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
+					</View>
+				) : null}
 
-					{data?.movies && data.movies.length > 0 ? (
-						<View>
-							<Text style={{ color: colors.text200 }}>Фильмы и сериалы</Text>
+				{data?.movies && data.movies.length > 0 ? (
+					<View>
+						<Text style={{ color: colors.text200 }}>Фильмы и сериалы</Text>
 
-							{data.movies.map(({ movie }) => (
-								<Movie key={movie.id} onPress={() => navigation.push('Movie', { data: { id: movie.id } })} item={movie} />
-							))}
-						</View>
-					) : null}
+						{data.movies.map(({ movie }) => (
+							<Movie key={movie.id} onPress={onMovie} item={movie} />
+						))}
+					</View>
+				) : null}
 
-					{data?.movieLists && data.movieLists.length > 0 ? (
-						<View>
-							<Text style={{ color: colors.text200 }}>Списки и подборки</Text>
+				{data?.movieLists && data.movieLists.length > 0 ? (
+					<View>
+						<Text style={{ color: colors.text200 }}>Списки и подборки</Text>
 
-							{data.movieLists.map(({ movieList }) => (
-								<MovieList key={movieList.id} onPress={() => navigation.push('MovieListSlug', { data: { slug: movieList.url.split('/')[movieList.url.split('/').length - (movieList.url.endsWith('/') ? 2 : 1)] } })} item={movieList} />
-							))}
-						</View>
-					) : null}
+						{data.movieLists.map(({ movieList }) => (
+							<MovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />
+						))}
+					</View>
+				) : null}
 
-					{data?.persons && data.persons.length > 0 ? (
-						<View>
-							<Text style={{ color: colors.text200 }}>Персоны</Text>
+				{data?.persons && data.persons.length > 0 ? (
+					<View>
+						<Text style={{ color: colors.text200 }}>Персоны</Text>
 
-							{data.persons.map(({ person }) => (
-								<Person key={person.id} onPress={() => {}} item={person} />
-							))}
-						</View>
-					) : null}
-				</View>
+						{data.persons.map(({ person }) => (
+							<Person key={person.id} onPress={onPerson} item={person} />
+						))}
+					</View>
+				) : null}
 			</ScrollView>
 		</TVFocusGuideView>
 	)

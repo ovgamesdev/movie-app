@@ -1,7 +1,7 @@
 import { EntityState, createEntityAdapter } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IGraphqlMovie, IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson } from './types'
+import { IGraphqlMovie, IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson, IListSlugFilter } from './types'
 
 // interface ICacheBaseQueryArgs {
 // 	url: string
@@ -139,8 +139,20 @@ export const kinopoiskApi = createApi({
 		}
 	}),
 	endpoints: build => ({
-		getListBySlug: build.query<{ docs: EntityState<{ movie: IGraphqlMovie; positionDiff: number }>; total: number; limit: number; page: number; pages: number }, { slug: string; page?: number; limit?: number }>({
-			query: ({ slug, page = 1, limit = 25 }) => ({
+		getListBySlug: build.query<{ docs: EntityState<{ movie: IGraphqlMovie; positionDiff: number }>; total: number; limit: number; page: number; pages: number; name: string }, { slug: string; filters?: IListSlugFilter; order?: string; page?: number; limit?: number }>({
+			query: ({
+				slug,
+				filters = {
+					booleanFilterValues: [],
+					intRangeFilterValues: [],
+					singleSelectFilterValues: [],
+					multiSelectFilterValues: [],
+					realRangeFilterValues: []
+				},
+				order: moviesOrder = 'POSITION_ASC',
+				page = 1,
+				limit = 25
+			}) => ({
 				url: '?operationName=MovieDesktopListPage',
 				method: 'post',
 				body: {
@@ -151,18 +163,12 @@ export const kinopoiskApi = createApi({
 						regionId: 10298,
 						withUserData: false,
 						supportedFilterTypes: ['BOOLEAN', 'SINGLE_SELECT'],
-						filters: {
-							booleanFilterValues: [],
-							intRangeFilterValues: [],
-							singleSelectFilterValues: [],
-							multiSelectFilterValues: [],
-							realRangeFilterValues: []
-						},
+						filters,
 						singleSelectFiltersLimit: 250,
 						singleSelectFiltersOffset: 0,
 						moviesLimit: limit,
 						moviesOffset: limit * (page - 1),
-						moviesOrder: 'POSITION_ASC',
+						moviesOrder,
 						supportedItemTypes: ['COMING_SOON_MOVIE_LIST_ITEM', 'MOVIE_LIST_ITEM', 'TOP_MOVIE_LIST_ITEM', 'POPULAR_MOVIE_LIST_ITEM', 'MOST_PROFITABLE_MOVIE_LIST_ITEM', 'MOST_EXPENSIVE_MOVIE_LIST_ITEM', 'BOX_OFFICE_MOVIE_LIST_ITEM', 'OFFLINE_AUDIENCE_MOVIE_LIST_ITEM', 'RECOMMENDATION_MOVIE_LIST_ITEM']
 					},
 					query:
@@ -173,14 +179,15 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				const movies = (response as any)?.data?.movieListBySlug?.movies ?? { items: [], total: 0 }
+				const data = (response as any)?.data?.movieListBySlug
+				const movies = data?.movies ?? { items: [], total: 0 }
 
 				const total = movies.total
 				const limit = arg.limit ?? 25
 				const page = arg.page ?? 1
 				const pages = Math.ceil(total / limit)
 
-				return { docs: kinopoiskItemsAdapter.addMany(kinopoiskItemsAdapter.getInitialState(), movies.items), total, limit, page, pages }
+				return { docs: kinopoiskItemsAdapter.addMany(kinopoiskItemsAdapter.getInitialState(), movies.items), total, limit, page, pages, name: data.name ?? '' }
 			},
 			transformErrorResponse: (response, meta, arg) => {
 				console.log('transformErrorResponse', { response, meta, arg })
@@ -188,16 +195,16 @@ export const kinopoiskApi = createApi({
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			},
 			forceRefetch: ({ currentArg, previousArg }) => {
-				return currentArg?.page !== previousArg?.page || currentArg?.limit !== previousArg?.limit
+				return currentArg?.page !== previousArg?.page || currentArg?.limit !== previousArg?.limit || JSON.stringify(currentArg?.filters) !== JSON.stringify(previousArg?.filters)
 			},
 			serializeQueryArgs: ({ endpointName, queryArgs }) => {
-				return `${endpointName}-${queryArgs.slug}-${queryArgs?.limit}`
+				return `${endpointName}-${queryArgs.slug}-${queryArgs?.limit}-${JSON.stringify(queryArgs?.filters)}`
 			},
 			merge: (currentState, incomingState) => {
 				kinopoiskItemsAdapter.addMany(currentState.docs, kinopoiskItemsSelector.selectAll(incomingState.docs))
 			}
 		}),
-		getSuggestSearch: build.query<{ cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson } | null }, { keyword: string }>({
+		getSuggestSearch: build.query<{ cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }, { keyword: string }>({
 			query: ({ keyword }) => ({
 				url: '?operationName=SuggestSearch',
 				method: 'post',
