@@ -2,7 +2,7 @@ import { Button, Input, InputType } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Image, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetSuggestSearchQuery } from '../../store/kinopoisk/kinopoisk.api'
@@ -84,7 +84,8 @@ export const Search = ({ route }: Props) => {
 	const navigation = useNavigation()
 
 	const [keyword, setKeyword] = useState('')
-	const { isFetching, data } = useGetSuggestSearchQuery({ keyword })
+	const deferredKeyword = useDeferredValue(keyword)
+	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword })
 
 	const ref = useRef<InputType>(null)
 
@@ -108,13 +109,17 @@ export const Search = ({ route }: Props) => {
 		// navigation.push('Person', { data: { id } })
 	}
 
+	const isEmpty = !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
+	const isLoading = keyword !== deferredKeyword || isFetching
+
+	console.log({ isEmpty, isLoading })
+
 	return (
 		<TVFocusGuideView style={{ flex: 1, padding: 10, paddingBottom: 10 + insets.bottom, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<Input ref={ref} value={keyword} onChangeText={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+			{isEmpty && isLoading && <ActivityIndicator />}
 
 			<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 5 }}>
-				{isFetching && <ActivityIndicator />}
-
 				{data?.topResult?.global ? (
 					<View>
 						<Text style={{ color: colors.text200 }}>Возможно, вы искали</Text>
