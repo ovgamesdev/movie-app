@@ -1,4 +1,4 @@
-import { Button } from '@components/atoms'
+import { Button, DropDown } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -102,8 +102,21 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				ListHeaderComponent={
 					<>
 						<Button text='back' onPress={() => navigation.pop()} />
-						{/* <Switch {setOrder} /> */}
 						{data.name && <Text style={{ color: colors.text100 }}>{data.name}</Text>}
+						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
+							<View></View>
+							<DropDown
+								items={[
+									{ label: 'По порядку', value: 'POSITION_ASC' },
+									{ label: 'По количеству оценок', value: 'VOTES_COUNT_DESC' },
+									{ label: 'По рейтингу', value: 'KP_RATING_DESC' },
+									{ label: 'По дате выхода', value: 'YEAR_DESC' },
+									{ label: 'По названию', value: 'TITLE_ASC' }
+								]}
+								onChange={setOrder}
+								value={order}
+							/>
+						</View>
 					</>
 				}
 				ListHeaderComponentStyle={{ marginTop: insets.top, marginBottom: 5 }}

@@ -21,8 +21,8 @@ const Movie = ({ item, onPress }: { item: IGraphqlSuggestMovie; onPress: (id: nu
 					{item.title.russian ?? item.title.original}
 				</Text>
 				<Text style={{ color: colors.text200 }}>
-					{item.rating.kinopoisk ? <Text>{item.rating.kinopoisk.value?.toFixed(1)} </Text> : null}
-					{[item.__typename === 'TvSeries' ? ' сериал' : null, item.releaseYears && item.releaseYears?.length !== 0 ? (item.releaseYears?.[0]?.start === item.releaseYears?.[0]?.end ? (item.releaseYears?.[0]?.start === null ? '' : item.releaseYears?.[0]?.start) : item.releaseYears?.[0]?.start != null || item.releaseYears?.[0]?.end != null ? (item.releaseYears?.[0]?.start ?? '...') + ' - ' + (item.releaseYears?.[0]?.end ?? '...') : '') : item.productionYear].filter(it => it).join(', ')}
+					{item.rating.kinopoisk?.value && item.rating.kinopoisk.value > 0 ? <Text>{item.rating.kinopoisk.value?.toFixed(1)} </Text> : null}
+					{[item.__typename === 'TvSeries' ? 'сериал' : null, item.releaseYears && item.releaseYears?.length !== 0 ? (item.releaseYears?.[0]?.start === item.releaseYears?.[0]?.end ? (item.releaseYears?.[0]?.start === null ? '' : item.releaseYears?.[0]?.start) : item.releaseYears?.[0]?.start != null || item.releaseYears?.[0]?.end != null ? (item.releaseYears?.[0]?.start ?? '...') + ' - ' + (item.releaseYears?.[0]?.end ?? '...') : '') : item.productionYear].filter(it => it).join(', ')}
 				</Text>
 			</View>
 		</Button>
@@ -88,7 +88,7 @@ export const Search = ({ route }: Props) => {
 
 	const ref = useRef<InputType>(null)
 
-	useEffect(() => navigation.addListener('focus', () => setTimeout(() => ref.current?.focus(), 0)), [navigation, ref])
+	useEffect(() => navigation.addListener('focus', () => setTimeout(() => keyword.length === 0 && ref.current?.focus(), 0)), [navigation, ref, keyword])
 
 	const onFilter = (filter: string[][]) => {
 		const singleSelectFilterValues = filter.map(filter => ({ filterId: filter[0], value: filter[1] }))

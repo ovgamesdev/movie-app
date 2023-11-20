@@ -41,8 +41,9 @@ interface Props extends PressableProps {
 	borderStyle?: BorderProps
 }
 
-type ButtonType = {
+export type ButtonType = {
 	requestTVFocus: () => void
+	buttonRef: View | null
 }
 
 export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
@@ -71,7 +72,8 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 	}, [props.hasTVPreferredFocus])
 
 	useImperativeHandle(forwardRef, () => ({
-		requestTVFocus: () => buttonRef.current?.requestTVFocus()
+		requestTVFocus: () => buttonRef.current?.requestTVFocus(),
+		buttonRef: buttonRef.current
 	}))
 
 	return (

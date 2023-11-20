@@ -195,10 +195,10 @@ export const kinopoiskApi = createApi({
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			},
 			forceRefetch: ({ currentArg, previousArg }) => {
-				return currentArg?.page !== previousArg?.page || currentArg?.limit !== previousArg?.limit || JSON.stringify(currentArg?.filters) !== JSON.stringify(previousArg?.filters)
+				return currentArg?.page !== previousArg?.page || currentArg?.order !== previousArg?.order || currentArg?.limit !== previousArg?.limit || JSON.stringify(currentArg?.filters) !== JSON.stringify(previousArg?.filters)
 			},
 			serializeQueryArgs: ({ endpointName, queryArgs }) => {
-				return `${endpointName}-${queryArgs.slug}-${queryArgs?.limit}-${JSON.stringify(queryArgs?.filters)}`
+				return `${endpointName}-${queryArgs.slug} -${queryArgs.order}-${queryArgs.limit}-${JSON.stringify(queryArgs.filters)}`
 			},
 			merge: (currentState, incomingState) => {
 				kinopoiskItemsAdapter.addMany(currentState.docs, kinopoiskItemsSelector.selectAll(incomingState.docs))
