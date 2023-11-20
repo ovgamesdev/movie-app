@@ -30,6 +30,7 @@ interface Props extends PressableProps {
 	text?: string
 	animation?: 'scale'
 	transparent?: boolean
+	focusable?: boolean
 
 	isActive?: boolean
 	textColor?: string
@@ -46,7 +47,7 @@ export type ButtonType = {
 	buttonRef: View | null
 }
 
-export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
+export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, focusable, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
 	const { colors } = useTheme()
 	const [scale] = useState(new Animated.Value(1))
 
@@ -82,6 +83,8 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 				ref={buttonRef}
 				onPressIn={handleOnPressIn}
 				onPressOut={handleOnPressOut}
+				focusable={focusable}
+				accessible={focusable}
 				style={state => [
 					{
 						backgroundColor: transparent ? 'transparent' : isActive ? (state.pressed ? activePressedButtonColor ?? colors.bg300 : activeButtonColor ?? colors.bg200) : state.pressed ? pressedButtonColor ?? colors.bg300 : buttonColor ?? colors.bg200,

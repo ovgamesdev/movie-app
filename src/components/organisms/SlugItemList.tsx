@@ -1,6 +1,7 @@
 import { Button } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
+import { NavigateNextIcon } from '@icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { IGraphqlMovie } from 'src/store/kinopoisk/types'
@@ -58,7 +59,10 @@ export const SlugItemList = ({ slug, title }: Props) => {
 
 	return (
 		<>
-			<Text style={{ color: colors.text100, paddingVertical: 5 }}>{title}</Text>
+			<Button focusable={false} transparent flexDirection='row' onPress={() => navigation.push('MovieListSlug', { data: { slug } })}>
+				<Text style={{ color: colors.text100 }}>{title}</Text>
+				{!Platform.isTV && <NavigateNextIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10 }} />}
+			</Button>
 			<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 				<FlatList
 					keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
@@ -83,7 +87,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 									<ActivityIndicator size={data.length !== 0 ? 'large' : 'small'} color={colors.text200} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />
 								</View>
 							)}
-							{isEmpty ? null : (
+							{!Platform.isTV || isEmpty ? null : (
 								<Button onFocus={() => handleOnFocus({ index: data.length })} onBlur={handleOnBlur} onPress={() => navigation.push('MovieListSlug', { data: { slug } })} hasTVPreferredFocus={data.length === refreshFocusedItem.focus.index} flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
 									<Text style={{ color: colors.text200, paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }}>More..</Text>
 								</Button>
