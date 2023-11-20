@@ -1,7 +1,7 @@
 import { EntityState, createEntityAdapter } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IGraphqlMovie, IGraphqlSuggestMovie, IGraphqlSuggestMovieList, IGraphqlSuggestPerson, IListSlugFilter } from './types'
+import { IGraphqlMovie, IListSlugFilter, ISuggestSearchResults } from './types'
 
 // interface ICacheBaseQueryArgs {
 // 	url: string
@@ -204,7 +204,7 @@ export const kinopoiskApi = createApi({
 				kinopoiskItemsAdapter.addMany(currentState.docs, kinopoiskItemsSelector.selectAll(incomingState.docs))
 			}
 		}),
-		getSuggestSearch: build.query<{ cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }, { keyword: string }>({
+		getSuggestSearch: build.query<ISuggestSearchResults, { keyword: string }>({
 			query: ({ keyword }) => ({
 				url: '?operationName=SuggestSearch',
 				method: 'post',

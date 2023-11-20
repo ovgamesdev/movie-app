@@ -89,6 +89,8 @@ export interface IGraphqlSuggestPerson {
 	__typename: 'Person'
 }
 
+export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
+
 export interface IGraphqlSuggestMovieList {
 	cover: Pick<Poster, 'avatarsUrl'>
 	coverBackground: null
