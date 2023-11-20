@@ -1,9 +1,9 @@
-import { Button } from '@components/atoms'
+import { Button, ButtonType } from '@components/atoms'
 import { VoiceComponent } from '@components/molecules'
 import { useTheme } from '@hooks'
 import { CloseIcon, SearchIcon } from '@icons'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { Keyboard, TVFocusGuideView, TextInput, TextInputProps, ToastAndroid, View } from 'react-native'
+import { Keyboard, TVFocusGuideView, TextInput, TextInputProps, ToastAndroid } from 'react-native'
 
 interface Props extends TextInputProps {
 	transparent?: boolean
@@ -24,7 +24,7 @@ export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearabl
 
 	// const _style = (state: PressableStateCallbackType) => (typeof style === 'function' ? style(state) : typeof style === 'object' ? style : {})
 
-	const buttonRef = useRef<View | null>(null)
+	const buttonRef = useRef<ButtonType | null>(null)
 	const textInputRef = useRef<TextInput | null>(null)
 
 	useEffect(() => {
@@ -44,7 +44,7 @@ export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearabl
 		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 			<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1} flexDirection='row' alignItems='center' borderStyle={isRight ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}>
 				{icon === 'search' ? <SearchIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10 }} /> : null}
-				<TextInput ref={textInputRef} style={{ color: colors.text100, fontSize: 14, height: 40, lineHeight: 14, padding: 10, flex: 1 }} placeholderTextColor={colors.text200} onSubmitEditing={() => buttonRef.current?.requestTVFocus()} cursorColor={colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
+				<TextInput ref={textInputRef} style={{ color: colors.text100, fontSize: 14, height: 40, padding: 10, flex: 1 }} placeholderTextColor={colors.text200} onSubmitEditing={() => buttonRef.current?.requestTVFocus()} cursorColor={colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
 			</Button>
 
 			{isRight ? (
