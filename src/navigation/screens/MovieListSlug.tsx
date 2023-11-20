@@ -101,7 +101,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				ListFooterComponentStyle={{ flexGrow: 1 }}
 				ListHeaderComponent={
 					<>
-						<Button text='back' onPress={() => navigation.pop()} />
+						<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
 						{data.name && <Text style={{ color: colors.text100 }}>{data.name}</Text>}
 						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
 							<View></View>

@@ -2,7 +2,7 @@ import { Button, ButtonType } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
 import React, { useRef, useState } from 'react'
-import { Dimensions, Text, View } from 'react-native'
+import { Dimensions, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -24,6 +24,7 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 	const { colors } = useTheme()
 
 	const buttonRef = useRef<ButtonType>(null)
+	const optionsRef = useRef<(ButtonType | null)[]>([])
 	const position = useRef<{ top?: number; right?: number; bottom?: number; left?: number }>({})
 
 	const onClose = () => {
@@ -54,14 +55,19 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 		})
 	}
 
-	const checkedItem = items.find(it => it.value === value)
+	const checkedIndex = items.findIndex(it => it.value === value)
+	const checkedItem = items[checkedIndex]
+
+	const _onShow = () => {
+		optionsRef.current[checkedIndex]?.requestTVFocus()
+	}
 
 	if (!checkedItem) {
 		return null
 	}
 
 	return (
-		<View style={{}}>
+		<TVFocusGuideView trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
 			<Button ref={buttonRef} onLayout={onLayout} onPress={() => setIsVisible(is => !is)} flex={0} flexDirection='row'>
 				<Text style={{ color: colors.text100 }} numberOfLines={1}>
 					{checkedItem.label}
@@ -69,13 +75,13 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 				<ExpandMoreIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10, transform: isVisible ? [{ rotateX: '180deg' }] : [] }} />
 			</Button>
 
-			<Modal isVisible={isVisible} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
+			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.2} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
 				<View style={[{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6 }, position.current, { minWidth: 200, maxWidth: '100%', maxHeight: '100%' }, { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 }]}>
 					{items.map((item, i) => {
 						const isChecked = value === item.value
 
 						return (
-							<Button key={i} onPress={() => onSelect(item.value)} flexDirection='row' justifyContent='space-between'>
+							<Button key={i} ref={ref => (optionsRef.current[i] = ref)} onPress={() => onSelect(item.value)} flexDirection='row' justifyContent='space-between'>
 								<Text style={{ color: isChecked ? colors.text100 : colors.text200 }} numberOfLines={1}>
 									{item.label}
 								</Text>
@@ -85,6 +91,6 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 					})}
 				</View>
 			</Modal>
-		</View>
+		</TVFocusGuideView>
 	)
 }

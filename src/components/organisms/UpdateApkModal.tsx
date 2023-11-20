@@ -1,4 +1,4 @@
-import { Button } from '@components/atoms'
+import { Button, ButtonType } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { ExpandMoreIcon } from '@icons'
 import { useRef, useState } from 'react'
@@ -11,7 +11,7 @@ export const UpdateApkModal = () => {
 	const [isExpand, setIsExpand] = useState(false)
 	const { colors } = useTheme()
 
-	const buttonRef = useRef<View | null>(null)
+	const buttonRef = useRef<ButtonType>(null)
 
 	const onClose = () => {
 		setIsVisibleModal(false)
