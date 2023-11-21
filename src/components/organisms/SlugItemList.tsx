@@ -1,9 +1,9 @@
-import { Button } from '@components/atoms'
+import { ActivityIndicator, Button } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import React, { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { IMovieItem } from 'src/store/kinopoisk/types'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
@@ -76,7 +76,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 						<>
 							{!isFetching ? null : (
 								<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-									<ActivityIndicator size={data.length !== 0 ? 'large' : 'small'} color={colors.text200} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />
+									<ActivityIndicator size={data.length !== 0 ? 'large' : 'small'} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />
 								</View>
 							)}
 							{!Platform.isTV || isEmpty ? null : (

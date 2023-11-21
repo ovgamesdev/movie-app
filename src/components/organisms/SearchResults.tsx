@@ -33,16 +33,16 @@ export const SearchResults = ({ data }: Props) => {
 	return (
 		<View>
 			{data?.topResult?.global ? (
-				<View>
-					<Text style={{ color: colors.text200 }}>Возможно, вы искали</Text>
+				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
+					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Возможно, вы искали</Text>
 
 					{data.topResult.global.__typename === 'Person' ? <SearchPerson onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <SearchMovieList key={data.topResult.global.id} onPress={onMovieList} onFilter={onFilter} item={data.topResult.global} /> : <SearchMovie onPress={onMovie} item={data.topResult.global} />}
 				</View>
 			) : null}
 
 			{data?.movies && data.movies.length > 0 ? (
-				<View>
-					<Text style={{ color: colors.text200 }}>Фильмы и сериалы</Text>
+				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
+					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Фильмы и сериалы</Text>
 
 					{data.movies.map(({ movie }) => (
 						<SearchMovie key={movie.id} onPress={onMovie} item={movie} />
@@ -51,8 +51,8 @@ export const SearchResults = ({ data }: Props) => {
 			) : null}
 
 			{data?.movieLists && data.movieLists.length > 0 ? (
-				<View>
-					<Text style={{ color: colors.text200 }}>Списки и подборки</Text>
+				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
+					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
 
 					{data.movieLists.map(({ movieList }) => (
 						<SearchMovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />
@@ -61,8 +61,8 @@ export const SearchResults = ({ data }: Props) => {
 			) : null}
 
 			{data?.persons && data.persons.length > 0 ? (
-				<View>
-					<Text style={{ color: colors.text200 }}>Персоны</Text>
+				<View style={{ paddingBottom: 10 }}>
+					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Персоны</Text>
 
 					{data.persons.map(({ person }) => (
 						<SearchPerson key={person.id} onPress={onPerson} item={person} />

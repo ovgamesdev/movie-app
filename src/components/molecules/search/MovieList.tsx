@@ -30,13 +30,13 @@ export const MovieList = ({ item, onPress, onFilter }: Props) => {
 			.map(search => search.replace('ss_', '').split('=')) ?? []
 
 	return (
-		<Button onPress={() => (isFilter ? onFilter([...arrayFilters, ...search]) : onPress(slug))} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={() => (isFilter ? onFilter([...arrayFilters, ...search]) : onPress(slug))} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<Image source={{ uri: `https:${item.cover.avatarsUrl}/32x32` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
-				<Text numberOfLines={2} style={{ color: colors.text100 }}>
+				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.name}
 				</Text>
-				<Text style={{ color: colors.text200 }}>{item.movies.total} фильмов</Text>
+				<Text style={{ color: colors.text200, fontSize: 13 }}>{item.movies.total} фильмов</Text>
 			</View>
 		</Button>
 	)

@@ -1,3 +1,4 @@
+export * from './ActivityIndicator'
 export * from './Button'
 export * from './DropDown'
 export * from './Input'
