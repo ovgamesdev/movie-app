@@ -117,8 +117,8 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 	})
 
 	return (
-		<ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }}>
-			<TVFocusGuideView style={{ paddingTop: 10, flexGrow: 1, flexDirection: 'row', justifyContent: 'center' }} autoFocus trapFocusLeft trapFocusRight>
+		<ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }} style={{ marginTop: 10 }}>
+			<TVFocusGuideView style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'center' }} autoFocus trapFocusLeft trapFocusRight>
 				{!isPreviousDisabled && (
 					<Button style={styles.button} padding={0} transparent onPress={handleMovePrev}>
 						<NavigateNextIcon width={20} height={20} fill={colors.text100} style={{ transform: [{ rotateY: '180deg' }] }} />
