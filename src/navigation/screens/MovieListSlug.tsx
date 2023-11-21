@@ -10,6 +10,9 @@ import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IBoxOfficeMovieListItem, IMovieItem, IPopularMovieListItem, ITopMovieListItem } from '../../store/kinopoisk/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
+type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
+
+const skeletonData: Skeleton[] = Array.from({ length: 50 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
 export const MovieListSlug = ({ navigation, route }: Props) => {
 	const { slug, filters } = route.params.data
@@ -56,7 +59,11 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	// if (top250) { gold rating }
 
-	const renderItem: ListRenderItem<IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem> = ({ item, index }) => {
+	const renderItem: ListRenderItem<Skeleton | IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem> = ({ item, index }) => {
+		if (item.__typename === 'Skeleton') {
+			return <Button style={{ height: 100 }} focusable={false} />
+		}
+
 		if (item.__typename === 'PopularMovieListItem') {
 			// Популярные фильмы
 			return <Button style={{ height: 100 }} text={`${(page - 1) * 50 + (index + 1)}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
@@ -80,7 +87,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
 				ref={ref}
 				// TODO skeleton loading
-				data={isFetching ? [] : data.docs}
+				data={isFetching ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
 				renderItem={renderItem}
