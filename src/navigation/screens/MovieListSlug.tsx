@@ -59,7 +59,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const renderItem: ListRenderItem<IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem> = ({ item, index }) => {
 		if (item.__typename === 'PopularMovieListItem') {
 			// Популярные фильмы
-			return <Button style={{ height: 100 }} text={`${index + 1}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+			return <Button style={{ height: 100 }} text={`${(page - 1) * 50 + (index + 1)}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		} else if (item.__typename === 'TopMovieListItem') {
 			// 250 лучших фильмов
 			return <Button style={{ height: 100 }} text={`${item.position}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
@@ -79,7 +79,8 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
 				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
 				ref={ref}
-				data={data.docs}
+				// TODO skeleton loading
+				data={isFetching ? [] : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
 				renderItem={renderItem}
