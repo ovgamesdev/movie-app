@@ -55,6 +55,8 @@ export interface IGraphqlMovie {
 	genres: Country[]
 	cast: Cast
 	directors: Cast
+	duration?: number
+	isShortFilm?: boolean
 	url: string
 	rating: Rating
 	mainTrailer: MainTrailer
@@ -65,8 +67,9 @@ export interface IGraphqlMovie {
 	seriesDuration: number | null
 	totalDuration: number | null
 	top250: number | null
-	__typename: string
+	__typename: 'TvSeries' | 'Film'
 }
+
 export interface IGraphqlSuggestMovie {
 	contentId: string | null
 	id: number
@@ -91,10 +94,28 @@ export interface IGraphqlSuggestPerson {
 
 export interface IMovieItem {
 	movie: IGraphqlMovie
+	__typename: 'MovieListItem'
+}
+export interface IPopularMovieListItem {
+	movie: IGraphqlMovie
 	positionDiff: number
+	__typename: 'PopularMovieListItem'
+}
+export interface ITopMovieListItem {
+	movie: IGraphqlMovie
+	position: number
+	positionDiff: number
+	rate: number
+	votes: number
+	__typename: 'TopMovieListItem'
+}
+export interface IBoxOfficeMovieListItem {
+	movie: IGraphqlMovie
+	boxOffice: { amount: number }
+	__typename: 'BoxOfficeMovieListItem'
 }
 
-export type IListBySlugResults = { docs: IMovieItem[]; total: number; limit: number; page: number; pages: number; name: string }
+export type IListBySlugResults = { docs: (IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem)[]; total: number; limit: number; page: number; pages: number; name: string }
 export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
 
 export interface IGraphqlSuggestMovieList {

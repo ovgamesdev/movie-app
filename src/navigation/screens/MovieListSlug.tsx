@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
-import { IMovieItem } from '../../store/kinopoisk/types'
+import { IBoxOfficeMovieListItem, IMovieItem, IPopularMovieListItem, ITopMovieListItem } from '../../store/kinopoisk/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 
@@ -54,8 +54,23 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	const renderItem: ListRenderItem<IMovieItem> = ({ item, index }) => {
-		return <Button style={{ height: 100 }} text={`${index + 1}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	// if (top250) { gold rating }
+
+	const renderItem: ListRenderItem<IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem> = ({ item, index }) => {
+		if (item.__typename === 'PopularMovieListItem') {
+			// Популярные фильмы
+			return <Button style={{ height: 100 }} text={`${index + 1}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		} else if (item.__typename === 'TopMovieListItem') {
+			// 250 лучших фильмов
+			return <Button style={{ height: 100 }} text={`${item.position}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		} else if (item.__typename === 'BoxOfficeMovieListItem') {
+			// США: Самые кассовые фильмы в первый уик-энд проката
+			return <Button style={{ height: 100 }} text={`$${(item.boxOffice.amount / 1000000).toFixed(1)} млн ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		} else {
+			// (item.__typename === 'MovieListItem')
+
+			return <Button style={{ height: 100 }} text={`${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		}
 	}
 
 	return (
