@@ -1,6 +1,6 @@
 import { Button, DropDown } from '@components/atoms'
 import { Pagination } from '@components/molecules'
-import { useTheme } from '@hooks'
+import { useOrientation, useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
@@ -18,6 +18,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const { slug, filters } = route.params.data
 
 	const insets = useSafeAreaInsets()
+	const orientation = useOrientation()
 	const { colors } = useTheme()
 	const ref = useRef<FlatList>(null)
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
@@ -106,21 +107,27 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 					// 	</View>
 					// )
 
-					data != null && data.page != null && data.pages != null ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={Platform.isTV ? 2 : 1} onPageChange={onPageChange} /> : null
+					data != null && data.page != null && data.pages != null ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
 				}
 				ListFooterComponentStyle={{ flexGrow: 1 }}
 				ListHeaderComponent={
 					<>
 						<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
-
-						<View style={{ flexDirection: 'row', padding: 10 }}>
-							<View style={{ flex: 1, paddingRight: 20 }}>
-								{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 20 }}>{data.name}</Text>}
+						{orientation.landscape ? (
+							<View style={{ flexDirection: 'row', padding: 10 }}>
+								<View style={{ flex: 1, paddingRight: 20 }}>
+									{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 20 }}>{data.name}</Text>}
+									{data.description && <Text style={{ color: colors.text100, fontSize: 13 }}>{data.description}</Text>}
+								</View>
+								{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140 }} />}
+							</View>
+						) : (
+							<View style={{ padding: 10, alignItems: 'center' }}>
+								{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140, marginBottom: 20 }} />}
+								{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 15, textAlign: 'center' }}>{data.name}</Text>}
 								{data.description && <Text style={{ color: colors.text100, fontSize: 13 }}>{data.description}</Text>}
 							</View>
-							{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 100, height: 100 }} />}
-						</View>
-
+						)}
 						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
 							<View></View>
 							<DropDown
