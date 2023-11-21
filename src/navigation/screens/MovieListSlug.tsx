@@ -43,7 +43,9 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	const handleOnFocus = ({ index }: { index: number }) => {
 		if (index < data.docs.length) {
-			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+			// FIXME scrollToIndex not correct scroll
+			// ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+			// ref.current?.scrollToIndex({ index, animated: true })
 		}
 
 		focusedItem.current = { index }
