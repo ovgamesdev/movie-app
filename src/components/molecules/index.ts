@@ -1,4 +1,5 @@
 export * from './NetInfo'
+export * from './Pagination'
 export * from './SlugItem'
 export * from './UpdateApk'
 export * from './User'

@@ -1,12 +1,13 @@
 import { Button, DropDown } from '@components/atoms'
+import { Pagination } from '@components/molecules'
 import { useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
-import { IGraphqlMovie } from '../../store/kinopoisk/types'
+import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
+import { IMovieItem } from '../../store/kinopoisk/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 
@@ -33,15 +34,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	const [page, setPage] = useState(1)
 	const [order, setOrder] = useState('POSITION_ASC')
-	const { isFetching, data } = useGetListBySlugQuery(
-		{ slug, filters, order, page, limit: 50 },
-		{
-			selectFromResult: ({ data, ...otherParams }) => ({
-				data: { ...data, docs: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()) },
-				...otherParams
-			})
-		}
-	)
+	const { isFetching, data } = useGetListBySlugQuery({ slug, filters, order, page, limit: 50 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: { ...data, docs: data?.docs ?? [] }, ...otherParams }) })
 	const isEmpty = data.docs.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {
@@ -50,25 +43,19 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		}
 
 		focusedItem.current = { index }
-
-		if (!isFetching && index > data.docs.length - 1 - 10) {
-			setPage(page => page + 1)
-		}
 	}
 
 	const handleOnBlur = () => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const handleScrollEnd = () => {
-		if (!isFetching) {
-			setPage(page => page + 1)
-		}
+	const onPageChange = (page: number) => {
+		setPage(page)
+		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	const renderItem: ListRenderItem<{ movie: IGraphqlMovie; positionDiff: number }> = ({ item, index }) => {
+	const renderItem: ListRenderItem<IMovieItem> = ({ item, index }) => {
 		return <Button style={{ height: 100 }} text={`${index + 1}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
-		// return <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 	}
 
 	return (
@@ -79,8 +66,6 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				ref={ref}
 				data={data.docs}
 				showsHorizontalScrollIndicator={!false}
-				onEndReached={handleScrollEnd}
-				onEndReachedThreshold={1}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
 				renderItem={renderItem}
 				ListEmptyComponent={
@@ -92,11 +77,13 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 					)
 				}
 				ListFooterComponent={
-					!isFetching ? null : (
-						<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-							<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={colors.text200} style={{ padding: 10 }} />
-						</View>
-					)
+					// !isFetching ? null : (
+					// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
+					// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={colors.text200} style={{ padding: 10 }} />
+					// 	</View>
+					// )
+
+					data != null && data.page != null && data.pages != null ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={Platform.isTV ? 2 : 1} onPageChange={onPageChange} /> : null
 				}
 				ListFooterComponentStyle={{ flexGrow: 1 }}
 				ListHeaderComponent={

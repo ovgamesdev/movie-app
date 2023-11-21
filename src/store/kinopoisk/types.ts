@@ -89,6 +89,12 @@ export interface IGraphqlSuggestPerson {
 	__typename: 'Person'
 }
 
+export interface IMovieItem {
+	movie: IGraphqlMovie
+	positionDiff: number
+}
+
+export type IListBySlugResults = { docs: IMovieItem[]; total: number; limit: number; page: number; pages: number; name: string }
 export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
 
 export interface IGraphqlSuggestMovieList {

@@ -1,7 +1,6 @@
-import { EntityState, createEntityAdapter } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IGraphqlMovie, IListSlugFilter, ISuggestSearchResults } from './types'
+import { IListBySlugResults, IListSlugFilter, ISuggestSearchResults } from './types'
 
 // interface ICacheBaseQueryArgs {
 // 	url: string
@@ -118,12 +117,6 @@ import { IGraphqlMovie, IListSlugFilter, ISuggestSearchResults } from './types'
 // 	})
 // })
 
-const kinopoiskItemsAdapter = createEntityAdapter({
-	selectId: (item: { movie: IGraphqlMovie; positionDiff: number }) => item.movie.id
-})
-
-const kinopoiskItemsSelector = kinopoiskItemsAdapter.getSelectors()
-
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
 	refetchOnFocus: true,
@@ -139,7 +132,7 @@ export const kinopoiskApi = createApi({
 		}
 	}),
 	endpoints: build => ({
-		getListBySlug: build.query<{ docs: EntityState<{ movie: IGraphqlMovie; positionDiff: number }>; total: number; limit: number; page: number; pages: number; name: string }, { slug: string; filters?: IListSlugFilter; order?: string; page?: number; limit?: number }>({
+		getListBySlug: build.query<IListBySlugResults, { slug: string; filters?: IListSlugFilter; order?: string; page?: number; limit?: number }>({
 			query: ({
 				slug,
 				filters = {
@@ -187,21 +180,12 @@ export const kinopoiskApi = createApi({
 				const page = arg.page ?? 1
 				const pages = Math.ceil(total / limit)
 
-				return { docs: kinopoiskItemsAdapter.addMany(kinopoiskItemsAdapter.getInitialState(), movies.items), total, limit, page, pages, name: data.name ?? '' }
+				return { docs: movies.items, total, limit, page, pages, name: data.name ?? '' }
 			},
 			transformErrorResponse: (response, meta, arg) => {
 				console.log('transformErrorResponse', { response, meta, arg })
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
-			},
-			forceRefetch: ({ currentArg, previousArg }) => {
-				return currentArg?.page !== previousArg?.page || currentArg?.order !== previousArg?.order || currentArg?.limit !== previousArg?.limit || JSON.stringify(currentArg?.filters) !== JSON.stringify(previousArg?.filters)
-			},
-			serializeQueryArgs: ({ endpointName, queryArgs }) => {
-				return `${endpointName}-${queryArgs.slug} -${queryArgs.order}-${queryArgs.limit}-${JSON.stringify(queryArgs.filters)}`
-			},
-			merge: (currentState, incomingState) => {
-				kinopoiskItemsAdapter.addMany(currentState.docs, kinopoiskItemsSelector.selectAll(incomingState.docs))
 			}
 		}),
 		getSuggestSearch: build.query<ISuggestSearchResults, { keyword: string }>({
@@ -238,5 +222,3 @@ export const kinopoiskApi = createApi({
 })
 
 export const { useGetListBySlugQuery, useGetSuggestSearchQuery } = kinopoiskApi
-
-export { kinopoiskItemsAdapter, kinopoiskItemsSelector }

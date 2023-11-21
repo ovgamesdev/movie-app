@@ -4,8 +4,8 @@ import { useNavigation, useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
-import { IGraphqlMovie } from 'src/store/kinopoisk/types'
-import { kinopoiskItemsAdapter, kinopoiskItemsSelector, useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
+import { IMovieItem } from 'src/store/kinopoisk/types'
+import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = {
 	slug: string
@@ -31,15 +31,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		}
 	}, [focusedItem.current, navigation])
 
-	const { isFetching, data } = useGetListBySlugQuery(
-		{ slug, page: 1, limit: 25 },
-		{
-			selectFromResult: ({ data, ...otherParams }) => ({
-				data: kinopoiskItemsSelector.selectAll(data?.docs ?? kinopoiskItemsAdapter.getInitialState()),
-				...otherParams
-			})
-		}
-	)
+	const { isFetching, data } = useGetListBySlugQuery({ slug, page: 1, limit: 25 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.docs ?? [], ...otherParams }) })
 
 	const isEmpty = data.length === 0
 
@@ -55,7 +47,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const renderItem: ListRenderItem<{ movie: IGraphqlMovie; positionDiff: number }> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	const renderItem: ListRenderItem<IMovieItem> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 
 	return (
 		<>

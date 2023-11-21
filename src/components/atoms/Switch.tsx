@@ -49,13 +49,13 @@ export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) 
 	)
 	const thumbStyle = useAnimatedStyle(
 		() => ({
-			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [thumbColor?.false ?? colors.text200, thumbColor?.true ?? colors.accent100])
+			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [thumbColor?.false ?? colors.text200, thumbColor?.true ?? colors.primary100])
 		}),
 		[switchTranslate, colors]
 	)
 
 	return (
-		<Pressable onPress={memoizedOnSwitchPressCallback} style={({ focused }) => ({ borderRadius: 36.5, borderWidth: 3, borderColor: focused ? colors.accent100 : 'transparent' })}>
+		<Pressable onPress={memoizedOnSwitchPressCallback} style={({ focused }) => ({ borderRadius: 36.5, borderWidth: 3, borderColor: focused ? colors.primary100 : 'transparent' })}>
 			<Animated.View style={[{ width: 50, padding: 2, borderRadius: 36.5 }, trackStyle]}>
 				<GestureDetector gesture={pan}>
 					<Animated.View style={[{ width: 24, height: 24, borderRadius: 24, elevation: 4, transform: [{ translateX: switchTranslate }] }, thumbStyle]} />

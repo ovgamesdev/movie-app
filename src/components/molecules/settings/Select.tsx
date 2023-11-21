@@ -36,14 +36,14 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 								textColor={colors.text100}
 								activeTextColor={colors.primary300}
 								buttonColor={colors.bg200}
-								activeButtonColor={colors.accent100}
+								activeButtonColor={colors.primary100}
 								activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}
 								borderStyle={{
 									borderTopLeftRadius: isStart ? 36.5 : 0,
 									borderBottomLeftRadius: isStart ? 36.5 : 0,
 									borderTopRightRadius: isEnd ? 36.5 : 0,
 									borderBottomRightRadius: isEnd ? 36.5 : 0,
-									borderColor: getColorForTheme({ dark: 'bg300', light: 'accent100' }),
+									borderColor: getColorForTheme({ dark: 'bg300', light: 'primary100' }),
 									borderTopWidth: 1,
 									borderBottomWidth: 1,
 									borderRightWidth: 1,
