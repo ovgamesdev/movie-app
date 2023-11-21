@@ -11,6 +11,8 @@ interface IItem<T> {
 	label: string
 }
 
+type Position = { top?: number; right?: number; bottom?: number; left?: number }
+
 interface Props<T> {
 	type?: 'toLeftTop' | 'toLeftBottom' | 'toRightTop' | 'toRightBottom'
 	items: IItem<T>[]
@@ -25,10 +27,15 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 
 	const buttonRef = useRef<ButtonType>(null)
 	const optionsRef = useRef<(ButtonType | null)[]>([])
-	const position = useRef<{ top?: number; right?: number; bottom?: number; left?: number }>({})
+	const [position, setPosition] = useState<Position>({})
 
 	const onClose = () => {
 		setIsVisible(false)
+	}
+
+	const onOpen = () => {
+		onLayout()
+		setIsVisible(is => !is)
 	}
 
 	const onSelect = (value: T) => {
@@ -44,13 +51,13 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 
 			// TODO check is quit of screen
 			if (type === 'toLeftTop') {
-				position.current = { bottom: screen.height - pageY - insets.bottom + padding, right: screen.width - (pageX + width) - insets.right }
+				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, right: screen.width - (pageX + width) - insets.right })
 			} else if (type === 'toLeftBottom') {
-				position.current = { top: height + pageY - insets.top + padding, right: screen.width - (pageX + width) - insets.right }
+				setPosition({ top: height + pageY - insets.top + padding, right: screen.width - (pageX + width) - insets.right })
 			} else if (type === 'toRightTop') {
-				position.current = { bottom: screen.height - pageY - insets.bottom + padding, left: pageX - insets.left }
+				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, left: pageX - insets.left })
 			} else if (type === 'toRightBottom') {
-				position.current = { top: height + pageY - insets.top + padding, left: pageX - insets.left }
+				setPosition({ top: height + pageY - insets.top + padding, left: pageX - insets.left })
 			}
 		})
 	}
@@ -68,7 +75,7 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 
 	return (
 		<TVFocusGuideView trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
-			<Button ref={buttonRef} onLayout={onLayout} onPress={() => setIsVisible(is => !is)} flex={0} flexDirection='row'>
+			<Button ref={buttonRef} onLayout={onLayout} onPress={onOpen} flex={0} flexDirection='row'>
 				<Text style={{ color: colors.text100 }} numberOfLines={1}>
 					{checkedItem.label}
 				</Text>
@@ -76,7 +83,7 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 			</Button>
 
 			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.2} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
-				<View style={[{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6 }, position.current, { minWidth: 200, maxWidth: '100%', maxHeight: '100%' }, { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 }]}>
+				<View style={[{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6 }, position, { minWidth: 200, maxWidth: '100%', maxHeight: '100%' }, { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 }]}>
 					{items.map((item, i) => {
 						const isChecked = value === item.value
 
