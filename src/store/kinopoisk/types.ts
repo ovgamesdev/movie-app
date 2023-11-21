@@ -115,7 +115,7 @@ export interface IBoxOfficeMovieListItem {
 	__typename: 'BoxOfficeMovieListItem'
 }
 
-export type IListBySlugResults = { docs: (IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem)[]; total: number; limit: number; page: number; pages: number; name: string }
+export type IListBySlugResults = { docs: (IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem)[]; total: number; limit: number; page: number; pages: number; name: string; availableFilters: { items: { id: string; enabled: boolean; name: { russian: string } }[] }; description: string; cover: { avatarsUrl: string } }
 export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
 
 export interface IGraphqlSuggestMovieList {

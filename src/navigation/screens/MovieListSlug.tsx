@@ -4,7 +4,7 @@ import { useTheme } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IBoxOfficeMovieListItem, IMovieItem, IPopularMovieListItem, ITopMovieListItem } from '../../store/kinopoisk/types'
@@ -112,7 +112,15 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				ListHeaderComponent={
 					<>
 						<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
-						{data.name && <Text style={{ color: colors.text100 }}>{data.name}</Text>}
+
+						<View style={{ flexDirection: 'row', padding: 10 }}>
+							<View style={{ flex: 1, paddingRight: 20 }}>
+								{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 20 }}>{data.name}</Text>}
+								{data.description && <Text style={{ color: colors.text100, fontSize: 13 }}>{data.description}</Text>}
+							</View>
+							{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 100, height: 100 }} />}
+						</View>
+
 						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
 							<View></View>
 							<DropDown

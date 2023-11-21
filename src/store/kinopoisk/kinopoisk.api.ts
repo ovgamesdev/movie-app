@@ -65,7 +65,7 @@ export const kinopoiskApi = createApi({
 				const page = arg.page ?? 1
 				const pages = Math.ceil(total / limit)
 
-				return { docs: movies.items, total, limit, page, pages, name: data.name ?? '' }
+				return { docs: movies.items, total, limit, page, pages, name: data.name ?? '', availableFilters: data.availableFilters ?? [], cover: data.cover, description: data.description }
 			},
 			transformErrorResponse: (response, meta, arg) => {
 				console.log('transformErrorResponse', { response, meta, arg })
