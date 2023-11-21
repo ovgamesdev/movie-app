@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import React from 'react'
-import { ScrollView, StyleSheet, TVFocusGuideView } from 'react-native'
+import { ScrollView, StyleSheet, TVFocusGuideView, Text } from 'react-native'
 
 const LEFT_PAGE = 'LEFT'
 const RIGHT_PAGE = 'RIGHT'
@@ -113,6 +113,10 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 			justifyContent: 'center',
 			alignItems: 'center',
 			borderRadius: 8
+		},
+		label: {
+			fontSize: 13,
+			color: colors.text100
 		}
 	})
 
@@ -127,11 +131,23 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 
 				{pages.map((page, index) => {
 					if (page === LEFT_PAGE) {
-						return <Button key={index} style={styles.button} padding={0} transparent text='...' onPress={handleMoveLeft} />
+						return (
+							<Button key={index} style={styles.button} padding={0} transparent onPress={handleMoveLeft}>
+								<Text style={styles.label}>...</Text>
+							</Button>
+						)
 					} else if (page === RIGHT_PAGE) {
-						return <Button key={index} style={styles.button} padding={0} transparent text='...' onPress={handleMoveRight} />
+						return (
+							<Button key={index} style={styles.button} padding={0} transparent onPress={handleMoveRight}>
+								<Text style={styles.label}>...</Text>
+							</Button>
+						)
 					} else {
-						return <Button key={index} style={styles.button} padding={0} transparent={currentPage !== page} text={page + ''} onPress={() => onPageChange(Number(page))} isActive={currentPage === page} activeTextColor={colors.primary300} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })} />
+						return (
+							<Button key={index} style={styles.button} padding={0} transparent={currentPage !== page} onPress={() => onPageChange(Number(page))} isActive={currentPage === page} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}>
+								<Text style={[styles.label, currentPage === page && { color: colors.primary300 }]}>{page}</Text>
+							</Button>
+						)
 					}
 				})}
 

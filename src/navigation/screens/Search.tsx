@@ -27,16 +27,19 @@ export const Search = ({ route }: Props) => {
 	const isEmpty = !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
 	const isLoading = keyword !== deferredKeyword || isFetching
 
-	console.log({ isEmpty, isLoading })
-
 	return (
 		<TVFocusGuideView style={{ flex: 1, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<View style={{ paddingHorizontal: 10 }}>
 				<Input ref={ref} value={keyword} onChangeText={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
-			{/* {isEmpty && isLoading && <ActivityIndicator />} */}
 
-			{isLoading ? (
+			{keyword.length === 0 ? (
+				<>
+					<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
+						<Text style={{ color: colors.text200, fontSize: 15, paddingHorizontal: 30, textAlign: 'center' }}>Смотри то, что нравится</Text>
+					</View>
+				</>
+			) : isLoading ? (
 				<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
 					<ActivityIndicator size='small' />
 				</View>
