@@ -18,7 +18,7 @@ export const Search = ({ route }: Props) => {
 
 	const [keyword, setKeyword] = useState('')
 	const deferredKeyword = useDeferredValue(keyword)
-	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword })
+	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: deferredKeyword.length === 0 })
 
 	const ref = useRef<InputType>(null)
 
