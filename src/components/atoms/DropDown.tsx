@@ -103,8 +103,9 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 				<ExpandMoreIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10, transform: isVisible ? [{ rotateX: '180deg' }] : [] }} />
 			</Button>
 
-			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.2} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
-				<View ref={modalRef} style={[{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6, overflow: 'hidden' }, position, { minWidth: 200, maxWidth: '100%', maxHeight: '100%' }, { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 }]}>
+			{/* FIXME: shadow not animated { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 } */}
+			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.25} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
+				<View ref={modalRef} style={{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6, overflow: 'hidden', minWidth: 200, maxWidth: '100%', maxHeight: '100%', ...position }}>
 					<ScrollView>
 						{items.map((item, i) => {
 							const isChecked = value === item.value
