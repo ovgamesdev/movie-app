@@ -4,6 +4,7 @@ import { getCurrentGoogleUser } from './auth/auth.actions'
 import { reducer as authReducer } from './auth/auth.slice'
 import { kinopoiskApi } from './kinopoisk/kinopoisk.api'
 import { listenerMiddleware } from './listenerMiddleware'
+import { reducer as safeAreaReducer } from './safeArea/safeArea.slice'
 import { reducer as settingsReducer } from './settings/settings.slice'
 import { getApkVersion } from './update/update.actions'
 import { reducer as updateReducer } from './update/update.slice'
@@ -13,7 +14,8 @@ const reducers = combineReducers({
 	settings: settingsReducer,
 	network,
 	update: updateReducer,
-	[kinopoiskApi.reducerPath]: kinopoiskApi.reducer
+	[kinopoiskApi.reducerPath]: kinopoiskApi.reducer,
+	safeArea: safeAreaReducer
 })
 
 export const store = configureStore({

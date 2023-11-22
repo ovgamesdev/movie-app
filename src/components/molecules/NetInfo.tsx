@@ -1,15 +1,16 @@
 import { Button } from '@components/atoms'
-import { useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC, useEffect, useRef, useState } from 'react'
 import { Animated, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const NetInfo: FC = () => {
 	const isConnected = useTypedSelector(state => state.network.isConnected)
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { colors } = useTheme()
 	const insets = useSafeAreaInsets()
+	const { setIsShowNetInfo } = useActions()
 
-	const [isShowConnectedStatus, setIsShowConnectedStatus] = useState<boolean>(false)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null)
 
@@ -42,7 +43,7 @@ export const NetInfo: FC = () => {
 		animationRef.current = Animated.timing(netInfoHeight, { toValue: 0, duration: 500, useNativeDriver: false })
 		animationRef.current.start(() =>
 			// isConnected === true &&
-			setIsShowConnectedStatus(false)
+			setIsShowNetInfo(false)
 		)
 	}
 
@@ -52,17 +53,17 @@ export const NetInfo: FC = () => {
 			animationRef.current = null
 		}
 
-		setIsShowConnectedStatus(true)
+		setIsShowNetInfo(true)
 		animationRef.current = Animated.timing(netInfoHeight, { toValue: 24 + insets.bottom, duration: 500, useNativeDriver: false })
 		animationRef.current.start()
 	}
 
-	if (!isShowConnectedStatus || isConnected === null) return null
+	if (!isShowNetInfo || isConnected === null) return null
 
 	return (
 		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? colors.success : colors.warning }}>
 			<Button onPress={hideAnimation} transparent padding={0} justifyContent='center' style={{ height: 24, borderRadius: 0 }}>
-				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: colors.primary300, height: 24, marginBottom: insets.bottom }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
+				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: colors.primary300, height: 24 }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
 			</Button>
 		</Animated.View>
 	)

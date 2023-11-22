@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 
 import * as authExtraActions from '../store/auth/auth.actions'
 import { actions as authActions } from '../store/auth/auth.slice'
+import { actions as safeAreaActions } from '../store/safeArea/safeArea.slice'
 import * as settingsExtraActions from '../store/settings/settings.actions'
 import { actions as settingsActions } from '../store/settings/settings.slice'
 import * as updateExtraActions from '../store/update/update.actions'
@@ -15,7 +16,8 @@ const rootActions = {
 	...settingsActions,
 	...settingsExtraActions,
 	...updateActions,
-	...updateExtraActions
+	...updateExtraActions,
+	...safeAreaActions
 }
 
 export const useActions = () => {
