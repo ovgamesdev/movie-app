@@ -1,6 +1,6 @@
 import { Button, DropDown } from '@components/atoms'
 import { Pagination } from '@components/molecules'
-import { useOrientation, useTheme } from '@hooks'
+import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
@@ -18,6 +18,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const { slug, filters } = route.params.data
 
 	const insets = useSafeAreaInsets()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const orientation = useOrientation()
 	const { colors } = useTheme()
 	const ref = useRef<FlatList>(null)
@@ -92,7 +93,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				// TODO skeleton loading
 				data={isFetching ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
-				contentContainerStyle={{ padding: 10, paddingBottom: 10 + insets.bottom, flexGrow: 1 }}
+				contentContainerStyle={{ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }}
 				renderItem={renderItem}
 				ListEmptyComponent={
 					isFetching ? null : (
