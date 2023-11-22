@@ -4,7 +4,7 @@ import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IBoxOfficeMovieListItem, IMovieItem, IPopularMovieListItem, ITopMovieListItem } from '../../store/kinopoisk/types'
@@ -84,6 +84,42 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		}
 	}
 
+	const CoverImage = () => {
+		if (data.cover) {
+			return <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140 }} />
+		}
+		return <Skeleton style={{ width: 140, height: 140 }} />
+	}
+
+	const NameText = ({ style, ...props }: TextProps) => {
+		if (data.name) {
+			return (
+				<Text {...props} style={[{ color: colors.text100, fontSize: 20, fontWeight: '700' }, style]}>
+					{data.name}
+				</Text>
+			)
+		}
+		return <Skeleton style={{ height: 27.333, width: '70%', marginBottom: 15, marginTop: 20 }} />
+	}
+
+	const DescriptionText = ({ style, ...props }: TextProps) => {
+		if (data.description) {
+			return (
+				<Text {...props} style={[{ color: colors.text100, fontSize: 13 }, style]}>
+					{data.description}
+				</Text>
+			)
+		}
+		return <Skeleton style={{ height: 50.666, width: '100%' }} />
+	}
+
+	const Skeleton = ({ style, ...props }: ViewProps) => {
+		if (isFetching) {
+			return <View {...props} style={[{ backgroundColor: colors.bg200, borderRadius: 6 }, style]} />
+		}
+		return null
+	}
+
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<FlatList
@@ -119,16 +155,16 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 						{orientation.landscape ? (
 							<View style={{ flexDirection: 'row', padding: 10 }}>
 								<View style={{ flex: 1, paddingRight: 20 }}>
-									{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 20 }}>{data.name}</Text>}
-									{data.description && <Text style={{ color: colors.text100, fontSize: 13 }}>{data.description}</Text>}
+									<NameText style={{ marginBottom: 20 }} />
+									<DescriptionText />
 								</View>
-								{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140 }} />}
+								<CoverImage />
 							</View>
 						) : (
 							<View style={{ padding: 10, alignItems: 'center' }}>
-								{data.cover && <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140, marginBottom: 20 }} />}
-								{data.name && <Text style={{ color: colors.text100, fontSize: 20, fontWeight: '700', marginBottom: 15, textAlign: 'center' }}>{data.name}</Text>}
-								{data.description && <Text style={{ color: colors.text100, fontSize: 13 }}>{data.description}</Text>}
+								<CoverImage />
+								<NameText style={{ marginBottom: 15, marginTop: 20, textAlign: 'center' }} />
+								<DescriptionText />
 							</View>
 						)}
 						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
