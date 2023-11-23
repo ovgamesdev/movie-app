@@ -30,7 +30,7 @@ export const Search = ({ route }: Props) => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
 			<View style={{ paddingHorizontal: 10 }}>
-				<Input ref={ref} value={keyword} onChangeText={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+				<Input ref={ref} value={keyword} onChangeText={setKeyword} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
 			{keyword.length === 0 ? (

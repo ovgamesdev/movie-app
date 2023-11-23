@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { VoiceIcon } from '@icons'
-import Voice from '@react-native-voice/voice'
+import Voice, { SpeechErrorEvent } from '@react-native-voice/voice'
 import { mapValue } from '@utils'
 import React, { useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -9,7 +9,7 @@ import { View } from 'react-native'
 interface VoiceComponentProps {
 	onSpeechResult?: (value: string | null) => void
 	onSpeechPartialResult?: (value: string | null) => void
-	onSpeechError?: (error?: { code?: string; message?: string }) => void
+	onSpeechError?: (event?: SpeechErrorEvent) => void
 	onPress?: () => void
 }
 
@@ -23,7 +23,7 @@ export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, 
 		Voice.onSpeechStart = () => setRecognizing(true)
 		Voice.onSpeechRecognized = () => setRecognizing(false)
 		Voice.onSpeechEnd = () => setRecognizing(false)
-		Voice.onSpeechError = e => (setRecognizing(false), onSpeechError?.(e.error))
+		Voice.onSpeechError = e => (setRecognizing(false), onSpeechError?.(e))
 		Voice.onSpeechResults = e => onSpeechResult?.(e.value?.[0] ?? null)
 		Voice.onSpeechPartialResults = e => onSpeechPartialResult?.(e.value?.[0] ?? null)
 		Voice.onSpeechVolumeChanged = e => setVolumeScale(e.value != null ? mapValue(e.value, -2, 12, 1, 1.5) : 1)
@@ -41,7 +41,7 @@ export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, 
 
 	const _onPress = async () => {
 		if (!isSupported) {
-			return onSpeechError?.({ code: 'NOT_AVAILABLE', message: 'SpeechRecognizer не поддерживается' })
+			return onSpeechError?.({ error: { code: 'NOT_AVAILABLE', message: 'SpeechRecognizer не поддерживается' } })
 		}
 
 		onPress?.()
