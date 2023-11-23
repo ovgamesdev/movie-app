@@ -2,7 +2,7 @@ import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolk
 import { ToastAndroid } from 'react-native'
 import { AppStartListening } from '../listenerMiddleware'
 import { getSettings, saveSettings } from './settings.actions'
-import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey } from './types'
+import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey } from './settings.types'
 
 const initialState: IInitialStateSettings = {
 	settings: {

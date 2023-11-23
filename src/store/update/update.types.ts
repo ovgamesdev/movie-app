@@ -1,3 +1,12 @@
+export interface IInitialStateUpdate {
+	options: IOptions
+	remote: IRemote | null
+	canUpdate: boolean
+	download: IDownload | null
+	size: number | null
+	isVisibleModal: boolean
+}
+
 export interface IOptions {
 	apkVersionUrl: string
 	fileProviderAuthority: string

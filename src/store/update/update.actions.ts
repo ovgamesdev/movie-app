@@ -2,8 +2,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { Alert, NativeModules } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
 import { AppDispatch, RootState } from '../store'
-import { IRemote } from './types'
 import { actions } from './update.slice'
+import { IRemote } from './update.types'
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK
 

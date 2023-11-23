@@ -1,3 +1,10 @@
+export interface IInitialStateSettings {
+	settings: ISettings
+	isLoading: boolean
+	isLoaded: boolean
+	lastSaveTime: number
+}
+
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number }
 	_settings_time: number
@@ -5,13 +12,6 @@ export interface ISettings {
 	kinopoiskToken: string
 	theme: null | 'light' | 'dark'
 	showDevOptions: boolean
-}
-
-export interface IInitialStateSettings {
-	settings: ISettings
-	isLoading: boolean
-	isLoaded: boolean
-	lastSaveTime: number
 }
 
 export type SettingKey = keyof ISettings

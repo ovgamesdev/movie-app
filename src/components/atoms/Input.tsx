@@ -25,8 +25,6 @@ export type InputType = {
 export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearable, onClear, voice, onVoice, flex, ...props }, forwardRef) => {
 	const { colors } = useTheme()
 
-	// const _style = (state: PressableStateCallbackType) => (typeof style === 'function' ? style(state) : typeof style === 'object' ? style : {})
-
 	const buttonRef = useRef<ButtonType | null>(null)
 	const textInputRef = useRef<TextInput | null>(null)
 
@@ -59,7 +57,10 @@ export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearabl
 						</Button>
 					) : null}
 
-					{voice && props.value?.length === 0 ? <VoiceComponent onPress={Keyboard.dismiss} onSpeechPartialResult={e => e !== null && props.onChangeText?.(e)} onSpeechResult={e => e !== null && onVoice?.(e)} onSpeechError={e => (e?.code === '7' ? ToastAndroid.show('Неразборчиво', ToastAndroid.SHORT) : e?.code === 'NOT_AVAILABLE' ? ToastAndroid.show('Голосовой ввод не поддерживается', ToastAndroid.SHORT) : ToastAndroid.show('Неизвестная ошибка', ToastAndroid.SHORT))} /> : null}
+					{/* TODO more error */}
+					{/* {"code": "6", "message": "6/No speech input"} */}
+					{/* {"code": "3", "message": "3/Audio recording error"} */}
+					{voice && props.value?.length === 0 ? <VoiceComponent onPress={Keyboard.dismiss} onSpeechPartialResult={e => e !== null && props.onChangeText?.(e)} onSpeechResult={e => e !== null && onVoice?.(e)} onSpeechError={e => (e?.code === '7' ? ToastAndroid.show('Неразборчиво', ToastAndroid.SHORT) : e?.code === 'NOT_AVAILABLE' ? ToastAndroid.show('Голосовой ввод не поддерживается', ToastAndroid.SHORT) : (ToastAndroid.show('Неизвестная ошибка', ToastAndroid.SHORT), console.warn('VoiceComponent error:', e)))} /> : null}
 				</>
 			) : null}
 		</TVFocusGuideView>

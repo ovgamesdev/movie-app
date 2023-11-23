@@ -20,6 +20,7 @@ const animConfig = {
 	restDisplacementThreshold: 0.001
 }
 
+// TODO remove pan
 export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) => {
 	const switchTranslate = useSharedValue(value ? 21 : 0)
 	const { colors } = useTheme()

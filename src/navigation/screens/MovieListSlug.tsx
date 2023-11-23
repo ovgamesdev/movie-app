@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
-import { IBoxOfficeMovieListItem, IMovieItem, IPopularMovieListItem, ITopMovieListItem } from '../../store/kinopoisk/types'
+import { IListBySlugResultsDocs } from '../../store/kinopoisk/kinopoisk.types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
@@ -63,7 +63,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	// if (top250) { gold rating }
 
-	const renderItem: ListRenderItem<Skeleton | IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem> = ({ item, index }) => {
+	const renderItem: ListRenderItem<Skeleton | IListBySlugResultsDocs> = ({ item, index }) => {
 		if (item.__typename === 'Skeleton') {
 			return <Button style={{ height: 100 }} focusable={false} />
 		}

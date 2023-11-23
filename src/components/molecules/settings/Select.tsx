@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
-import { ISettings, SelectSettingsKey } from 'src/store/settings/types'
+import { ISettings, SelectSettingsKey } from 'src/store/settings/settings.types'
 
 interface SelectProps<K extends SelectSettingsKey> {
 	item: K

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IListBySlugResults, IListSlugFilter, ISuggestSearchResults } from './types'
+import { IListBySlugResults, IListSlugFilter, ISuggestSearchResults } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',

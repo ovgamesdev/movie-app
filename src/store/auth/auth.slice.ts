@@ -1,13 +1,8 @@
-import { User, statusCodes } from '@react-native-google-signin/google-signin'
+import { statusCodes } from '@react-native-google-signin/google-signin'
 import { createSlice } from '@reduxjs/toolkit'
 import { ToastAndroid } from 'react-native'
 import { addScopeGoogleUser, getCurrentGoogleUser, signInGoogleUser, signOutGoogleUser } from './auth.actions'
-
-interface IInitialStateAuth {
-	user: User | null
-	isLoading: boolean
-	isAllScopeAllowed: boolean
-}
+import { IInitialStateAuth } from './auth.types'
 
 const initialState: IInitialStateAuth = {
 	user: null,

@@ -3,7 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { GDrive, ListQueryBuilder, MimeTypes } from '@robinbobin/react-native-google-drive-api-wrapper'
 import { AppDispatch, RootState } from '../store'
-import { ISettings } from './types'
+import { ISettings } from './settings.types'
 
 const KEY = 'settings'
 

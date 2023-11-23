@@ -1,8 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
-
-interface IInitialStateSafeArea {
-	isShowNetInfo: boolean
-}
+import { IInitialStateSafeArea } from './safeArea.types'
 
 const initialState: IInitialStateSafeArea = {
 	isShowNetInfo: false

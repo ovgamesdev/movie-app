@@ -2,7 +2,7 @@ import { SearchMovie, SearchMovieList, SearchPerson } from '@components/molecule
 import { useNavigation, useTheme } from '@hooks'
 import React from 'react'
 import { Text, View } from 'react-native'
-import { ISuggestSearchResults } from 'src/store/kinopoisk/types'
+import { ISuggestSearchResults } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	data: ISuggestSearchResults

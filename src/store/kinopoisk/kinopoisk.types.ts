@@ -1,40 +1,3 @@
-// interface IShortImage {
-// 	url: string | null
-// 	previewUrl: string | null
-// }
-
-// interface IYearRange {
-// 	start?: number | null
-// 	end?: number | null
-// }
-
-// export interface ISlug {
-// 	id: number
-// 	name?: string | null
-// 	enName?: string | null
-// 	year: number | null
-// 	poster: IShortImage
-// 	alternativeName: string | null
-// 	isSeries: boolean
-// 	releaseYears?: [IYearRange]
-// }
-
-// export interface ISuccessResponse<T> {
-// 	docs: T[]
-// 	total: number
-// 	limit: number
-// 	page: number
-// 	pages: number
-// }
-
-// export interface IErrorResponse {
-// 	statusCode: number
-// 	message: string
-// 	error: string
-// }
-
-// export type IResponse<T> = ISuccessResponse<T> & IErrorResponse
-
 export interface IListSlugFilter {
 	booleanFilterValues: BooleanFilterValues[]
 	intRangeFilterValues: []
@@ -115,7 +78,8 @@ export interface IBoxOfficeMovieListItem {
 	__typename: 'BoxOfficeMovieListItem'
 }
 
-export type IListBySlugResults = { docs: (IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem)[]; total: number; limit: number; page: number; pages: number; name: string; availableFilters: { items: { id: string; enabled: boolean; name: { russian: string } }[] }; description: string; cover: { avatarsUrl: string } }
+export type IListBySlugResultsDocs = IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem
+export type IListBySlugResults = { docs: IListBySlugResultsDocs[]; total: number; limit: number; page: number; pages: number; name: string; availableFilters: { items: { id: string; enabled: boolean; name: { russian: string } }[] }; description: string; cover: { avatarsUrl: string } }
 export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
 
 export interface IGraphqlSuggestMovieList {

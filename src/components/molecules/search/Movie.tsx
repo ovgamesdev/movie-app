@@ -3,7 +3,7 @@ import { useTheme } from '@hooks'
 import { getRatingColor } from '@utils'
 import React from 'react'
 import { Image, Text, View } from 'react-native'
-import { IGraphqlSuggestMovie } from 'src/store/kinopoisk/types'
+import { IGraphqlSuggestMovie } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	item: IGraphqlSuggestMovie

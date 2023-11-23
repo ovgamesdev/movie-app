@@ -2,18 +2,9 @@ import { PayloadAction, Unsubscribe, createSlice } from '@reduxjs/toolkit'
 import { Alert, NativeModules } from 'react-native'
 import semver from 'semver'
 import { AppStartListening } from '../listenerMiddleware'
-import { IDownload, IOptions, IRemote } from './types'
+import { IDownload, IInitialStateUpdate, IOptions, IRemote } from './update.types'
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK
-
-interface IInitialStateUpdate {
-	options: IOptions
-	remote: IRemote | null
-	canUpdate: boolean
-	download: IDownload | null
-	size: number | null
-	isVisibleModal: boolean
-}
 
 const initialState: IInitialStateUpdate = {
 	options: {

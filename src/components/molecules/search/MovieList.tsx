@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
 import React from 'react'
 import { Image, Text, View } from 'react-native'
-import { IGraphqlSuggestMovieList } from 'src/store/kinopoisk/types'
+import { IGraphqlSuggestMovieList } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	item: IGraphqlSuggestMovieList

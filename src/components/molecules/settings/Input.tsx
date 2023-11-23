@@ -2,7 +2,7 @@ import { Input as MyInput } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, TextInputProps, View } from 'react-native'
-import { InputSettingsKey } from 'src/store/settings/types'
+import { InputSettingsKey } from 'src/store/settings/settings.types'
 
 interface Props extends TextInputProps {
 	item: InputSettingsKey

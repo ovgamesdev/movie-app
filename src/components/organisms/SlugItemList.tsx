@@ -4,7 +4,7 @@ import { useNavigation, useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
-import { IMovieItem } from 'src/store/kinopoisk/types'
+import { IListBySlugResultsDocs } from 'src/store/kinopoisk/kinopoisk.types'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = {
@@ -47,7 +47,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const renderItem: ListRenderItem<IMovieItem> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	const renderItem: ListRenderItem<IListBySlugResultsDocs> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 
 	return (
 		<>

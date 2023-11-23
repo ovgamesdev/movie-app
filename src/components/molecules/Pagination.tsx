@@ -7,7 +7,7 @@ import { ScrollView, StyleSheet, TVFocusGuideView, Text } from 'react-native'
 const LEFT_PAGE = 'LEFT'
 const RIGHT_PAGE = 'RIGHT'
 
-const range = (from: number, to: number, step = 1) => {
+const generateRange = (from: number, to: number, step = 1) => {
 	let i = from
 	const range = []
 
@@ -72,7 +72,7 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 			const startPage = leftBound > 2 ? leftBound : 2
 			const endPage = rightBound < beforeLastPage ? rightBound : beforeLastPage
 
-			pages = range(startPage, endPage)
+			pages = generateRange(startPage, endPage)
 
 			const pagesCount = pages.length
 			const singleSpillOffset = totalNumbers - pagesCount - 1
@@ -84,10 +84,10 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 			const rightSpillPage = RIGHT_PAGE
 
 			if (leftSpill && !rightSpill) {
-				const extraPages = range(startPage - singleSpillOffset, startPage - 1)
+				const extraPages = generateRange(startPage - singleSpillOffset, startPage - 1)
 				pages = [leftSpillPage, ...extraPages, ...pages]
 			} else if (!leftSpill && rightSpill) {
-				const extraPages = range(endPage + 1, endPage + singleSpillOffset)
+				const extraPages = generateRange(endPage + 1, endPage + singleSpillOffset)
 				pages = [...pages, ...extraPages, rightSpillPage]
 			} else if (leftSpill && rightSpill) {
 				pages = [leftSpillPage, ...pages, rightSpillPage]
@@ -96,7 +96,7 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 			return [1, ...pages, pageCount]
 		}
 
-		return range(1, pageCount)
+		return generateRange(1, pageCount)
 	}
 
 	const isPreviousDisabled = currentPage === 1

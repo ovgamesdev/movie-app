@@ -1,4 +1,4 @@
-import { IListSlugFilter } from 'src/store/kinopoisk/types'
+import { IListSlugFilter } from 'src/store/kinopoisk/kinopoisk.types'
 
 export * from './StackNavigator'
 export * from './TabNavigator'

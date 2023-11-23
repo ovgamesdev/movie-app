@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
 import React from 'react'
 import { ImageBackground, Text, View } from 'react-native'
-import { IGraphqlMovie } from 'src/store/kinopoisk/types'
+import { IGraphqlMovie } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	data: IGraphqlMovie
