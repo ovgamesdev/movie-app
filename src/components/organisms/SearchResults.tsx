@@ -22,8 +22,8 @@ export const SearchResults = ({ data }: Props) => {
 		navigation.push('MovieListSlug', { data: { slug } })
 	}
 
-	const onMovie = (id: number) => {
-		navigation.push('Movie', { data: { id } })
+	const onMovie = (data: { id: number; type: 'TvSeries' | 'Film' }) => {
+		navigation.push('Movie', { data })
 	}
 
 	const onPerson = (id: number) => {

@@ -70,17 +70,17 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 		if (item.__typename === 'PopularMovieListItem') {
 			// Популярные фильмы
-			return <Button style={{ height: 100 }} text={`${(page - 1) * 50 + (index + 1)}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+			return <Button style={{ height: 100 }} text={`${(page - 1) * 50 + (index + 1)}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		} else if (item.__typename === 'TopMovieListItem') {
 			// 250 лучших фильмов
-			return <Button style={{ height: 100 }} text={`${item.position}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+			return <Button style={{ height: 100 }} text={`${item.position}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		} else if (item.__typename === 'BoxOfficeMovieListItem') {
 			// США: Самые кассовые фильмы в первый уик-энд проката
-			return <Button style={{ height: 100 }} text={`$${(item.boxOffice.amount / 1000000).toFixed(1)} млн ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+			return <Button style={{ height: 100 }} text={`$${(item.boxOffice.amount / 1000000).toFixed(1)} млн ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		} else {
 			// (item.__typename === 'MovieListItem')
 
-			return <Button style={{ height: 100 }} text={`${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+			return <Button style={{ height: 100 }} text={`${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
 		}
 	}
 

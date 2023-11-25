@@ -7,14 +7,14 @@ import { IGraphqlSuggestMovie } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	item: IGraphqlSuggestMovie
-	onPress: (id: number) => void
+	onPress: ({ id, type }: { id: number; type: 'TvSeries' | 'Film' }) => void
 }
 
 export const Movie = ({ item, onPress }: Props) => {
 	const { colors } = useTheme()
 
 	return (
-		<Button onPress={() => onPress(item.id)} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={() => onPress({ id: item.id, type: item.__typename })} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<Image source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
