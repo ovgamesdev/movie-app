@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IListBySlugResults, IListSlugFilter, ISuggestSearchResults } from './kinopoisk.types'
+import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, ISuggestSearchResults, ITvSeriesBaseInfo } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
@@ -104,7 +104,7 @@ export const kinopoiskApi = createApi({
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
 		}),
-		getFilmBaseInfo: build.query<any, { filmId: number }>({
+		getFilmBaseInfo: build.query<IFilmBaseInfo, { filmId: number }>({
 			query: ({ filmId }) => ({
 				url: '?operationName=FilmBaseInfo',
 				method: 'post',
@@ -139,7 +139,7 @@ export const kinopoiskApi = createApi({
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
 		}),
-		getTvSeriesBaseInfo: build.query<any, { tvSeriesId: number }>({
+		getTvSeriesBaseInfo: build.query<ITvSeriesBaseInfo, { tvSeriesId: number }>({
 			query: ({ tvSeriesId }) => ({
 				url: '?operationName=TvSeriesBaseInfo',
 				method: 'post',
