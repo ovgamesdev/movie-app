@@ -88,7 +88,7 @@ export const Movie = ({ navigation, route }: Props) => {
 		if (data.rating.expectation && data.rating.expectation.isActive && data.rating.expectation.value && data.rating.expectation.value > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
 		if (!data.rating.kinopoisk || data.rating.kinopoisk.value === null || !data.rating.kinopoisk.isActive) return null
 		const top = data.rating.kinopoisk.value.toFixed(1)
-		if (data.top250 === undefined) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{data.rating.kinopoisk.value}</Text>
+		if (data.top250 === null) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{top}</Text>
 		const width = top.length === 3 ? 65 : 93
 
 		return (
