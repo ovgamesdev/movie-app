@@ -126,16 +126,17 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
 				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
 				ref={ref}
-				// TODO skeleton loading
 				data={isFetching ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={{ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }}
 				renderItem={renderItem}
 				ListEmptyComponent={
 					isFetching ? null : (
-						<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: colors.bg200, borderRadius: 6, padding: 5 }}>
-							<Text style={{ textAlign: 'center', color: colors.text100 }}>Лист пуст</Text>
-							{/* <Text style={{ textAlign: 'center', color: colors.text200 }}></Text> */}
+						<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
+							<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
+								<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
+								<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
+							</View>
 						</View>
 					)
 				}
@@ -146,7 +147,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 					// 	</View>
 					// )
 
-					data != null && data.page != null && data.pages != null ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
+					data != null && data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
 				}
 				ListFooterComponentStyle={{ flexGrow: 1 }}
 				ListHeaderComponent={
@@ -168,7 +169,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 							</View>
 						)}
 						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
-							<View></View>
+							<View>{/* TODO add filters */}</View>
 							<DropDown
 								items={[
 									{ label: 'По порядку', value: 'POSITION_ASC' },

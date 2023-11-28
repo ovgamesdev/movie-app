@@ -287,8 +287,8 @@ interface IMovieBaseInfo {
 	production: {
 		total: number
 	}
-	productionStatus: null // TODO
-	productionStatusUpdateDate: null // TODO
+	productionStatus: string | null // 'ANNOUNCED' | 'COMPLETED' | 'FILMING' | 'POST_PRODUCTION' | 'PRE_PRODUCTION' | 'UNKNOWN'
+	productionStatusUpdateDate: string | null
 	productionYear: number // TODO
 	promos: {
 		total: number

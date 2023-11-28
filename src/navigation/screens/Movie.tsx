@@ -1,12 +1,12 @@
 import { ActivityIndicator, Button } from '@components/atoms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
-import { Kp3dIcon, KpImaxIcon, PlayIcon } from '@icons'
+import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { declineSeasons, formatDuration, ratingMPAA } from '@utils'
+import { declineSeasons, formatDuration, getRatingColor, ratingMPAA } from '@utils'
 import { Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
+import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
 import { useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '../../store/kinopoisk/kinopoisk.api'
 
@@ -84,6 +84,118 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
+	const RatingText = () => {
+		if (data.rating.expectation && data.rating.expectation.value !== null && data.rating.expectation.count > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
+		if (data.rating.kinopoisk?.value === 0 || data.rating.kinopoisk?.value === null || data.rating.kinopoisk?.value === undefined) return null
+		const top = data.rating.kinopoisk.value.toFixed(1)
+		if (data.top250 === undefined) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{data.rating.kinopoisk.value}</Text>
+		const width = top.length === 3 ? 65 : 93
+
+		return (
+			<Svg height={43} width={width}>
+				<DefsSvg>
+					<LinearGradientSvg id='gradient' x1='0%' y1='0%' x2='25%' y2='125%'>
+						<StopSvg offset='16.44%' stopColor='#ffd25e' />
+						<StopSvg offset='63.42%' stopColor='#b59646' />
+					</LinearGradientSvg>
+				</DefsSvg>
+				<TextSvg x={width / 2} y={38.5} textAnchor='middle' fill='url(#gradient)' fontSize={48} fontWeight='500'>
+					{top}
+				</TextSvg>
+			</Svg>
+		)
+	}
+
+	const Text250 = () => {
+		if (data.top250 === null) return null
+		const length = data.top250.toString().length
+		const width = length === 1 ? 60 : length === 2 ? 64 : 72
+
+		return (
+			<View style={{ flexDirection: 'row', marginLeft: 13, alignItems: 'center' }}>
+				<KpTop250LIcon width={18} height={43} viewBox='0 0 10 24' />
+				<View style={{ marginHorizontal: 7 }}>
+					<Svg height={43} width={width}>
+						<DefsSvg>
+							<LinearGradientSvg id='gradient' x1='0%' y1='0%' x2='25%' y2='125%'>
+								<StopSvg offset='16.44%' stopColor='#ffd25e' />
+								<StopSvg offset='63.42%' stopColor='#b59646' />
+							</LinearGradientSvg>
+						</DefsSvg>
+						<TextSvg x={width / 2} y={18} textAnchor='middle' fill='url(#gradient)' fontSize={15} fontWeight='600'>
+							ТОП 250
+						</TextSvg>
+						<TextSvg x={width / 2} y={36} textAnchor='middle' fill='url(#gradient)' fontSize={15} fontWeight='400'>
+							{data.top250 + ' место'}
+						</TextSvg>
+					</Svg>
+				</View>
+				<KpTop250RIcon width={18} height={43} viewBox='0 0 10 24' />
+			</View>
+		)
+	}
+
+	const ProductionStatusText = () => {
+		if (!data.productionStatus || !data.productionStatusUpdateDate) return null
+
+		let statusMessage = ''
+		let statusStyle = {}
+
+		switch (data.productionStatus) {
+			case 'FILMING':
+				statusMessage = 'Съемочный процесс'
+				statusStyle = {
+					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
+					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
+				}
+				break
+			case 'PRE_PRODUCTION':
+				statusMessage = 'Подготовка к съемкам'
+				statusStyle = {
+					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
+					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
+				}
+				break
+			case 'COMPLETED':
+				statusMessage = 'Производство завершено'
+				statusStyle = {
+					color: 'rgba(0,153,51,.9)',
+					backgroundColor: '#d9f0e1'
+				}
+				break
+			case 'ANNOUNCED':
+				statusMessage = 'Проект объявлен'
+				statusStyle = {
+					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
+					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
+				}
+				break
+			case 'POST_PRODUCTION':
+				statusMessage = 'Постпродакшн'
+				statusStyle = {
+					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
+					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
+				}
+				break
+			case 'UNKNOWN':
+				statusMessage = 'Неизвестно'
+				statusStyle = {
+					color: orientation.portrait ? 'rgba(31,31,31,.9)' : 'rgba(255,255,255,.8)',
+					backgroundColor: orientation.portrait ? 'rgba(31,31,31,.1)' : 'rgba(31,31,31,.24)'
+				}
+				break
+			default:
+				break
+		}
+
+		return (
+			<View style={{ flexDirection: 'row', paddingBottom: 8 }}>
+				<Text style={{ ...statusStyle, fontSize: 13, fontWeight: '500', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>{statusMessage}</Text>
+				<Text style={{ color: colors.text200, fontSize: 13, fontWeight: '500' }}> – обновлено {new Date(data.productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+			</View>
+		)
+	}
+
 	// ott.promoTrailers.items[0].streamUrl
 	// //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/678x380 1x, //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/1344x756 2x
 
@@ -110,12 +222,13 @@ export const Movie = ({ navigation, route }: Props) => {
 							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={80 + 6 + 6 ?? 96} borderRadius={8} top={-100} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
+									<ProductionStatusText />
 									{data.title.russian ?? data.title.localized ?? data.title.original} <Text>{data.__typename === 'Film' ? `(${data.productionYear})` : `(сериал ${data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})`}</Text>
 								</Text>
 
 								<Text style={{ color: colors.text200, fontSize: 18 }}>
-									{data.title.original ? data.title.original + ' ' : ''}
-									{data.restriction.age ? data.restriction.age.replace('age', '') : ''}+
+									{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
+									{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
 								</Text>
 							</View>
 						</View>
@@ -125,7 +238,9 @@ export const Movie = ({ navigation, route }: Props) => {
 								<Button text='trailer' />
 							</TVFocusGuideView>
 
-							<View style={{ gap: 5, marginTop: 5 }}>
+							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {data.__typename === 'TvSeries' ? 'сериале' : 'фильме'}</Text>
+
+							<View style={{ gap: 5, marginTop: 5, marginBottom: 40 }}>
 								{!!data.productionYear && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ flex: 1 }}>Год производства</Text>
@@ -304,6 +419,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										</ScrollView>
 									</TVFocusGuideView>
 								)}
+
 								{data.filmEditors.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ flex: 1 }}>Монтаж</Text>
@@ -433,21 +549,23 @@ export const Movie = ({ navigation, route }: Props) => {
 									</TVFocusGuideView>
 								)}
 
-								{/* TODO fix border */}
 								{data.restriction.age && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ flex: 1 }}>Возраст</Text>
-										<Text style={{ flex: 1 }}>{data.restriction.age.replace('age', '')}+</Text>
+										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 10 }}>
+											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
+												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{data.restriction.age.replace('age', '')}+</Text>
+											</View>
+										</View>
 									</TVFocusGuideView>
 								)}
 
-								{/* TODO fix border */}
 								{data.restriction.mpaa && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ flex: 1 }}>Рейтинг MPAA</Text>
-										<View style={{ flex: 1, flexDirection: 'row' }}>
-											<View style={{ borderColor: colors.text100, borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
-												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13 }}>{ratingMPAA(data.restriction.mpaa).value}</Text>
+										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 10 }}>
+											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
+												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{ratingMPAA(data.restriction.mpaa).value}</Text>
 											</View>
 										</View>
 									</TVFocusGuideView>
@@ -459,11 +577,50 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия(${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
 									</TVFocusGuideView>
 								)}
-
-								{data.synopsis && <Text style={{ color: Colors.text100, fontSize: 16, marginTop: 40 }}>{data.synopsis}</Text>}
-
-								{/* <Button text='back' onPress={() => navigation.pop()} /> */}
 							</View>
+
+							<View style={{ borderColor: colors.bg300, borderBottomWidth: 1, marginBottom: 40, flexDirection: 'row' }}>
+								<Button focusable={false} transparent text='Обзор' />
+							</View>
+							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
+
+							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {data.__typename === 'TvSeries' ? 'сериала' : 'фильма'}</Text>
+							<View style={{ flexDirection: 'row' }}>
+								<RatingText />
+								<Text250 />
+							</View>
+
+							{data.rating.kinopoisk?.value != null && data.rating.expectation?.value == null && data.rating.kinopoisk.value === 0 && (
+								<View>
+									<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
+									{data.rating.imdb?.value != null && (
+										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
+											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
+										</Text>
+									)}
+									<Text style={{ fontSize: 13, color: colors.text200 }}>Недостаточно оценок, рейтинг формируется</Text>
+								</View>
+							)}
+
+							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.value > 0 && (
+								<View style={{ flexDirection: 'row' }}>
+									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>{data.rating.kinopoisk.count.toLocaleString()} оценок</Text>
+									{data.rating.imdb?.value != null && (
+										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
+											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
+										</Text>
+									)}
+								</View>
+							)}
+
+							{data.rating.expectation?.value != null && data.rating.expectation.value > 0 && (
+								<View>
+									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>Рейтинг ожидания</Text>
+									<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>{data.rating.expectation.count.toLocaleString()} ждут премьеры</Text>
+								</View>
+							)}
+
+							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
 						</View>
 					</View>
 				</View>
