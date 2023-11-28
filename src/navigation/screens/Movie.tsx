@@ -452,11 +452,10 @@ export const Movie = ({ navigation, route }: Props) => {
 									</TVFocusGuideView>
 								)}
 
-								{/* TODO fix border */}
 								{data.__typename === 'Film' && data.audience.total > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ flex: 1 }}>Зрители</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
+										<ScrollView horizontal style={{ flex: 1, paddingLeft: 10 }}>
 											{data.audience.items.map((it, i) => (
 												<View key={it.country.id} style={{ flexDirection: 'row' }}>
 													<View style={{ marginLeft: i !== 0 ? 5 : undefined, flexDirection: 'row', alignItems: 'center' }}>
