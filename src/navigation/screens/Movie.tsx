@@ -191,7 +191,7 @@ export const Movie = ({ navigation, route }: Props) => {
 		return (
 			<View style={{ flexDirection: 'row', paddingBottom: 8 }}>
 				<Text style={{ ...statusStyle, fontSize: 13, fontWeight: '500', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>{statusMessage}</Text>
-				<Text style={{ color: colors.text200, fontSize: 13, fontWeight: '500' }}> – обновлено {new Date(data.productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+				<Text style={{ color: colors.text200, fontSize: 13, fontWeight: '500', paddingVertical: 2 }}> – обновлено {new Date(data.productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 			</View>
 		)
 	}
