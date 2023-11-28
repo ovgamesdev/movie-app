@@ -85,8 +85,8 @@ export const Movie = ({ navigation, route }: Props) => {
 	}
 
 	const RatingText = () => {
-		if (data.rating.expectation && data.rating.expectation.value !== null && data.rating.expectation.count > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
-		if (data.rating.kinopoisk?.value === 0 || data.rating.kinopoisk?.value === null || data.rating.kinopoisk?.value === undefined) return null
+		if (data.rating.expectation && data.rating.expectation.isActive && data.rating.expectation.value && data.rating.expectation.value > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
+		if (!data.rating.kinopoisk || data.rating.kinopoisk.value === null || !data.rating.kinopoisk.isActive) return null
 		const top = data.rating.kinopoisk.value.toFixed(1)
 		if (data.top250 === undefined) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{data.rating.kinopoisk.value}</Text>
 		const width = top.length === 3 ? 65 : 93
@@ -219,7 +219,7 @@ export const Movie = ({ navigation, route }: Props) => {
 					)}
 					<View style={[{ flex: 1 }, orientation.portrait && { backgroundColor: colors.bg100, marginTop: -10, paddingHorizontal: 10, paddingTop: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16 }]}>
 						<View style={{ flexDirection: 'row', gap: 10 }}>
-							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={80 + 6 + 6 ?? 96} borderRadius={8} top={-100} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
+							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6 ?? 96} borderRadius={8} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
 									<ProductionStatusText />
@@ -590,10 +590,10 @@ export const Movie = ({ navigation, route }: Props) => {
 								<Text250 />
 							</View>
 
-							{data.rating.kinopoisk?.value != null && data.rating.expectation?.value == null && data.rating.kinopoisk.value === 0 && (
+							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.expectation?.value == null && data.rating.kinopoisk.value === 0 && (
 								<View>
 									<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
-									{data.rating.imdb?.value != null && (
+									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
 										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
 											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
 										</Text>
@@ -602,10 +602,10 @@ export const Movie = ({ navigation, route }: Props) => {
 								</View>
 							)}
 
-							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.value > 0 && (
+							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.kinopoisk.value > 0 && (
 								<View style={{ flexDirection: 'row' }}>
 									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>{data.rating.kinopoisk.count.toLocaleString()} оценок</Text>
-									{data.rating.imdb?.value != null && (
+									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
 										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
 											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
 										</Text>
@@ -613,7 +613,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								</View>
 							)}
 
-							{data.rating.expectation?.value != null && data.rating.expectation.value > 0 && (
+							{data.rating.expectation?.value != null && data.rating.expectation.isActive && data.rating.expectation.value > 0 && (
 								<View>
 									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>Рейтинг ожидания</Text>
 									<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>{data.rating.expectation.count.toLocaleString()} ждут премьеры</Text>
