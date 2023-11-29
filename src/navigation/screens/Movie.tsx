@@ -630,7 +630,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								<Text250 />
 							</View>
 
-							{data.rating.kinopoisk?.isActive && (
+							{data.rating.kinopoisk?.value === null && data.rating.kinopoisk.isActive && (
 								<View>
 									<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
 									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
