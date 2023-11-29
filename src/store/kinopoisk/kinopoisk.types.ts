@@ -567,6 +567,40 @@ export interface ITvSeriesBaseInfo
 	__typename: 'TvSeries'
 }
 
+export interface ISimilarMovieResults {
+	items: { movie: ISimilarMovie; types: string[] }[]
+	total: number
+}
+// export interface ITvSeriesSimilarMovieResults {
+// 	items: { movie: ITvSeriesSimilarMovie; types: string[] }[]
+// 	total: number
+// }
+export interface ISimilarMovie extends Pick<IMovieBaseInfo, '__typename' | 'countries' | 'genres' | 'id' | 'poster' | 'productionYear' | 'releaseYears' | 'userData' | 'viewOption'> {
+	rating: {
+		expectation: RatingValue | null
+		kinopoisk: RatingValue | null
+	}
+	title: {
+		english: string | null
+		// localized: string | null
+		original: string | null
+		russian: string | null
+	}
+}
+// export interface ITvSeriesSimilarMovie extends Pick<IMovieBaseInfo, 'countries' | 'genres' | 'id' | 'poster' | 'productionYear' | 'releaseYears' | 'userData' | 'viewOption'> {
+// 	rating: {
+// 		expectation: RatingValue | null
+// 		kinopoisk: RatingValue | null
+// 	}
+// 	title: {
+// 		english: string | null
+// 		// localized: string | null
+// 		original: string | null
+// 		russian: string | null
+// 	}
+// 	__typename: 'TvSeries'
+// }
+
 interface MoneyAmount {
 	amount: number
 	currency: { symbol: string }

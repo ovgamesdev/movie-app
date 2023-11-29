@@ -1,4 +1,5 @@
 import { ActivityIndicator, Button } from '@components/atoms'
+import { SimilarMovie } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
@@ -629,7 +630,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								<Text250 />
 							</View>
 
-							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.expectation?.value == null && data.rating.kinopoisk.value === 0 && (
+							{data.rating.kinopoisk?.isActive && (
 								<View>
 									<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
 									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
@@ -660,6 +661,8 @@ export const Movie = ({ navigation, route }: Props) => {
 							)}
 
 							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
+
+							{data.similarMoviesCount.total > 0 && <SimilarMovie id={data.id} type={data.__typename} />}
 						</View>
 					</View>
 				</View>

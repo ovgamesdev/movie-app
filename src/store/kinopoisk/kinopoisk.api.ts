@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, ISuggestSearchResults, ITvSeriesBaseInfo } from './kinopoisk.types'
+import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
@@ -173,8 +173,68 @@ export const kinopoiskApi = createApi({
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
+		}),
+		getTvSeriesSimilarMovies: build.query<ISimilarMovieResults, { tvSeriesId: number }>({
+			query: ({ tvSeriesId }) => ({
+				url: '?operationName=TvSeriesSimilarMovies',
+				method: 'post',
+				body: {
+					operationName: 'TvSeriesSimilarMovies',
+					variables: {
+						tvSeriesId,
+						similarMoviesLimit: 10,
+						withUserData: false
+					},
+					query:
+						'query TvSeriesSimilarMovies($tvSeriesId: Long!, $similarMoviesLimit: Int = 10, $withUserData: Boolean = false) { tvSeries(id: $tvSeriesId) { id rating { kinopoisk { isActive __typename } __typename } userRecommendations(limit: $similarMoviesLimit) { items { movie { id title { russian english original __typename } countries { id name __typename } poster { avatarsUrl fallbackUrl __typename } genres { id name slug __typename } rating { expectation { value count isActive __typename } kinopoisk { value count isActive __typename } __typename } userData @include(if: $withUserData) { voting { value __typename } __typename } viewOption { buttonText isAvailableOnline: isWatchable(filter: {anyDevice: false, anyRegion: false}) purchasabilityStatus contentPackageToBuy { billingFeatureName __typename } type posterWithRightholderLogo __typename } ... on Film { productionYear __typename } ... on Video { productionYear __typename } ... on TvSeries { releaseYears { start end __typename } __typename } ... on TvShow { releaseYears { start end __typename } __typename } ... on MiniSeries { releaseYears { start end __typename } __typename } __typename } types __typename } total __typename } __typename } } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				console.log('response', response)
+				const data = (response as any)?.data
+
+				return data?.tvSeries?.userRecommendations
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
+		}),
+		getFilmSimilarMovies: build.query<ISimilarMovieResults, { filmId: number }>({
+			query: ({ filmId }) => ({
+				url: '?operationName=FilmSimilarMovies',
+				method: 'post',
+				body: {
+					operationName: 'FilmSimilarMovies',
+					variables: {
+						filmId,
+						similarMoviesLimit: 10,
+						withUserData: false
+					},
+					query:
+						'query FilmSimilarMovies($filmId: Long!, $similarMoviesLimit: Int = 10, $withUserData: Boolean = false) { film(id: $filmId) { id rating { kinopoisk { isActive __typename } __typename } userRecommendations(limit: $similarMoviesLimit) { items { movie { id title { russian english original __typename } countries { id name __typename } poster { avatarsUrl fallbackUrl __typename } genres { id name slug __typename } rating { expectation { value count isActive __typename } kinopoisk { value count isActive __typename } __typename } userData @include(if: $withUserData) { voting { value __typename } __typename } viewOption { buttonText isAvailableOnline: isWatchable(filter: {anyDevice: false, anyRegion: false}) purchasabilityStatus contentPackageToBuy { billingFeatureName __typename } type posterWithRightholderLogo __typename } ... on Film { productionYear __typename } ... on Video { productionYear __typename } ... on TvSeries { releaseYears { start end __typename } __typename } ... on TvShow { releaseYears { start end __typename } __typename } ... on MiniSeries { releaseYears { start end __typename } __typename } __typename } types __typename } total __typename } __typename } } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				console.log('response', response)
+				const data = (response as any)?.data
+
+				return data?.film?.userRecommendations
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
 		})
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } = kinopoiskApi
