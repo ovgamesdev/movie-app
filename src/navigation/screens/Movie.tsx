@@ -433,28 +433,28 @@ export const Movie = ({ navigation, route }: Props) => {
 								)}
 
 								{data.boxOffice.budget && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Бюджет</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.budget.currency.symbol + data.boxOffice.budget.amount.toLocaleString()} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.boxOffice.usaBox && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в США</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.usaBox.currency.symbol + data.boxOffice.usaBox.amount.toLocaleString()} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.boxOffice.worldBox && data.boxOffice.usaBox && data.boxOffice.worldBox.amount !== data.boxOffice.usaBox.amount && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в мире</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`+ ${data.boxOffice.usaBox.currency.symbol}${(data.boxOffice.worldBox.amount - data.boxOffice.usaBox.amount).toLocaleString()} = ${data.boxOffice.worldBox.currency.symbol}${data.boxOffice.worldBox.amount.toLocaleString()}`} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.__typename === 'Film' && data.audience.total > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Зрители</Text>
 										<ScrollView horizontal style={{ flex: 1, paddingLeft: 5 }}>
 											{data.audience.items.map((it, i) => (
@@ -467,50 +467,50 @@ export const Movie = ({ navigation, route }: Props) => {
 												</View>
 											))}
 										</ScrollView>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.boxOffice.rusBox && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в России</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.rusBox.currency.symbol + data.boxOffice.rusBox.amount.toLocaleString()} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.distribution.rusRelease.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в России</Text>
 										<View style={{ flex: 1, flexDirection: 'row' }}>
 											<Button padding={0} transparent focusable={false} textColor={colors.text200} text={data.distribution.rusRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')).join(' ') + data.distribution.rusRelease.items.map(it => it.companies.map(campania => `, «${campania.displayName}»`).join('')).join(' ')} />
 											{'releaseOptions' in data && data.releaseOptions.isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
 											{'releaseOptions' in data && data.releaseOptions.is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
 										</View>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.worldPremiere && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в мире</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={new Date(data.worldPremiere.incompleteDate.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.distribution.digitalRelease.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Цифровой релиз</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.digitalRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + ' ').join(' ') + data.distribution.digitalRelease.items.map(it => it.companies.map(it => `, «${it.displayName}»`)).join(' ')} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.distribution.reRelease.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Ре-релиз (РФ)</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.reRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + ' ').join(' ') + data.distribution.reRelease.items.map(it => it.companies.map(it => `, «${it.displayName}»`)).join(' ')} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.releases.find(it => it.type === 'DVD') && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Релиз на DVD</Text>
 										<Button
 											padding={0}
@@ -526,11 +526,11 @@ export const Movie = ({ navigation, route }: Props) => {
 													.join(' ')
 											}
 										/>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.releases.find(it => it.type === 'BLURAY') && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Релиз на Blu-ray</Text>
 										<Button
 											padding={0}
@@ -546,36 +546,36 @@ export const Movie = ({ navigation, route }: Props) => {
 													.join(' ')
 											}
 										/>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.restriction.age && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Возраст</Text>
 										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 5 }}>
 											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
 												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{data.restriction.age.replace('age', '')}+</Text>
 											</View>
 										</View>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.restriction.mpaa && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Рейтинг MPAA</Text>
 										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 5 }}>
 											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
 												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{ratingMPAA(data.restriction.mpaa).value}</Text>
 											</View>
 										</View>
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{(data.__typename === 'TvSeries' ? !!data.seriesDuration : !!data.duration) && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия(${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
-									</TVFocusGuideView>
+									</View>
 								)}
 
 								{data.sequelsPrequels.total > 0 && (
@@ -620,45 +620,47 @@ export const Movie = ({ navigation, route }: Props) => {
 							</View>
 
 							<View style={{ borderColor: colors.bg300, borderBottomWidth: 1, marginBottom: 40, flexDirection: 'row' }}>
-								<Button focusable={false} transparent text='Обзор' />
+								<Button transparent text='Обзор' />
 							</View>
 							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
 
-							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {data.__typename === 'TvSeries' ? 'сериала' : 'фильма'}</Text>
-							<View style={{ flexDirection: 'row' }}>
-								<RatingText />
-								<Text250 />
-							</View>
-
-							{data.rating.kinopoisk?.value === null && data.rating.kinopoisk.isActive && (
-								<View>
-									<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
-									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
-										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
-											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
-										</Text>
-									)}
-									<Text style={{ fontSize: 13, color: colors.text200 }}>Недостаточно оценок, рейтинг формируется</Text>
-								</View>
-							)}
-
-							{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.kinopoisk.value > 0 && (
+							<View focusable accessible>
+								<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {data.__typename === 'TvSeries' ? 'сериала' : 'фильма'}</Text>
 								<View style={{ flexDirection: 'row' }}>
-									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>{data.rating.kinopoisk.count.toLocaleString()} оценок</Text>
-									{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
-										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
-											<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
-										</Text>
-									)}
+									<RatingText />
+									<Text250 />
 								</View>
-							)}
 
-							{data.rating.expectation?.value != null && data.rating.expectation.isActive && data.rating.expectation.value > 0 && (
-								<View>
-									<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>Рейтинг ожидания</Text>
-									<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>{data.rating.expectation.count.toLocaleString()} ждут премьеры</Text>
-								</View>
-							)}
+								{data.rating.kinopoisk?.value === null && data.rating.kinopoisk.isActive && (
+									<View>
+										<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
+										{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
+											<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
+												<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
+											</Text>
+										)}
+										<Text style={{ fontSize: 13, color: colors.text200 }}>Недостаточно оценок, рейтинг формируется</Text>
+									</View>
+								)}
+
+								{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.kinopoisk.value > 0 && (
+									<View style={{ flexDirection: 'row' }}>
+										<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>{data.rating.kinopoisk.count.toLocaleString()} оценок</Text>
+										{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
+											<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
+												<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
+											</Text>
+										)}
+									</View>
+								)}
+
+								{data.rating.expectation?.value != null && data.rating.expectation.isActive && data.rating.expectation.value > 0 && (
+									<View>
+										<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>Рейтинг ожидания</Text>
+										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>{data.rating.expectation.count.toLocaleString()} ждут премьеры</Text>
+									</View>
+								)}
+							</View>
 
 							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
 

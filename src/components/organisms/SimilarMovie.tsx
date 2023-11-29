@@ -38,7 +38,6 @@ export const SimilarMovie = ({ id, type }: Props) => {
 					data={data.items}
 					horizontal
 					showsHorizontalScrollIndicator={!false}
-					contentContainerStyle={{ marginHorizontal: -10 }}
 					renderItem={({ item: { movie } }) => {
 						const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
 						const poster = movie.poster ? `https:${movie.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
