@@ -4,7 +4,7 @@ import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@i
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { declineSeasons, formatDuration, getRatingColor, ratingMPAA } from '@utils'
-import { Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
@@ -38,7 +38,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	console.log('data:', data)
 
 	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
-		const poster = `https:${data.poster.avatarsUrl}/300x450`
+		const poster = data.poster ? `https:${data.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
 
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
@@ -223,7 +223,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
 									<ProductionStatusText />
-									{data.title.russian ?? data.title.localized ?? data.title.original} <Text>{data.__typename === 'Film' ? `(${data.productionYear})` : `(сериал ${data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})`}</Text>
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{data.__typename === 'Film' ? `(${data.productionYear})` : `(сериал ${data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})`}</Text>
 								</Text>
 
 								<Text style={{ color: colors.text200, fontSize: 18 }}>
@@ -445,10 +445,10 @@ export const Movie = ({ navigation, route }: Props) => {
 									</TVFocusGuideView>
 								)}
 
-								{data.boxOffice.worldBox && (
+								{data.boxOffice.worldBox && data.boxOffice.usaBox && data.boxOffice.worldBox.amount !== data.boxOffice.usaBox.amount && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в мире</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={(data.boxOffice.usaBox ? `+ ${data.boxOffice.usaBox.currency.symbol}${(data.boxOffice.worldBox.amount - data.boxOffice.usaBox.amount).toLocaleString()} = ` : '') + data.boxOffice.worldBox.currency.symbol + data.boxOffice.worldBox.amount.toLocaleString()} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`+ ${data.boxOffice.usaBox.currency.symbol}${(data.boxOffice.worldBox.amount - data.boxOffice.usaBox.amount).toLocaleString()} = ${data.boxOffice.worldBox.currency.symbol}${data.boxOffice.worldBox.amount.toLocaleString()}`} />
 									</TVFocusGuideView>
 								)}
 
@@ -575,6 +575,46 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия(${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
 									</TVFocusGuideView>
+								)}
+
+								{data.sequelsPrequels.total > 0 && (
+									<View style={{ marginTop: 40 }}>
+										<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Сиквелы и приквелы</Text>
+										<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
+											<FlatList
+												keyExtractor={data => `sequels_prequels_item_${data.movie.id}`}
+												data={data.sequelsPrequels.items}
+												horizontal
+												showsHorizontalScrollIndicator={!false}
+												contentContainerStyle={{ marginHorizontal: -10 }}
+												renderItem={({ item: { movie } }) => {
+													const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
+													const poster = movie.poster ? `https:${movie.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
+
+													return (
+														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })}>
+															<ImageBackground source={{ uri: poster }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}>
+																{rating && (
+																	<View style={{ position: 'absolute', top: 6, left: 6 }}>
+																		<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
+																	</View>
+																)}
+															</ImageBackground>
+
+															<View style={{ paddingTop: 5 }}>
+																<Text style={{ color: colors.text100, fontSize: 14 }} numberOfLines={2}>
+																	{movie.title.russian ?? movie.title.original ?? movie.title.english}
+																</Text>
+																<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
+																	{movie.__typename === 'TvSeries' ? movie.releaseYears[0]?.start : movie.productionYear}, {movie.genres[0]?.name}
+																</Text>
+															</View>
+														</Button>
+													)
+												}}
+											/>
+										</TVFocusGuideView>
+									</View>
 								)}
 							</View>
 

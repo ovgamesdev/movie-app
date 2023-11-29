@@ -276,7 +276,7 @@ interface IMovieBaseInfo {
 	positiveCriticReviews: {
 		total: number
 	}
-	poster: { avatarsUrl: string; fallbackUrl: string | null }
+	poster: Poster | null
 	posters: {
 		total: number
 	}
@@ -331,7 +331,7 @@ interface IMovieBaseInfo {
 		total: number
 	}
 	sequelsPrequels: {
-		items: []
+		items: { movie: SequelsPrequelsMovie; relationType: string }[]
 		limit: number
 		offset: number
 		total: number
@@ -592,4 +592,17 @@ interface RatingValue {
 	count: number
 	isActive: boolean
 	value: number | null
+}
+
+interface SequelsPrequelsMovie extends Pick<IMovieBaseInfo, '__typename' | 'countries' | 'genres' | 'id' | 'poster' | 'releaseYears' | 'productionYear' | 'userData' | 'viewOption'> {
+	rating: {
+		expectation: RatingValue | null
+		kinopoisk: RatingValue | null
+	}
+	title: {
+		english: string | null
+		// localized: string | null
+		original: string | null
+		russian: string | null
+	}
 }
