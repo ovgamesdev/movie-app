@@ -1,6 +1,7 @@
 export * from './Home'
 export * from './Movie'
 export * from './MovieListSlug'
+export * from './Person'
 export * from './Search'
 export * from './Settings'
 export * from './Watch'

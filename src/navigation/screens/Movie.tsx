@@ -28,10 +28,18 @@ export const Movie = ({ navigation, route }: Props) => {
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm || dataTvSeries
 	const isFetching = isFetchingFilm ?? isFetchingTvSeries
 
-	if (isFetching || !data) {
+	if (isFetching) {
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 				<ActivityIndicator size='large' />
+			</View>
+		)
+	}
+
+	if (!data) {
+		return (
+			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+				<Text>Not found</Text>
 			</View>
 		)
 	}
@@ -338,7 +346,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>В главных ролях</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.actors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -349,7 +357,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Роли дублировали</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.voiceOverActors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -360,7 +368,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Режиссер</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.directors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -371,7 +379,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сценарий</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.writers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -382,7 +390,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Продюсер</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.producers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -393,7 +401,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Оператор</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.operators.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -404,7 +412,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Композитор</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.composers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -415,7 +423,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Художник</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.designers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -426,7 +434,7 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Монтаж</Text>
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.filmEditors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent />
+												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
 											))}
 										</ScrollView>
 									</TVFocusGuideView>
@@ -587,7 +595,6 @@ export const Movie = ({ navigation, route }: Props) => {
 												data={data.sequelsPrequels.items}
 												horizontal
 												showsHorizontalScrollIndicator={!false}
-												contentContainerStyle={{ marginHorizontal: -10 }}
 												renderItem={({ item: { movie } }) => {
 													const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
 													const poster = movie.poster ? `https:${movie.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'

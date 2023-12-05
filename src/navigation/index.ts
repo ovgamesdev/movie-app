@@ -6,6 +6,7 @@ export * from './TabNavigator'
 export type RootStackParamList = {
 	Home: undefined
 	Movie: { data: { id: number; type: 'TvSeries' | 'Film' } }
+	Person: { data: { id: number } }
 	Watch: { data: { id: number } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 }

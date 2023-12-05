@@ -645,18 +645,18 @@ interface SequelsPrequelsMovie extends Pick<IMovieBaseInfo, '__typename' | 'coun
 
 export interface IPersonBaseInfoResults {
 	age: number
-	bestFilms: { movie: PersonBestMovie }[]
-	bestSeries: { movie: PersonBestMovie }[]
-	birthPlace: string // TODO null
-	dateOfBirth: { accuracy: string; date: string } // TODO null
+	bestFilms: { items: { movie: PersonBestMovie }[] }
+	bestSeries: { items: { movie: PersonBestMovie }[] }
+	birthPlace: string | null
+	dateOfBirth: { accuracy: string; date: string } | null
 	dateOfDeath: { accuracy: string; date: string } | null
-	deathPlace: { accuracy: string; date: string } | null
+	deathPlace: string | null
 	factsCount: {
 		total: number
 	}
-	filmographyYears: { end: number; start: number }
-	gender: string // 'FEMALE' // TODO null
-	height: number // TODO null
+	filmographyYears: { end: number; start: number } | null
+	gender: string // 'FEMALE' | 'MALE' // TODO null
+	height: number | null
 	id: number
 	images: {
 		total: number
@@ -666,16 +666,15 @@ export interface IPersonBaseInfoResults {
 	}
 	mainGenres: Genre[]
 	marriages: {
-		// TODO typed any
-		children: any
+		children: number
 		spouse: {
-			id: any
-			name: any
-			originalName: any
-			gender: any
-			published: any
+			gender: string
+			id: number
+			name: string
+			originalName: string
+			published: boolean
 		}
-		status: any
+		status: string // 'ANNULMENT' | 'DIVORCE' | 'OK | 'SPOUSE_DEATH'
 	}[]
 	mediaPostsCount: {
 		total: number
@@ -683,7 +682,7 @@ export interface IPersonBaseInfoResults {
 	movieCount: {
 		total: number
 	}
-	name: string // TODO null
+	name: string | null
 	onlineFilmsCount: {
 		total: number
 	}
@@ -697,15 +696,13 @@ export interface IPersonBaseInfoResults {
 	}
 	poster: Poster | null
 	roles: {
-		// TODO null
 		items: { role: { slug: string; title: { russian: string } } }[]
 	}
 	userData: null // not used
 	zodiacSign: {
-		// TODO null
 		slug: string
 		title: { russian: string }
-	}
+	} | null
 }
 
 interface PersonAwardNominee {
@@ -723,7 +720,7 @@ interface Award {
 	year: number
 }
 
-interface PersonPopularMovie extends Pick<IGraphqlMovie, 'genres' | 'id' | 'isTicketsAvailable' | 'poster' | 'productionYear' | 'releaseYears' | 'viewOption' | '__typename'> {
+interface PersonPopularMovie extends Pick<IGraphqlMovie, '__typename' | 'genres' | 'id' | 'isTicketsAvailable' | 'poster' | 'productionYear' | 'releaseYears' | 'viewOption'> {
 	rating: {
 		expectation: RatingValue | null
 		kinopoisk: RatingValue | null
@@ -734,7 +731,7 @@ interface PersonPopularMovie extends Pick<IGraphqlMovie, 'genres' | 'id' | 'isTi
 	}
 }
 
-interface PersonBestMovie extends Pick<IGraphqlMovie, 'id' | '__typename'> {
+interface PersonBestMovie extends Pick<IGraphqlMovie, '__typename' | 'id'> {
 	title: {
 		russian: string | null
 	}

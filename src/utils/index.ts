@@ -62,3 +62,42 @@ export const declineSeasons = (count: number): string => {
 		return `${count} сезонов`
 	}
 }
+
+// PERSON
+
+export const declineAge = (years: number | undefined): string => {
+	if (years == undefined) return ''
+
+	const lastDigit = years % 10
+	const lastTwoDigits = years % 100
+
+	if (lastDigit === 1 && lastTwoDigits !== 11) {
+		return `${years} год`
+	} else if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwoDigits >= 12 && lastTwoDigits <= 14)) {
+		return `${years} года`
+	} else {
+		return `${years} лет`
+	}
+}
+
+export const getSpouseStatus = (status: string, gender: string): string => {
+	// 'ANNULMENT' | 'DIVORCE' | 'OK | 'SPOUSE_DEATH'
+
+	return status === 'DIVORCE' ? 'развод' : status === 'ANNULMENT' ? 'аннулирован' : status === 'SPOUSE_DEATH' && gender === 'FEMALE' ? 'умерла' : status === 'SPOUSE_DEATH' && gender === 'MALE' ? 'умер' : ''
+}
+
+export const declineChildren = (count: number): string => {
+	if (count === 0) return 'нет детей'
+
+	const cases = [2, 0, 1, 1, 1, 2]
+	const titles = ['ребенок', 'ребенка', 'детей']
+	const numericWords: { [key: number]: string } = { 1: 'один', 2: 'двое', 3: 'трое', 4: 'четверо', 5: 'пятеро', 6: 'шестеро', 7: 'семеро' }
+
+	if (count === 1) {
+		return `${numericWords[count]} ${titles[0]}`
+	} else if (count in numericWords) {
+		return `${numericWords[count]} ${titles[2]}`
+	}
+
+	return `${count} ${titles[count % 100 > 4 && count % 100 < 20 ? 2 : cases[Math.min(count % 10, 5)]]}`
+}

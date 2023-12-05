@@ -269,4 +269,4 @@ export const kinopoiskApi = createApi({
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery } = kinopoiskApi

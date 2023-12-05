@@ -27,7 +27,7 @@ export const SearchResults = ({ data }: Props) => {
 	}
 
 	const onPerson = (id: number) => {
-		// navigation.push('Person', { data: { id } })
+		navigation.push('Person', { data: { id } })
 	}
 
 	return (
