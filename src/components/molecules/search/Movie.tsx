@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
-import { getRatingColor } from '@utils'
+import { getRatingColor, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Image, Text, View } from 'react-native'
 import { IGraphqlSuggestMovie } from 'src/store/kinopoisk/kinopoisk.types'
@@ -12,10 +12,11 @@ type Props = {
 
 export const Movie = ({ item, onPress }: Props) => {
 	const { colors } = useTheme()
+	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 	return (
 		<Button onPress={() => onPress({ id: item.id, type: item.__typename })} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${item.id}.jpg` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			<Image source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.title.russian ?? item.title.original}

@@ -1,6 +1,6 @@
 import { ActivityIndicator, Button } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
-import { getRatingColor } from '@utils'
+import { getRatingColor, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, ImageBackground, TVFocusGuideView, Text, View } from 'react-native'
 import { useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '../../store/kinopoisk/kinopoisk.api'
@@ -40,7 +40,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 					showsHorizontalScrollIndicator={!false}
 					renderItem={({ item: { movie } }) => {
 						const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
-						const poster = movie.poster ? `https:${movie.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
+						const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 						return (
 							<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })}>

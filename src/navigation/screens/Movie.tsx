@@ -4,7 +4,7 @@ import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { declineSeasons, formatDuration, getRatingColor, ratingMPAA } from '@utils'
+import { declineSeasons, formatDuration, getRatingColor, normalizeUrlWithNull, ratingMPAA } from '@utils'
 import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
@@ -26,7 +26,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' })
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm || dataTvSeries
-	const isFetching = isFetchingFilm ?? isFetchingTvSeries
+	const isFetching = isFetchingFilm || isFetchingTvSeries
 
 	if (isFetching) {
 		return (
@@ -47,7 +47,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	console.log('data:', data)
 
 	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
-		const poster = data.poster ? `https:${data.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
+		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
@@ -62,8 +62,7 @@ export const Movie = ({ navigation, route }: Props) => {
 		if (!data.mainTrailer) {
 			return null
 		}
-
-		const poster = `https:${data.mainTrailer.preview.avatarsUrl}/600x380`
+		const poster = normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
 
 		return (
 			<Button padding={0} transparent style={{ margin: -4 }}>
@@ -84,7 +83,7 @@ export const Movie = ({ navigation, route }: Props) => {
 			return null
 		}
 
-		const poster = `https:${data.cover.image.avatarsUrl}/1344x756`
+		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/1344x756' })
 
 		return (
 			<View {...props}>
@@ -597,7 +596,7 @@ export const Movie = ({ navigation, route }: Props) => {
 												showsHorizontalScrollIndicator={!false}
 												renderItem={({ item: { movie } }) => {
 													const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
-													const poster = movie.poster ? `https:${movie.poster.avatarsUrl}/300x450` : 'https://via.placeholder.com/300x450'
+													const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 													return (
 														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })}>

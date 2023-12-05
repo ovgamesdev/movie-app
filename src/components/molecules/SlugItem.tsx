@@ -1,5 +1,6 @@
 import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
+import { normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { ImageBackground, Text, View } from 'react-native'
 import { IGraphqlMovie } from 'src/store/kinopoisk/kinopoisk.types'
@@ -15,10 +16,11 @@ type Props = {
 
 export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }: Props) => {
 	const { colors } = useTheme()
+	const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 	return (
 		<Button onFocus={() => onFocus({ index })} onBlur={() => onBlur({ index })} onPress={() => onPress({ id: data.id, type: data.__typename })} hasTVPreferredFocus={hasTVPreferredFocus} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }}>
-			<ImageBackground source={{ uri: `https://st.kp.yandex.net/images/film_iphone/iphone360_${data.id}.jpg` }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}></ImageBackground>
+			<ImageBackground source={{ uri: poster }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}></ImageBackground>
 
 			<View style={{ paddingTop: 5 }}>
 				<Text style={{ color: colors.text100, fontSize: 14 }} numberOfLines={2}>

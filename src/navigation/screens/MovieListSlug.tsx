@@ -3,6 +3,7 @@ import { Pagination } from '@components/molecules'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { normalizeUrlWithNull } from '@utils'
 import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -86,7 +87,8 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	const CoverImage = () => {
 		if (data.cover) {
-			return <Image source={{ uri: `https:${data.cover.avatarsUrl}/384x384` }} style={{ width: 140, height: 140 }} />
+			const poster = normalizeUrlWithNull(data.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/384x384' })
+			return <Image source={{ uri: poster }} style={{ width: 140, height: 140 }} />
 		}
 		return <Skeleton style={{ width: 140, height: 140 }} />
 	}

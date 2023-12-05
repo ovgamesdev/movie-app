@@ -1,12 +1,4 @@
-export const mapValue = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number => {
-	const fromRange = fromMax - fromMin
-	const toRange = toMax - toMin
-
-	const scaledValue = (value - fromMin) / fromRange
-	const mappedValue = scaledValue * toRange + toMin
-
-	return mappedValue
-}
+// MOVIE
 
 export const getRatingColor = (rating: number): string => {
 	if (rating >= 7) {
@@ -100,4 +92,34 @@ export const declineChildren = (count: number): string => {
 	}
 
 	return `${count} ${titles[count % 100 > 4 && count % 100 < 20 ? 2 : cases[Math.min(count % 10, 5)]]}`
+}
+
+// OTHER
+
+export const mapValue = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number => {
+	const fromRange = fromMax - fromMin
+	const toRange = toMax - toMin
+
+	const scaledValue = (value - fromMin) / fromRange
+	const mappedValue = scaledValue * toRange + toMin
+
+	return mappedValue
+}
+
+export const normalizeUrlWithNull = (url: string | null | undefined, other: { isNull: string; append?: string }): string => {
+	if (!url) {
+		return other.isNull + (other.append ? other.append : '')
+	} else if (url.startsWith('//')) {
+		return `http:${url}` + (other.append ? other.append : '')
+	}
+
+	return url
+}
+
+export const normalizeUrl = (url: string): string => {
+	if (url.startsWith('//')) {
+		return `http:${url}`
+	}
+
+	return url
 }

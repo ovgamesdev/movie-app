@@ -1,5 +1,6 @@
 import { Button } from '@components/atoms'
 import { useTheme } from '@hooks'
+import { normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Image, Text, View } from 'react-native'
 import { IGraphqlSuggestMovieList } from 'src/store/kinopoisk/kinopoisk.types'
@@ -12,6 +13,7 @@ type Props = {
 
 export const MovieList = ({ item, onPress, onFilter }: Props) => {
 	const { colors } = useTheme()
+	const cover = normalizeUrlWithNull(item.cover?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/32x32' })
 
 	const isFilter = item.url.includes('--') || item.url.includes('?ss_')
 	const slug = item.url.split('/')[item.url.split('/').length - (item.url.endsWith('/') ? 2 : 1)]
@@ -31,7 +33,7 @@ export const MovieList = ({ item, onPress, onFilter }: Props) => {
 
 	return (
 		<Button onPress={() => (isFilter ? onFilter([...arrayFilters, ...search]) : onPress(slug))} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: `https:${item.cover.avatarsUrl}/32x32` }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			<Image source={{ uri: cover }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.name}
