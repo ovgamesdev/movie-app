@@ -126,7 +126,12 @@ export const Person = ({ navigation, route }: Props) => {
 											{data.marriages.map((it, i) => {
 												const spouseStatus = getSpouseStatus(it.status, it.spouse.gender)
 
-												return <Button key={i} padding={0} transparent focusable={it.spouse.published} disabled={!it.spouse.published} textColor={it.spouse.published ? undefined : colors.text200} text={(it.spouse.name ?? it.spouse.originalName) + (spouseStatus ? ` (${spouseStatus})` : '') + (it.children !== 0 ? ` ${declineChildren(it.children)}` : '')} onPress={() => navigation.push('Person', { data: { id: it.spouse.id } })} />
+												return (
+													<Button key={i} padding={0} transparent flexDirection='row' focusable={it.spouse.published} disabled={!it.spouse.published} onPress={() => navigation.push('Person', { data: { id: it.spouse.id } })}>
+														<Text style={{ color: it.spouse.published ? colors.text100 : colors.text200 }}>{(it.spouse.name ?? it.spouse.originalName) + (spouseStatus ? ` (${spouseStatus})` : '')}</Text>
+														{it.children === 0 ? null : <Text style={{ marginLeft: 5 }}>{declineChildren(it.children)}</Text>}
+													</Button>
+												)
 											})}
 										</View>
 									</View>
