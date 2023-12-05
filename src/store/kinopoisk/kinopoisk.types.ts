@@ -15,7 +15,7 @@ export interface IGraphqlMovie {
 	title: Title
 	poster: Poster | null
 	countries: Country[]
-	genres: Country[]
+	genres: Country[] // TODO not Country { name: string }
 	cast: Cast
 	directors: Cast
 	duration?: number
@@ -637,6 +637,105 @@ interface SequelsPrequelsMovie extends Pick<IMovieBaseInfo, '__typename' | 'coun
 		english: string | null
 		// localized: string | null
 		original: string | null
+		russian: string | null
+	}
+}
+
+// PersonBaseInfo
+
+export interface IPersonBaseInfoResults {
+	age: number
+	bestFilms: { movie: PersonBestMovie }[]
+	bestSeries: { movie: PersonBestMovie }[]
+	birthPlace: string // TODO null
+	dateOfBirth: { accuracy: string; date: string } // TODO null
+	dateOfDeath: { accuracy: string; date: string } | null
+	deathPlace: { accuracy: string; date: string } | null
+	factsCount: {
+		total: number
+	}
+	filmographyYears: { end: number; start: number }
+	gender: string // 'FEMALE' // TODO null
+	height: number // TODO null
+	id: number
+	images: {
+		total: number
+	}
+	mainAwardWinNominationsTotal: {
+		total: number
+	}
+	mainGenres: Genre[]
+	marriages: {
+		// TODO typed any
+		children: any
+		spouse: {
+			id: any
+			name: any
+			originalName: any
+			gender: any
+			published: any
+		}
+		status: any
+	}[]
+	mediaPostsCount: {
+		total: number
+	}
+	movieCount: {
+		total: number
+	}
+	name: string // TODO null
+	onlineFilmsCount: {
+		total: number
+	}
+	originalName: string // TODO null
+	personMainAward: {
+		items: PersonAwardNominee[]
+		total: number
+	}
+	popularMovies: {
+		items: { movie: PersonPopularMovie }[]
+	}
+	poster: Poster | null
+	roles: {
+		// TODO null
+		items: { role: { slug: string; title: { russian: string } } }[]
+	}
+	userData: null // not used
+	zodiacSign: {
+		// TODO null
+		slug: string
+		title: { russian: string }
+	}
+}
+
+interface PersonAwardNominee {
+	movie: Pick<IGraphqlMovie, 'id' | 'title'>
+	nomination: {
+		award: Award
+		title: string
+	}
+	win: boolean
+}
+
+interface Award {
+	slug: string
+	title: string
+	year: number
+}
+
+interface PersonPopularMovie extends Pick<IGraphqlMovie, 'genres' | 'id' | 'isTicketsAvailable' | 'poster' | 'productionYear' | 'releaseYears' | 'viewOption' | '__typename'> {
+	rating: {
+		expectation: RatingValue | null
+		kinopoisk: RatingValue | null
+	}
+	title: {
+		original: string | null
+		russian: string | null
+	}
+}
+
+interface PersonBestMovie extends Pick<IGraphqlMovie, 'id' | '__typename'> {
+	title: {
 		russian: string | null
 	}
 }
