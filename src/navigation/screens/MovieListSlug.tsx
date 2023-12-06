@@ -1,12 +1,14 @@
 import { Button, DropDown } from '@components/atoms'
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { normalizeUrlWithNull } from '@utils'
+import { getRatingColor, normalizeUrlWithNull } from '@utils'
 import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, Image, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
+import { FlatList, Image, ImageBackground, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { IListBySlugResultsDocs } from '../../store/kinopoisk/kinopoisk.types'
 
@@ -14,6 +16,28 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 
 const skeletonData: Skeleton[] = Array.from({ length: 50 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
+
+const Text250 = ({ top, rating }: { top: number; rating: string }) => {
+	return (
+		<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+			<KpTop250LIcon width={10} height={21} viewBox='0 0 10 24' />
+			<View style={{ marginHorizontal: 7 }}>
+				<Svg height={21} width={24}>
+					<DefsSvg>
+						<LinearGradientSvg id='gradient' x1='0%' y1='0%' x2='25%' y2='125%'>
+							<StopSvg offset='16.44%' stopColor='#ffd25e' />
+							<StopSvg offset='63.42%' stopColor='#b59646' />
+						</LinearGradientSvg>
+					</DefsSvg>
+					<TextSvg x={12.5} y={17} textAnchor='middle' fill='url(#gradient)' fontSize={18} fontWeight='600'>
+						{rating}
+					</TextSvg>
+				</Svg>
+			</View>
+			<KpTop250RIcon width={10} height={21} viewBox='0 0 10 24' />
+		</View>
+	)
+}
 
 export const MovieListSlug = ({ navigation, route }: Props) => {
 	const { slug, filters } = route.params.data
@@ -62,27 +86,102 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	// if (top250) { gold rating }
-
 	const renderItem: ListRenderItem<Skeleton | IListBySlugResultsDocs> = ({ item, index }) => {
 		if (item.__typename === 'Skeleton') {
-			return <Button style={{ height: 100 }} focusable={false} />
+			return (
+				<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24}>
+					<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 92, marginLeft: 20, flex: 1 }}>
+						<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: colors.bg200 }} />
+						<View style={{ width: '45%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+						<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+					</View>
+				</Button>
+			)
 		}
 
-		if (item.__typename === 'PopularMovieListItem') {
-			// Популярные фильмы
-			return <Button style={{ height: 100 }} text={`${(page - 1) * 50 + (index + 1)}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
-		} else if (item.__typename === 'TopMovieListItem') {
-			// 250 лучших фильмов
-			return <Button style={{ height: 100 }} text={`${item.position}${item.positionDiff ? ' (' + item.positionDiff + ')' : ''} ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
-		} else if (item.__typename === 'BoxOfficeMovieListItem') {
-			// США: Самые кассовые фильмы в первый уик-энд проката
-			return <Button style={{ height: 100 }} text={`$${(item.boxOffice.amount / 1000000).toFixed(1)} млн ${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
-		} else {
-			// (item.__typename === 'MovieListItem')
+		const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
+		const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
+		const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
 
-			return <Button style={{ height: 100 }} text={`${item.movie.title.russian ?? item.movie.title.original}`} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
-		}
+		// Популярные фильмы
+		// 250 лучших фильмов
+		// США: Самые кассовые фильмы в первый уик-энд проката
+
+		return (
+			<Button animation='scale' transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
+				{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
+					orientation.landscape &&
+					(item.__typename === 'BoxOfficeMovieListItem' ? (
+						<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>{item.__typename === 'BoxOfficeMovieListItem' ? `$${(item.boxOffice.amount / 1000000).toFixed(1)} млн` : itemPosition}</Text>
+					) : (
+						<View style={{ alignItems: 'center' }}>
+							<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: colors.text100 }}>{itemPosition}</Text>
+							{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
+						</View>
+					))}
+				<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
+					<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 108, width: 72, aspectRatio: 667 / 1000 }}>
+						{orientation.portrait && rating && (
+							<View style={{ position: 'absolute', top: 6, left: 6 }}>
+								<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
+							</View>
+						)}
+					</ImageBackground>
+				</View>
+
+				<View style={{ marginLeft: 20, flex: 1 }}>
+					<View style={{ minHeight: 92 }}>
+						<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 5 }} numberOfLines={2}>
+							{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
+							{item.movie.title.russian ?? item.movie.title.original}
+						</Text>
+						<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
+							<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
+								{item.movie.title.russian && item.movie.title.original && (
+									<Text style={{ overflow: 'hidden', flexShrink: 1 }} numberOfLines={1}>
+										{item.movie.title.original}
+									</Text>
+								)}
+								<Text style={{ flexWrap: 'nowrap' }}>
+									{item.movie.title.russian && item.movie.title.original && ', '}
+									{[item.movie.__typename === 'TvSeries' ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+								</Text>
+							</View>
+						</View>
+
+						<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+							{[item.movie.countries?.[0]?.name, item.movie.genres?.[0]?.name].filter(it => !!it).join(' • ')}
+							{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name || item.movie.directors.items[0].person.originalName}`}
+						</Text>
+
+						{orientation.landscape && (
+							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+								{item.movie.cast.items.length > 0 &&
+									`В ролях: ${[
+										item.movie.cast.items
+											.slice(0, 2)
+											.map(it => it.person.name || it.person.originalName)
+											.filter(it => !!it)
+											.join(', ')
+									]}`}
+							</Text>
+						)}
+					</View>
+
+					{orientation.portrait && item.__typename === 'BoxOfficeMovieListItem' && <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 16, color: colors.text100 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>}
+				</View>
+
+				{orientation.landscape && ratingKinopoisk && (
+					<View style={{ marginRight: 15 }}>
+						<View style={{ flexDirection: 'row' }}>
+							{item.movie.top250 ? <Text250 top={item.movie.top250} rating={ratingKinopoisk.value} /> : <Text style={{ fontWeight: '600', fontSize: 18, lineHeight: 22, color: ratingKinopoisk.color }}>{ratingKinopoisk.value}</Text>}
+							<Text style={{ marginTop: 4, marginLeft: 5, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }}>{ratingKinopoisk.count.toLocaleString()}</Text>
+						</View>
+					</View>
+				)}
+			</Button>
+		)
 	}
 
 	const CoverImage = () => {
