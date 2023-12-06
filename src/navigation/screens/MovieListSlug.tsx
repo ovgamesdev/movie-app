@@ -139,11 +139,11 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 						<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
 							<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
 								{item.movie.title.russian && item.movie.title.original && (
-									<Text style={{ overflow: 'hidden', flexShrink: 1 }} numberOfLines={1}>
+									<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }} numberOfLines={1}>
 										{item.movie.title.original}
 									</Text>
 								)}
-								<Text style={{ flexWrap: 'nowrap' }}>
+								<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }}>
 									{item.movie.title.russian && item.movie.title.original && ', '}
 									{[item.movie.__typename === 'TvSeries' ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
 								</Text>
