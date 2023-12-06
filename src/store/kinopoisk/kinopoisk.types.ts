@@ -619,7 +619,7 @@ interface Genre {
 
 interface Release {
 	companies: { displayName: string; id: number; slug: string; slugId: number }[]
-	date: { accuracy: string; date: string }
+	date: { accuracy: string; date: string } | null
 }
 
 interface RatingValue {

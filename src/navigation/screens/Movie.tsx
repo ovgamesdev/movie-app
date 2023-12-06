@@ -488,7 +488,7 @@ export const Movie = ({ navigation, route }: Props) => {
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в России</Text>
 										<View style={{ flex: 1, flexDirection: 'row' }}>
-											<Button padding={0} transparent focusable={false} textColor={colors.text200} text={data.distribution.rusRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')).join(' ') + data.distribution.rusRelease.items.map(it => it.companies.map(campania => `, «${campania.displayName}»`).join('')).join(' ')} />
+											<Button padding={0} transparent focusable={false} textColor={colors.text200} text={[data.distribution.rusRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.rusRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
 											{'releaseOptions' in data && data.releaseOptions.isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
 											{'releaseOptions' in data && data.releaseOptions.is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
 										</View>
@@ -505,14 +505,14 @@ export const Movie = ({ navigation, route }: Props) => {
 								{data.distribution.digitalRelease.items.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Цифровой релиз</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.digitalRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + ' ').join(' ') + data.distribution.digitalRelease.items.map(it => it.companies.map(it => `, «${it.displayName}»`)).join(' ')} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.digitalRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.digitalRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
 									</View>
 								)}
 
 								{data.distribution.reRelease.items.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Ре-релиз (РФ)</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.reRelease.items.map(it => new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + ' ').join(' ') + data.distribution.reRelease.items.map(it => it.companies.map(it => `, «${it.displayName}»`)).join(' ')} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.reRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.reRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
 									</View>
 								)}
 
