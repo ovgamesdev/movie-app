@@ -581,7 +581,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								{(data.__typename === 'TvSeries' ? !!data.seriesDuration : !!data.duration) && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия(${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
 									</View>
 								)}
 

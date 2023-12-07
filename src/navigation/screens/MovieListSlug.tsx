@@ -243,7 +243,10 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 							{ label: 'По дате выхода', value: 'YEAR_DESC' },
 							{ label: 'По названию', value: 'TITLE_ASC' }
 						]}
-						onChange={setOrder}
+						onChange={it => {
+							setOrder(it)
+							setPage(1)
+						}}
 						value={order}
 					/>
 				</View>
