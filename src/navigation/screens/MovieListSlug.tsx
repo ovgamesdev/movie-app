@@ -5,7 +5,7 @@ import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { getRatingColor, normalizeUrlWithNull } from '@utils'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FlatList, Image, ImageBackground, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
@@ -86,103 +86,173 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	const renderItem: ListRenderItem<Skeleton | IListBySlugResultsDocs> = ({ item, index }) => {
-		if (item.__typename === 'Skeleton') {
+	const renderItem: ListRenderItem<Skeleton | IListBySlugResultsDocs> = useCallback(
+		({ item, index }) => {
+			if (item.__typename === 'Skeleton') {
+				return (
+					<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24}>
+						<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: colors.bg200 }} />
+						<View style={{ height: 92, marginLeft: 20, flex: 1 }}>
+							<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: colors.bg200 }} />
+							<View style={{ width: '45%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+							<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+						</View>
+					</Button>
+				)
+			}
+
+			const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
+			const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
+			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
+
+			// Популярные фильмы
+			// 250 лучших фильмов
+			// США: Самые кассовые фильмы в первый уик-энд проката
+
 			return (
-				<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24}>
-					<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: colors.bg200 }} />
-					<View style={{ height: 92, marginLeft: 20, flex: 1 }}>
-						<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: colors.bg200 }} />
-						<View style={{ width: '45%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
-						<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+				<Button animation='scale' transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
+					{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
+						orientation.landscape &&
+						(item.__typename === 'BoxOfficeMovieListItem' ? (
+							<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>{item.__typename === 'BoxOfficeMovieListItem' ? `$${(item.boxOffice.amount / 1000000).toFixed(1)} млн` : itemPosition}</Text>
+						) : (
+							<View style={{ alignItems: 'center' }}>
+								<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: colors.text100 }}>{itemPosition}</Text>
+								{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
+							</View>
+						))}
+					<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
+						<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 108, width: 72, aspectRatio: 667 / 1000 }}>
+							{orientation.portrait && rating && (
+								<View style={{ position: 'absolute', top: 6, left: 6 }}>
+									<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
+								</View>
+							)}
+						</ImageBackground>
 					</View>
+
+					<View style={{ marginLeft: 20, flex: 1 }}>
+						<View style={{ minHeight: 92 }}>
+							<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 5 }} numberOfLines={2}>
+								{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
+								{item.movie.title.russian ?? item.movie.title.original}
+							</Text>
+							<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
+								<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
+									{item.movie.title.russian && item.movie.title.original && (
+										<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }} numberOfLines={1}>
+											{item.movie.title.original}
+										</Text>
+									)}
+									<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }}>
+										{item.movie.title.russian && item.movie.title.original && ', '}
+										{[item.movie.__typename === 'TvSeries' ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+									</Text>
+								</View>
+							</View>
+
+							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+								{[item.movie.countries?.[0]?.name, item.movie.genres?.[0]?.name].filter(it => !!it).join(' • ')}
+								{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name || item.movie.directors.items[0].person.originalName}`}
+							</Text>
+
+							{orientation.landscape && (
+								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+									{item.movie.cast.items.length > 0 &&
+										`В ролях: ${[
+											item.movie.cast.items
+												.slice(0, 2)
+												.map(it => it.person.name || it.person.originalName)
+												.filter(it => !!it)
+												.join(', ')
+										]}`}
+								</Text>
+							)}
+						</View>
+
+						{orientation.portrait && item.__typename === 'BoxOfficeMovieListItem' && <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 16, color: colors.text100 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>}
+					</View>
+
+					{orientation.landscape && ratingKinopoisk && (
+						<View style={{ marginRight: 15 }}>
+							<View style={{ flexDirection: 'row' }}>
+								{item.movie.top250 ? <Text250 top={item.movie.top250} rating={ratingKinopoisk.value} /> : <Text style={{ fontWeight: '600', fontSize: 18, lineHeight: 22, color: ratingKinopoisk.color }}>{ratingKinopoisk.value}</Text>}
+								<Text style={{ marginTop: 4, marginLeft: 5, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }}>{ratingKinopoisk.count.toLocaleString()}</Text>
+							</View>
+						</View>
+					)}
 				</Button>
 			)
-		}
+		},
+		[orientation, colors, data.page]
+	)
 
-		const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
-		const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
-		const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
+	const keyExtractor = useCallback((item: Skeleton | IListBySlugResultsDocs) => `list_${slug}_item_${item.movie.id}`, [slug])
+	const getItemLayout = useCallback((_: unknown, index: number) => ({ length: 100, offset: 100 * index, index }), [])
+	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }), [isShowNetInfo, insets.bottom])
 
-		// Популярные фильмы
-		// 250 лучших фильмов
-		// США: Самые кассовые фильмы в первый уик-энд проката
+	const ListEmptyComponent = useCallback(() => {
+		if (isFetching) return null
 
 		return (
-			<Button animation='scale' transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
-				{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
-					orientation.landscape &&
-					(item.__typename === 'BoxOfficeMovieListItem' ? (
-						<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>{item.__typename === 'BoxOfficeMovieListItem' ? `$${(item.boxOffice.amount / 1000000).toFixed(1)} млн` : itemPosition}</Text>
-					) : (
-						<View style={{ alignItems: 'center' }}>
-							<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: colors.text100 }}>{itemPosition}</Text>
-							{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
-						</View>
-					))}
-				<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
-					<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 108, width: 72, aspectRatio: 667 / 1000 }}>
-						{orientation.portrait && rating && (
-							<View style={{ position: 'absolute', top: 6, left: 6 }}>
-								<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
-							</View>
-						)}
-					</ImageBackground>
+			<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
+				<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
+					<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
+					<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
 				</View>
+			</View>
+		)
+	}, [isFetching])
 
-				<View style={{ marginLeft: 20, flex: 1 }}>
-					<View style={{ minHeight: 92 }}>
-						<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 5 }} numberOfLines={2}>
-							{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
-							{item.movie.title.russian ?? item.movie.title.original}
-						</Text>
-						<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
-							<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
-								{item.movie.title.russian && item.movie.title.original && (
-									<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }} numberOfLines={1}>
-										{item.movie.title.original}
-									</Text>
-								)}
-								<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }}>
-									{item.movie.title.russian && item.movie.title.original && ', '}
-									{[item.movie.__typename === 'TvSeries' ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
-								</Text>
-							</View>
+	const ListFooterComponent = useCallback(() => {
+		// !isFetching ? null : (
+		// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
+		// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={colors.text200} style={{ padding: 10 }} />
+		// 	</View>
+		// )
+
+		return data != null && data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
+	}, [data.page, data.pages, orientation])
+
+	const ListHeaderComponent = useCallback(() => {
+		return (
+			<>
+				<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
+				{orientation.landscape ? (
+					<View style={{ flexDirection: 'row', padding: 10 }}>
+						<View style={{ flex: 1, paddingRight: 20 }}>
+							<NameText style={{ marginBottom: 20 }} />
+							<DescriptionText />
 						</View>
-
-						<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
-							{[item.movie.countries?.[0]?.name, item.movie.genres?.[0]?.name].filter(it => !!it).join(' • ')}
-							{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name || item.movie.directors.items[0].person.originalName}`}
-						</Text>
-
-						{orientation.landscape && (
-							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
-								{item.movie.cast.items.length > 0 &&
-									`В ролях: ${[
-										item.movie.cast.items
-											.slice(0, 2)
-											.map(it => it.person.name || it.person.originalName)
-											.filter(it => !!it)
-											.join(', ')
-									]}`}
-							</Text>
-						)}
+						<CoverImage />
 					</View>
-
-					{orientation.portrait && item.__typename === 'BoxOfficeMovieListItem' && <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 16, color: colors.text100 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>}
-				</View>
-
-				{orientation.landscape && ratingKinopoisk && (
-					<View style={{ marginRight: 15 }}>
-						<View style={{ flexDirection: 'row' }}>
-							{item.movie.top250 ? <Text250 top={item.movie.top250} rating={ratingKinopoisk.value} /> : <Text style={{ fontWeight: '600', fontSize: 18, lineHeight: 22, color: ratingKinopoisk.color }}>{ratingKinopoisk.value}</Text>}
-							<Text style={{ marginTop: 4, marginLeft: 5, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }}>{ratingKinopoisk.count.toLocaleString()}</Text>
-						</View>
+				) : (
+					<View style={{ padding: 10, alignItems: 'center' }}>
+						<CoverImage />
+						<NameText style={{ marginBottom: 15, marginTop: 20, textAlign: 'center' }} />
+						<DescriptionText />
 					</View>
 				)}
-			</Button>
+				<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
+					<View>{/* TODO add filters */}</View>
+					<DropDown
+						items={[
+							{ label: 'По порядку', value: 'POSITION_ASC' },
+							{ label: 'По количеству оценок', value: 'VOTES_COUNT_DESC' },
+							{ label: 'По рейтингу', value: 'KP_RATING_DESC' },
+							{ label: 'По дате выхода', value: 'YEAR_DESC' },
+							{ label: 'По названию', value: 'TITLE_ASC' }
+						]}
+						onChange={setOrder}
+						value={order}
+					/>
+				</View>
+			</>
 		)
-	}
+	}, [navigation, orientation, order])
+
+	const ListFooterComponentStyle = useMemo(() => ({ flexGrow: 1 }), [])
+	const ListHeaderComponentStyle = useMemo(() => ({ marginTop: insets.top, marginBottom: 5 }), [insets.top])
 
 	const CoverImage = () => {
 		if (data.cover) {
@@ -224,68 +294,19 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<FlatList
-				keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
-				getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
+				//
+				keyExtractor={keyExtractor}
+				getItemLayout={getItemLayout}
 				ref={ref}
 				data={isFetching ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
-				contentContainerStyle={{ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }}
+				contentContainerStyle={contentContainerStyle}
 				renderItem={renderItem}
-				ListEmptyComponent={
-					isFetching ? null : (
-						<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
-							<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
-								<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
-								<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
-							</View>
-						</View>
-					)
-				}
-				ListFooterComponent={
-					// !isFetching ? null : (
-					// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-					// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={colors.text200} style={{ padding: 10 }} />
-					// 	</View>
-					// )
-
-					data != null && data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
-				}
-				ListFooterComponentStyle={{ flexGrow: 1 }}
-				ListHeaderComponent={
-					<>
-						<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
-						{orientation.landscape ? (
-							<View style={{ flexDirection: 'row', padding: 10 }}>
-								<View style={{ flex: 1, paddingRight: 20 }}>
-									<NameText style={{ marginBottom: 20 }} />
-									<DescriptionText />
-								</View>
-								<CoverImage />
-							</View>
-						) : (
-							<View style={{ padding: 10, alignItems: 'center' }}>
-								<CoverImage />
-								<NameText style={{ marginBottom: 15, marginTop: 20, textAlign: 'center' }} />
-								<DescriptionText />
-							</View>
-						)}
-						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 }}>
-							<View>{/* TODO add filters */}</View>
-							<DropDown
-								items={[
-									{ label: 'По порядку', value: 'POSITION_ASC' },
-									{ label: 'По количеству оценок', value: 'VOTES_COUNT_DESC' },
-									{ label: 'По рейтингу', value: 'KP_RATING_DESC' },
-									{ label: 'По дате выхода', value: 'YEAR_DESC' },
-									{ label: 'По названию', value: 'TITLE_ASC' }
-								]}
-								onChange={setOrder}
-								value={order}
-							/>
-						</View>
-					</>
-				}
-				ListHeaderComponentStyle={{ marginTop: insets.top, marginBottom: 5 }}
+				ListEmptyComponent={ListEmptyComponent}
+				ListFooterComponent={ListFooterComponent}
+				ListFooterComponentStyle={ListFooterComponentStyle}
+				ListHeaderComponent={ListHeaderComponent}
+				ListHeaderComponentStyle={ListHeaderComponentStyle}
 			/>
 		</TVFocusGuideView>
 	)
