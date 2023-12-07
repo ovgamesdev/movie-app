@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo } from './kinopoisk.types'
+import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
@@ -265,8 +265,36 @@ export const kinopoiskApi = createApi({
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
+		}),
+		getTvSeriesEpisodes: build.query<ITvSeriesEpisodesResults, { tvSeriesId: number }>({
+			query: ({ tvSeriesId }) => ({
+				url: '?operationName=TvSeriesEpisodes',
+				method: 'post',
+				body: {
+					operationName: 'TvSeriesEpisodes',
+					variables: {
+						episodesLimit: 5,
+						tvSeriesId
+					},
+					query: 'query TvSeriesEpisodes($tvSeriesId: Long!, $episodesLimit: Int = 10) { tvSeries(id: $tvSeriesId) { id episodesCount futureEpisodes: episodes(released: false, limit: $episodesLimit, orderBy: SEASON_NUMBER_EPISODE_NUMBER_ASC) { items { id number releaseDate { accuracy date __typename } season { number __typename } title { russian original __typename } __typename } __typename } releasedEpisodes: episodes(released: true, limit: $episodesLimit, orderBy: SEASON_NUMBER_EPISODE_NUMBER_DESC) { items { id number releaseDate { accuracy date __typename } season { number __typename } title { russian original __typename } __typename } __typename } __typename } } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				console.log('response', response)
+				const data = (response as any)?.data
+
+				return data?.tvSeries
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
 		})
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery } = kinopoiskApi

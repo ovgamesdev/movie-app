@@ -1,5 +1,5 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { SimilarMovie } from '@components/organisms'
+import { Episodes, SimilarMovie } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
@@ -584,6 +584,8 @@ export const Movie = ({ navigation, route }: Props) => {
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
 									</View>
 								)}
+
+								{data.__typename === 'TvSeries' && data.seasons.total > 0 && <Episodes id={data.id} />}
 
 								{data.sequelsPrequels.total > 0 && (
 									<View style={{ marginTop: 40 }}>

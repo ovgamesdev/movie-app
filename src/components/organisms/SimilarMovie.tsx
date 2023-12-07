@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button } from '@components/atoms'
+import { Button } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
 import { getRatingColor, normalizeUrlWithNull } from '@utils'
 import React from 'react'
@@ -21,13 +21,28 @@ export const SimilarMovie = ({ id, type }: Props) => {
 	const data: ISimilarMovieResults | undefined = dataFilm || dataTvSeries
 	const isFetching = isFetchingFilm ?? isFetchingTvSeries
 
-	if (isFetching || !data) {
+	if (isFetching) {
 		return (
-			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-				<ActivityIndicator size='large' />
+			<View style={{ marginTop: 40, marginBottom: 0 }}>
+				<View style={{ width: '80%', height: 22, marginTop: 5, marginBottom: 14, backgroundColor: colors.bg200 }} />
+				<FlatList
+					data={new Array(10)}
+					horizontal
+					renderItem={() => {
+						return (
+							<View style={{ width: 110, height: 215.5 - 2.666, padding: 5 }}>
+								<View style={{ backgroundColor: colors.bg200, height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000, borderRadius: 6 }} />
+								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: colors.bg200 }} />
+								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: colors.bg200 }} />
+							</View>
+						)
+					}}
+				/>
 			</View>
 		)
 	}
+
+	if (!data) return null
 
 	return (
 		<View style={{ marginTop: 40 }}>

@@ -736,3 +736,29 @@ interface PersonBestMovie extends Pick<IGraphqlMovie, '__typename' | 'id'> {
 		russian: string | null
 	}
 }
+
+// EPISODES
+
+export interface ITvSeriesEpisodesResults {
+	episodesCount: number
+	futureEpisodes: {
+		items: Episode[]
+	}
+	id: number
+	releasedEpisodes: {
+		items: Episode[]
+	}
+}
+
+interface Episode {
+	id: number
+	number: number
+	releaseDate: { accuracy: string; date: string }
+	season: {
+		number: number
+	}
+	title: {
+		original: string | null
+		russian: string | null
+	}
+}
