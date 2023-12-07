@@ -50,8 +50,10 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 			const screen = Dimensions.get('window')
 			const padding = 5
 
-			// TODO check is quit of screen
+			if ([x, y, width, height, pageX, pageY].find(it => it === undefined)) return
+
 			if (type === 'toLeftTop') {
+				// TODO check is quit of screen
 				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, right: screen.width - (pageX + width) - insets.right })
 			} else if (type === 'toLeftBottom') {
 				setPosition({ top: height + pageY - insets.top + padding, right: screen.width - (pageX + width) - insets.right })
