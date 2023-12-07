@@ -615,7 +615,7 @@ export const Movie = ({ navigation, route }: Props) => {
 																	{movie.title.russian ?? movie.title.original ?? movie.title.english}
 																</Text>
 																<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-																	{movie.__typename === 'TvSeries' ? movie.releaseYears[0]?.start : movie.productionYear}, {movie.genres[0]?.name}
+																	{[movie.__typename === 'TvSeries' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 																</Text>
 															</View>
 														</Button>
