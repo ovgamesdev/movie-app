@@ -30,7 +30,7 @@ export interface IGraphqlMovie {
 	seriesDuration: number | null
 	totalDuration: number | null
 	top250: number | null
-	__typename: 'TvSeries' | 'Film'
+	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
 }
 
 export interface IGraphqlSuggestMovie {
@@ -43,7 +43,7 @@ export interface IGraphqlSuggestMovie {
 	title: Title
 	type: string // TV_ONLY | NORMAL
 	viewOption: ViewOption | null
-	__typename: 'TvSeries' | 'Film'
+	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
 }
 
 export interface IGraphqlSuggestPerson {
@@ -159,8 +159,7 @@ interface ViewOption {}
 //
 // BaseInfo
 //
-
-interface IMovieBaseInfo {
+export interface IMovieBaseInfo {
 	actors: {
 		items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]
 		total: number
@@ -391,7 +390,7 @@ interface IMovieBaseInfo {
 		incompleteDate: { accuracy: string; date: string }
 	} | null
 	writers: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[] }
-	__typename: 'Film' | 'TvSeries'
+	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
 }
 
 export interface IFilmBaseInfo
@@ -564,17 +563,14 @@ export interface ITvSeriesBaseInfo
 		| 'worldPremiere'
 		| 'writers'
 	> {
-	__typename: 'TvSeries'
+	__typename: 'TvSeries' | 'MiniSeries'
 }
 
 export interface ISimilarMovieResults {
 	items: { movie: ISimilarMovie; types: string[] }[]
 	total: number
 }
-// export interface ITvSeriesSimilarMovieResults {
-// 	items: { movie: ITvSeriesSimilarMovie; types: string[] }[]
-// 	total: number
-// }
+
 export interface ISimilarMovie extends Pick<IMovieBaseInfo, '__typename' | 'countries' | 'genres' | 'id' | 'poster' | 'productionYear' | 'releaseYears' | 'userData' | 'viewOption'> {
 	rating: {
 		expectation: RatingValue | null
@@ -587,19 +583,6 @@ export interface ISimilarMovie extends Pick<IMovieBaseInfo, '__typename' | 'coun
 		russian: string | null
 	}
 }
-// export interface ITvSeriesSimilarMovie extends Pick<IMovieBaseInfo, 'countries' | 'genres' | 'id' | 'poster' | 'productionYear' | 'releaseYears' | 'userData' | 'viewOption'> {
-// 	rating: {
-// 		expectation: RatingValue | null
-// 		kinopoisk: RatingValue | null
-// 	}
-// 	title: {
-// 		english: string | null
-// 		// localized: string | null
-// 		original: string | null
-// 		russian: string | null
-// 	}
-// 	__typename: 'TvSeries'
-// }
 
 interface MoneyAmount {
 	amount: number

@@ -4,7 +4,7 @@ import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { declineSeasons, formatDuration, getRatingColor, normalizeUrlWithNull, ratingMPAA } from '@utils'
+import { declineSeasons, formatDuration, getRatingColor, isSeries, normalizeUrlWithNull, pickIsSeries, ratingMPAA } from '@utils'
 import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
@@ -23,7 +23,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	// const orientation = { portrait: false, landscape: true }
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' })
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' })
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' })
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm || dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
@@ -231,7 +231,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
 									<ProductionStatusText />
-									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{data.__typename === 'Film' ? `(${data.productionYear})` : `(сериал ${data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})`}</Text>
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : `(${data.productionYear})`}</Text>
 								</Text>
 
 								<Text style={{ color: colors.text200, fontSize: 18 }}>
@@ -246,7 +246,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								<Button text='trailer' />
 							</TVFocusGuideView>
 
-							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {data.__typename === 'TvSeries' ? 'сериале' : 'фильме'}</Text>
+							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
 
 							<View style={{ gap: 5, marginTop: 5, marginBottom: 40 }}>
 								{!!data.productionYear && (
@@ -257,7 +257,7 @@ export const Movie = ({ navigation, route }: Props) => {
 												<Button
 													onPress={() => {
 														const booleanFilterValues = [
-															{ filterId: data.__typename === 'TvSeries' ? 'series' : 'films', value: true },
+															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
 															{ filterId: 'top', value: true }
 														]
 														const singleSelectFilterValues = [{ filterId: 'year', value: data.productionYear.toString() }]
@@ -269,9 +269,9 @@ export const Movie = ({ navigation, route }: Props) => {
 													transparent
 												/>
 											)}
-											{data.__typename === 'TvSeries' && (!!data.seasonsAll || !!data.seasons) && (
+											{'seasons' in data && (
 												<Button padding={0} transparent focusable={false}>
-													<Text style={{}}>{'(' + declineSeasons((data.seasonsAll ?? data.seasons).total) + ')'}</Text>
+													<Text style={{}}>{'(' + declineSeasons(data.seasons.total) + ')'}</Text>
 												</Button>
 											)}
 										</View>
@@ -293,7 +293,7 @@ export const Movie = ({ navigation, route }: Props) => {
 												<Button
 													onPress={() => {
 														const booleanFilterValues = [
-															{ filterId: data.__typename === 'TvSeries' ? 'series' : 'films', value: true },
+															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
 															{ filterId: 'top', value: true }
 														]
 														const singleSelectFilterValues = [{ filterId: 'country', value: it.id + '' }]
@@ -322,7 +322,7 @@ export const Movie = ({ navigation, route }: Props) => {
 													transparent
 													onPress={() => {
 														const booleanFilterValues = [
-															{ filterId: data.__typename === 'TvSeries' ? 'series' : 'films', value: true },
+															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
 															{ filterId: 'top', value: true }
 														]
 														const singleSelectFilterValues = [{ filterId: 'genre', value: it.slug }]
@@ -460,7 +460,7 @@ export const Movie = ({ navigation, route }: Props) => {
 									</View>
 								)}
 
-								{data.__typename === 'Film' && data.audience.total > 0 && (
+								{'audience' in data && data.audience.total > 0 && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Зрители</Text>
 										<ScrollView horizontal style={{ flex: 1, paddingLeft: 5 }}>
@@ -578,14 +578,14 @@ export const Movie = ({ navigation, route }: Props) => {
 									</View>
 								)}
 
-								{(data.__typename === 'TvSeries' ? !!data.seriesDuration : !!data.duration) && (
+								{('seriesDuration' in data || 'duration' in data) && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${data.__typename === 'TvSeries' ? data.seriesDuration : data.duration} мин${(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) > 60 ? '. / ' + formatDuration(data.__typename === 'TvSeries' ? data.seriesDuration : data.duration) : ''}` + (data.__typename === 'TvSeries' ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${pickIsSeries(data, 'seriesDuration', 'duration')} мин${pickIsSeries(data, 'seriesDuration', 'duration') > 60 ? '. / ' + formatDuration(pickIsSeries(data, 'seriesDuration', 'duration')) : ''}` + ('totalDuration' in data && 'seriesDuration' in data ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
 									</View>
 								)}
 
-								{data.__typename === 'TvSeries' && data.seasons.total > 0 && <Episodes id={data.id} />}
+								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} />}
 
 								{data.sequelsPrequels.total > 0 && (
 									<View style={{ marginTop: 40 }}>
@@ -615,7 +615,7 @@ export const Movie = ({ navigation, route }: Props) => {
 																	{movie.title.russian ?? movie.title.original ?? movie.title.english}
 																</Text>
 																<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-																	{[movie.__typename === 'TvSeries' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
+																	{[isSeries(movie.__typename) ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 																</Text>
 															</View>
 														</Button>
@@ -633,7 +633,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
 
 							<View focusable accessible>
-								<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {data.__typename === 'TvSeries' ? 'сериала' : 'фильма'}</Text>
+								<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {isSeries(data.__typename) ? 'сериала' : 'фильма'}</Text>
 								<View style={{ flexDirection: 'row' }}>
 									<RatingText />
 									<Text250 />

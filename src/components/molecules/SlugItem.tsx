@@ -11,7 +11,7 @@ type Props = {
 	hasTVPreferredFocus: boolean
 	onFocus: ({ index }: { index: number }) => void
 	onBlur: ({ index }: { index: number }) => void
-	onPress: ({ id }: { id: number; type: 'TvSeries' | 'Film' }) => void
+	onPress: ({ id }: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' }) => void
 }
 
 export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }: Props) => {

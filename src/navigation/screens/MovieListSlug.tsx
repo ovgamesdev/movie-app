@@ -4,7 +4,7 @@ import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { getRatingColor, normalizeUrlWithNull } from '@utils'
+import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FlatList, Image, ImageBackground, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -146,7 +146,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 									)}
 									<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }}>
 										{item.movie.title.russian && item.movie.title.original && ', '}
-										{[item.movie.__typename === 'TvSeries' ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+										{[isSeries(item.movie.__typename) ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
 									</Text>
 								</View>
 							</View>

@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
-import { getRatingColor, normalizeUrlWithNull } from '@utils'
+import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, ImageBackground, TVFocusGuideView, Text, View } from 'react-native'
 import { useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '../../store/kinopoisk/kinopoisk.api'
@@ -8,7 +8,7 @@ import { ISimilarMovieResults } from '../../store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	id: number
-	type: 'Film' | 'TvSeries'
+	type: 'Film' | 'TvSeries' | 'MiniSeries'
 }
 
 export const SimilarMovie = ({ id, type }: Props) => {
@@ -16,7 +16,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 	const navigation = useNavigation()
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' })
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' })
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })
 
 	const data: ISimilarMovieResults | undefined = dataFilm || dataTvSeries
 	const isFetching = isFetchingFilm ?? isFetchingTvSeries
@@ -46,7 +46,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Если вам понравился этот {type === 'TvSeries' ? 'сериал' : 'фильм'}</Text>
+			<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Если вам понравился этот {isSeries(type) ? 'сериал' : 'фильм'}</Text>
 			<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 				<FlatList
 					keyExtractor={data => `similar_item_${data.movie.id}`}
@@ -72,7 +72,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 										{movie.title.russian ?? movie.title.original ?? movie.title.english}
 									</Text>
 									<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-										{[movie.__typename === 'TvSeries' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
+										{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 									</Text>
 								</View>
 							</Button>

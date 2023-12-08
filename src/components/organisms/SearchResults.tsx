@@ -22,7 +22,7 @@ export const SearchResults = ({ data }: Props) => {
 		navigation.push('MovieListSlug', { data: { slug } })
 	}
 
-	const onMovie = (data: { id: number; type: 'TvSeries' | 'Film' }) => {
+	const onMovie = (data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' }) => {
 		navigation.push('Movie', { data })
 	}
 

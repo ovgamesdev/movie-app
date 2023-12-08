@@ -1,5 +1,7 @@
 // MOVIE
 
+import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
+
 export const getRatingColor = (rating: number): string => {
 	if (rating >= 7) {
 		return '#3bb33b'
@@ -122,4 +124,12 @@ export const normalizeUrl = (url: string): string => {
 	}
 
 	return url
+}
+
+export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
+	return type === 'TvSeries' || type === 'MiniSeries'
+}
+
+export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {
+	return type[series] ?? type[notSeries]
 }
