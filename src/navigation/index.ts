@@ -14,5 +14,5 @@ export type RootStackParamList = {
 export type HomeTabParamList = {
 	Content: undefined
 	Settings: undefined
-	Search: undefined | { data: {} }
+	Search: undefined | { data: object }
 }

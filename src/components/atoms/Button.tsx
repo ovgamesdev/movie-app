@@ -1,6 +1,6 @@
 import { useTheme } from '@hooks'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { Animated, FlexAlignType, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
+import { Animated, FlexAlignType, GestureResponderEvent, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
 
 interface BorderProps {
 	borderColor?: string
@@ -53,12 +53,14 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 
 	const _style = (state: PressableStateCallbackType) => (typeof style === 'function' ? style(state) : typeof style === 'object' ? style : {})
 
-	const handleOnPressIn = () => {
+	const handleOnPressIn = (event: GestureResponderEvent) => {
+		onPressIn?.(event)
 		if (animation === 'scale') {
 			Animated.timing(scale, { toValue: 0.8, useNativeDriver: true, duration: 250 }).start()
 		}
 	}
-	const handleOnPressOut = () => {
+	const handleOnPressOut = (event: GestureResponderEvent) => {
+		onPressOut?.(event)
 		if (animation === 'scale') {
 			Animated.timing(scale, { toValue: 1, useNativeDriver: true, duration: 250 }).start()
 		}

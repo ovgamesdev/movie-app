@@ -48,7 +48,9 @@ export const Search = ({ route }: Props) => {
 					<Text style={{ color: colors.text200, fontSize: 15, paddingHorizontal: 30, textAlign: 'center' }}>По вашему запросу ничего не найдено</Text>
 				</View>
 			) : (
-				<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 15 + insets.bottom }}>{data && <SearchResults data={data} />}</ScrollView>
+				<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 15 + insets.bottom }}>
+					<SearchResults data={data} />
+				</ScrollView>
 			)}
 		</TVFocusGuideView>
 	)

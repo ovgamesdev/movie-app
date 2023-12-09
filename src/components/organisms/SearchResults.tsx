@@ -32,7 +32,7 @@ export const SearchResults = ({ data }: Props) => {
 
 	return (
 		<View>
-			{data?.topResult?.global ? (
+			{data.topResult?.global ? (
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Возможно, вы искали</Text>
 
@@ -40,7 +40,7 @@ export const SearchResults = ({ data }: Props) => {
 				</View>
 			) : null}
 
-			{data?.movies && data.movies.length > 0 ? (
+			{data.movies.length > 0 ? (
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Фильмы и сериалы</Text>
 
@@ -50,7 +50,7 @@ export const SearchResults = ({ data }: Props) => {
 				</View>
 			) : null}
 
-			{data?.movieLists && data.movieLists.length > 0 ? (
+			{data.movieLists.length > 0 ? (
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
 
@@ -60,7 +60,7 @@ export const SearchResults = ({ data }: Props) => {
 				</View>
 			) : null}
 
-			{data?.persons && data.persons.length > 0 ? (
+			{data.persons.length > 0 ? (
 				<View style={{ paddingBottom: 10 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Персоны</Text>
 

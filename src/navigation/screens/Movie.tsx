@@ -94,7 +94,7 @@ export const Movie = ({ navigation, route }: Props) => {
 
 	const RatingText = () => {
 		if (data.rating.expectation && data.rating.expectation.isActive && data.rating.expectation.value && data.rating.expectation.value > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
-		if (!data.rating.kinopoisk || data.rating.kinopoisk.value === null || !data.rating.kinopoisk.isActive) return null
+		if (!data.rating.kinopoisk?.value || !data.rating.kinopoisk.isActive) return null
 		const top = data.rating.kinopoisk.value.toFixed(1)
 		if (data.top250 === null) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{top}</Text>
 		const width = top.length === 3 ? 65 : 93
@@ -227,7 +227,7 @@ export const Movie = ({ navigation, route }: Props) => {
 					)}
 					<View style={[{ flex: 1 }, orientation.portrait && { backgroundColor: colors.bg100, marginTop: -10, paddingHorizontal: 10, paddingTop: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16 }]}>
 						<View style={{ flexDirection: 'row', gap: 10 }}>
-							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6 ?? 96} borderRadius={8} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
+							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={8} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
 									<ProductionStatusText />
@@ -470,7 +470,7 @@ export const Movie = ({ navigation, route }: Props) => {
 														<Image style={{ width: 16, height: 11, marginRight: 5 }} source={{ uri: `https://st.kp.yandex.net/images/flags/flag-${it.country.id}.gif` }} />
 														<Text style={{ color: colors.text200, fontSize: 13 }}>{it.count >= 1000000 ? `${(it.count / 1000000).toFixed(1)} млн` : it.count >= 1000 ? `${(it.count / 1000).toFixed(1)} тыс` : it.count.toFixed(1)}</Text>
 													</View>
-													{data.audience?.total !== i + 1 && <Text style={{ color: colors.text200, fontSize: 13, lineHeight: 18 }}>,</Text>}
+													{data.audience.total !== i + 1 && <Text style={{ color: colors.text200, fontSize: 13, lineHeight: 18 }}>,</Text>}
 												</View>
 											))}
 										</ScrollView>
@@ -526,10 +526,10 @@ export const Movie = ({ navigation, route }: Props) => {
 											focusable={false}
 											textColor={colors.text200}
 											text={
-												new Date(data.releases.find(it => it.type === 'DVD')!.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
+												new Date(data.releases.find(it => it.type === 'DVD')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
 												data.releases
-													.find(it => it.type === 'DVD')!
-													.releasers.map(it => `, «${it.name}»`)
+													.find(it => it.type === 'DVD')
+													?.releasers.map(it => `, «${it.name}»`)
 													.join(' ')
 											}
 										/>
@@ -546,10 +546,10 @@ export const Movie = ({ navigation, route }: Props) => {
 											focusable={false}
 											textColor={colors.text200}
 											text={
-												new Date(data.releases.find(it => it.type === 'BLURAY')!.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
+												new Date(data.releases.find(it => it.type === 'BLURAY')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
 												data.releases
-													.find(it => it.type === 'BLURAY')!
-													.releasers.map(it => `, «${it.name}»`)
+													.find(it => it.type === 'BLURAY')
+													?.releasers.map(it => `, «${it.name}»`)
 													.join(' ')
 											}
 										/>
@@ -581,7 +581,7 @@ export const Movie = ({ navigation, route }: Props) => {
 								{('seriesDuration' in data || 'duration' in data) && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${pickIsSeries(data, 'seriesDuration', 'duration')} мин${pickIsSeries(data, 'seriesDuration', 'duration') > 60 ? '. / ' + formatDuration(pickIsSeries(data, 'seriesDuration', 'duration')) : ''}` + ('totalDuration' in data && 'seriesDuration' in data ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration && data.seriesDuration == null ? '. всего' : ''}` : '')} />
+										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${pickIsSeries(data, 'seriesDuration', 'duration')} мин${pickIsSeries(data, 'seriesDuration', 'duration') > 60 ? '. / ' + formatDuration(pickIsSeries(data, 'seriesDuration', 'duration')) : ''}` + ('totalDuration' in data && 'seriesDuration' in data ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration ? '. всего' : ''}` : '')} />
 									</View>
 								)}
 
@@ -615,7 +615,7 @@ export const Movie = ({ navigation, route }: Props) => {
 																	{movie.title.russian ?? movie.title.original ?? movie.title.english}
 																</Text>
 																<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-																	{[isSeries(movie.__typename) ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
+																	{[isSeries(movie.__typename) ? movie.releaseYears[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 																</Text>
 															</View>
 														</Button>

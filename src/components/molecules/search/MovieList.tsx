@@ -13,7 +13,7 @@ type Props = {
 
 export const MovieList = ({ item, onPress, onFilter }: Props) => {
 	const { colors } = useTheme()
-	const cover = normalizeUrlWithNull(item.cover?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/32x32' })
+	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/32x32' })
 
 	const isFilter = item.url.includes('--') || item.url.includes('?ss_')
 	const slug = item.url.split('/')[item.url.split('/').length - (item.url.endsWith('/') ? 2 : 1)]

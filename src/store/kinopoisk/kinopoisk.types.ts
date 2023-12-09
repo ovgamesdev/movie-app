@@ -143,8 +143,8 @@ interface Expectation {
 }
 
 interface ReleaseYear {
-	start: number
-	end: number
+	start: number | null
+	end: number | null
 	__typename: string
 }
 
@@ -653,8 +653,8 @@ export interface IPersonBaseInfoResults {
 		spouse: {
 			gender: string
 			id: number
-			name: string
-			originalName: string
+			name: string | null
+			originalName: string // TODO null
 			published: boolean
 		}
 		status: string // 'ANNULMENT' | 'DIVORCE' | 'OK | 'SPOUSE_DEATH'

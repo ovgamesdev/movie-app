@@ -102,8 +102,8 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 			}
 
 			const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
-			const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
-			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
+			const rating: null | { value: string; color: string } = item.movie.rating.expectation.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
+			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
 
 			// Популярные фильмы
 			// 250 лучших фильмов
@@ -114,11 +114,11 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 					{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
 						orientation.landscape &&
 						(item.__typename === 'BoxOfficeMovieListItem' ? (
-							<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>{item.__typename === 'BoxOfficeMovieListItem' ? `$${(item.boxOffice.amount / 1000000).toFixed(1)} млн` : itemPosition}</Text>
+							<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>
 						) : (
 							<View style={{ alignItems: 'center' }}>
 								<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: colors.text100 }}>{itemPosition}</Text>
-								{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
+								{item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
 							</View>
 						))}
 					<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
@@ -152,20 +152,18 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 							</View>
 
 							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
-								{[item.movie.countries?.[0]?.name, item.movie.genres?.[0]?.name].filter(it => !!it).join(' • ')}
-								{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name || item.movie.directors.items[0].person.originalName}`}
+								{[item.movie.countries[0]?.name, item.movie.genres[0]?.name].filter(it => !!it).join(' • ')}
+								{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name ?? item.movie.directors.items[0].person.originalName}`}
 							</Text>
 
 							{orientation.landscape && (
 								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
 									{item.movie.cast.items.length > 0 &&
-										`В ролях: ${[
-											item.movie.cast.items
-												.slice(0, 2)
-												.map(it => it.person.name || it.person.originalName)
-												.filter(it => !!it)
-												.join(', ')
-										]}`}
+										`В ролях: ${item.movie.cast.items
+											.slice(0, 2)
+											.map(it => it.person.name ?? it.person.originalName)
+											.filter(it => !!it)
+											.join(', ')}`}
 								</Text>
 							)}
 						</View>
@@ -211,7 +209,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		// 	</View>
 		// )
 
-		return data != null && data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
+		return data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
 	}, [data.page, data.pages, orientation])
 
 	const ListHeaderComponent = useCallback(() => {

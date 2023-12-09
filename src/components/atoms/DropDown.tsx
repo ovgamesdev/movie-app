@@ -117,7 +117,7 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 									<Text style={{ color: isChecked ? colors.text100 : colors.text200 }} numberOfLines={1}>
 										{item.label}
 									</Text>
-									{isChecked && <CheckIcon width={20} height={20} fill={isChecked ? colors.text100 : colors.text200} style={{ marginLeft: 5 }} />}
+									{isChecked && <CheckIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 5 }} />}
 								</Button>
 							)
 						})}

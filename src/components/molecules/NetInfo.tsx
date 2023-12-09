@@ -17,7 +17,7 @@ export const NetInfo: FC = () => {
 	const [netInfoHeight] = useState<Animated.Value>(new Animated.Value(isConnected ? 0 : 24 + insets.bottom))
 
 	useEffect(() => {
-		if (isConnected === true) {
+		if (isConnected) {
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current)
 				timeoutRef.current = null

@@ -19,7 +19,7 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 	const { apkVersionUrl } = thunkAPI.getState().update.options
 	let apkSize: number | null = null
 
-	if (__DEV__ === true) {
+	if (__DEV__) {
 		// return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
 		return console.log('RNUpdateAPK::getApkVersion - disabled in dev mode.')
 	}
@@ -30,7 +30,9 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 		const response = await fetch(apkVersionUrl, { method: 'HEAD' })
 		const size = Number(response.headers.get('content-length')) / (1024 * 1024)
 		apkSize = isNaN(size) ? null : Math.round(size)
-	} catch (error: any) {}
+	} catch (error: unknown) {
+		console.error("RNUpdateAPK::getApkVersion - get size doesn't exist/", error)
+	}
 
 	try {
 		const data: IRemote = await fetch(apkVersionUrl)
@@ -46,7 +48,7 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 				}
 				return response
 			})
-			.then(response => response.json())
+			.then(async response => response.json())
 
 		return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: apkSize, remote: data }))
 	} catch (error: any) {

@@ -52,8 +52,8 @@ export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearabl
 
 			{isRight ? (
 				<>
-					{clearable && props.value?.length !== 0 ? (
-						<Button onPress={clearable ? onClear : undefined} style={{ height: 46, width: 45 }} justifyContent='center' alignItems='center' borderStyle={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+					{props.value?.length !== 0 ? (
+						<Button onPress={onClear} style={{ height: 46, width: 45 }} justifyContent='center' alignItems='center' borderStyle={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
 							<CloseIcon width={15} height={15} fill={colors.text100} />
 						</Button>
 					) : null}

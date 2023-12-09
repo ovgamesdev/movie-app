@@ -59,7 +59,7 @@ export const Person = ({ navigation, route }: Props) => {
 					)}
 					<View style={[{ flex: 1 }, orientation.portrait && { backgroundColor: colors.bg100, marginTop: -10, paddingHorizontal: 10, paddingTop: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16 }]}>
 						<View style={{ flexDirection: 'row', gap: 20 }}>
-							{orientation.portrait && <PosterImage width={120} borderRadius={0 ?? 8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />}
+							{orientation.portrait && <PosterImage width={120} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>{data.name ?? data.originalName}</Text>
 								<Text style={{ color: colors.text200, fontSize: 18 }}>{!!data.name && data.originalName ? data.originalName : ''}</Text>

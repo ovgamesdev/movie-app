@@ -126,6 +126,7 @@ export const normalizeUrl = (url: string): string => {
 	return url
 }
 
+// TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
 export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
 	return type === 'TvSeries' || type === 'MiniSeries'
 }
