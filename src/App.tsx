@@ -69,6 +69,12 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 
 const AppContent: FC = () => {
 	const { colors } = useTheme()
+	const { getCurrentGoogleUser, getApkVersion } = useActions()
+
+	useEffect(() => {
+		getCurrentGoogleUser()
+		getApkVersion()
+	}, [])
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg100 }}>
