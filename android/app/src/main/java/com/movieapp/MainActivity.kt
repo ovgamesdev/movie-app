@@ -25,7 +25,6 @@ class MainActivity : ReactActivity() {
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
-  // TODO TEST
   override fun onCreate(savedInstanceState: Bundle?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val layoutParams = WindowManager.LayoutParams()
@@ -38,24 +37,6 @@ class MainActivity : ReactActivity() {
     // fix https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704067  
     super.onCreate(null)
   }
-
-
-  /**
-  * // NOTE Java version
-  * @Override
-  * protected void onCreate(Bundle savedInstanceState) {
-  *     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-  *         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-  *         layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-  *         getWindow().setAttributes(layoutParams);
-  *       // getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-  *         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-  *     }
-  *
-  *     // fix https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704067
-  *     super.onCreate(null);
-  * }
-  */
 
 }
 
