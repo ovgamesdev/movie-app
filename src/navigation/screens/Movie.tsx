@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button } from '@components/atoms'
+import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { Episodes, SimilarMovie } from '@components/organisms'
 import { addItemToContentReleaseNotify, isItemInContentReleaseNotify, removeItemToContentReleaseNotify, useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
@@ -6,7 +6,7 @@ import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { declineSeasons, formatDuration, getRatingColor, isSeries, normalizeUrlWithNull, pickIsSeries, ratingMPAA } from '@utils'
 import { useEffect, useState } from 'react'
-import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import { FlatList, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
@@ -40,7 +40,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' })
 
-	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm || dataTvSeries
+	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
 
 	if (isFetching) {
@@ -67,7 +67,7 @@ export const Movie = ({ navigation, route }: Props) => {
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
 				<View style={[style, { top, borderRadius }]}>
-					<Image source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
+					<ImageBackground source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
 				</View>
 			</View>
 		)
@@ -571,7 +571,7 @@ export const Movie = ({ navigation, route }: Props) => {
 											{data.audience.items.map((it, i) => (
 												<View key={it.country.id} style={{ flexDirection: 'row' }}>
 													<View style={{ marginLeft: i !== 0 ? 5 : undefined, flexDirection: 'row', alignItems: 'center' }}>
-														<Image style={{ width: 16, height: 11, marginRight: 5 }} source={{ uri: `https://st.kp.yandex.net/images/flags/flag-${it.country.id}.gif` }} />
+														<ImageBackground style={{ width: 16, height: 11, marginRight: 5 }} source={{ uri: `https://st.kp.yandex.net/images/flags/flag-${it.country.id}.gif` }} />
 														<Text style={{ color: colors.text200, fontSize: 13 }}>{it.count >= 1000000 ? `${(it.count / 1000000).toFixed(1)} млн` : it.count >= 1000 ? `${(it.count / 1000).toFixed(1)} тыс` : it.count.toFixed(1)}</Text>
 													</View>
 													{data.audience.total !== i + 1 && <Text style={{ color: colors.text200, fontSize: 13, lineHeight: 18 }}>,</Text>}

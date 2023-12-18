@@ -1,8 +1,8 @@
-import { Button } from '@components/atoms'
+import { Button, ImageBackground } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
-import { FlatList, ImageBackground, TVFocusGuideView, Text, View } from 'react-native'
+import { FlatList, TVFocusGuideView, Text, View } from 'react-native'
 import { useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { ISimilarMovieResults } from '../../store/kinopoisk/kinopoisk.types'
 
@@ -18,8 +18,8 @@ export const SimilarMovie = ({ id, type }: Props) => {
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })
 
-	const data: ISimilarMovieResults | undefined = dataFilm || dataTvSeries
-	const isFetching = isFetchingFilm ?? isFetchingTvSeries
+	const data: ISimilarMovieResults | undefined = dataFilm ?? dataTvSeries
+	const isFetching = isFetchingFilm || isFetchingTvSeries
 
 	if (isFetching) {
 		return (

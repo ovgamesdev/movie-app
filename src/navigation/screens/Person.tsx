@@ -1,10 +1,10 @@
-import { ActivityIndicator, Button } from '@components/atoms'
+import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { declineAge, declineChildren, getRatingColor, getSpouseStatus, normalizeUrlWithNull } from '@utils'
 import React from 'react'
-import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
+import { FlatList, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useGetPersonBaseInfoQuery } from '../../store/kinopoisk/kinopoisk.api'
 
@@ -42,7 +42,7 @@ export const Person = ({ navigation, route }: Props) => {
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
 				<View style={[style, { top, borderRadius }]}>
-					<Image source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
+					<ImageBackground source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
 				</View>
 			</View>
 		)

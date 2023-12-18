@@ -1,8 +1,8 @@
-import { Button } from '@components/atoms'
+import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
-import { Image, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import { IGraphqlSuggestMovie } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
@@ -16,7 +16,7 @@ export const Movie = ({ item, onPress }: Props) => {
 
 	return (
 		<Button onPress={() => onPress({ id: item.id, type: item.__typename })} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			<Image source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.title.russian ?? item.title.original}

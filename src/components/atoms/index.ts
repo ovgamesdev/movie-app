@@ -1,5 +1,6 @@
 export * from './ActivityIndicator'
 export * from './Button'
 export * from './DropDown'
+export * from './ImageBackground'
 export * from './Input'
 export * from './Switch'

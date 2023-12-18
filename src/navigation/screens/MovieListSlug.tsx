@@ -1,4 +1,4 @@
-import { Button, DropDown } from '@components/atoms'
+import { Button, DropDown, ImageBackground } from '@components/atoms'
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
@@ -6,7 +6,7 @@ import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FlatList, Image, ImageBackground, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
+import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
@@ -258,7 +258,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const CoverImage = () => {
 		if (data.cover) {
 			const poster = normalizeUrlWithNull(data.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/384x384' })
-			return <Image source={{ uri: poster }} style={{ width: 140, height: 140 }} />
+			return <ImageBackground source={{ uri: poster }} style={{ width: 140, height: 140 }} />
 		}
 		return <Skeleton style={{ width: 140, height: 140 }} />
 	}
