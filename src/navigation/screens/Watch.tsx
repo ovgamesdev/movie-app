@@ -52,14 +52,14 @@ export const Watch = ({ navigation, route }: Props) => {
 				}}
 				style={{ flex: 1 }}
 				injectedJavaScript={run}
-				startInLoadingState
 				scalesPageToFit={false}
-				allowsFullscreenVideo={true}
+				// allowsFullscreenVideo={true}
 				showsVerticalScrollIndicator={false}
 				nestedScrollEnabled={true}
 				setBuiltInZoomControls={false}
 				contentInset={insets}
-				webviewDebuggingEnabled
+				webviewDebuggingEnabled={__DEV__}
+				startInLoadingState
 				renderLoading={() => (
 					<View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: colors.bg200, justifyContent: 'center', alignItems: 'center' }}>
 						<ActivityIndicator size='large' />

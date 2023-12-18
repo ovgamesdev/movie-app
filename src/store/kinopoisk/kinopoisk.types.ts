@@ -238,16 +238,7 @@ export interface IMovieBaseInfo {
 		total: number
 	}
 	kpProductionYear: number // TODO ?
-	mainTrailer: {
-		createdAt: string
-		duration: number
-		id: number
-		isEmbedded: boolean
-		preview: { avatarsUrl: string; fallbackUrl: string | null }
-		sourceVideoUrl: string | null
-		streamUrl: string
-		title: string
-	} | null
+	mainTrailer: IMainTrailer | null
 	mediaPostsCount: {
 		total: number
 	}
@@ -564,6 +555,17 @@ export interface ITvSeriesBaseInfo
 		| 'writers'
 	> {
 	__typename: 'TvSeries' | 'MiniSeries'
+}
+
+export interface IMainTrailer {
+	createdAt: string
+	duration: number
+	id: number
+	isEmbedded: boolean
+	preview: { avatarsUrl: string; fallbackUrl: string | null }
+	sourceVideoUrl: string | null
+	streamUrl: string
+	title: string
 }
 
 export interface ISimilarMovieResults {

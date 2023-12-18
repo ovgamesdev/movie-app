@@ -73,22 +73,24 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
-	const Trailer = (props: ViewProps) => {
+	const Trailer = ({ showTime, aspectRatio, disabled, showPlay = true }: { showTime?: boolean; aspectRatio?: number; disabled?: boolean; showPlay?: boolean }) => {
 		if (!data.mainTrailer) {
 			return null
 		}
 		const poster = normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
 
 		return (
-			<Button padding={0} transparent style={{ margin: -4 }}>
-				<View {...props}>
-					<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 30 / 19, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-						<View style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 99, padding: 10 }}>
-							<PlayIcon width={40} height={40} fill={colors.primary300} />
+			<Button padding={0} transparent style={{ margin: -4 }} onPress={() => !disabled && data.mainTrailer && navigation.push('MovieTrailer', { data: data.mainTrailer })}>
+				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: aspectRatio ?? 302 / 169.708 }}>
+					{showPlay && (
+						<View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+							<View style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 99, padding: 10 }}>
+								<PlayIcon width={40} height={40} fill={colors.primary300} />
+							</View>
 						</View>
-						{/* <Text style={{ color: colors.primary300 }}>Play Trailer</Text> */}
-					</ImageBackground>
-				</View>
+					)}
+					{showTime && <Text style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: colors.primary300, position: 'absolute', bottom: 0, right: 0, paddingHorizontal: 5, paddingVertical: 3, fontSize: 13 }}>{data.mainTrailer.duration < 60 ? `${data.mainTrailer.duration.toFixed()} сек` : `${(data.mainTrailer.duration / 60).toFixed()} мин`}</Text>}
+				</ImageBackground>
 			</Button>
 		)
 	}
@@ -313,15 +315,14 @@ export const Movie = ({ navigation, route }: Props) => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				{orientation.portrait && (data.cover ? <Cover /> : data.mainTrailer ? <Trailer style={{ marginBottom: -10 }} /> : <View style={{ paddingTop: 10 + insets.top }} />)}
+				{orientation.portrait && (data.cover ? <Cover /> : data.mainTrailer ? <Trailer aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />)}
 				<View style={[{}, orientation.landscape && { flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10 + insets.top, gap: 20 }]}>
 					{orientation.landscape && (
 						<View style={{ width: 300, gap: 20 }}>
 							<PosterImage />
 							{data.mainTrailer && (
 								<View style={{ gap: 5 }}>
-									<Trailer style={{}} />
-
+									<Trailer showTime />
 									<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
 									<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 								</View>
@@ -347,7 +348,6 @@ export const Movie = ({ navigation, route }: Props) => {
 							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
 								<WatchButton data={data} />
 								<TestContentReleaseNotifyButton />
-								<Button text='trailer' />
 							</TVFocusGuideView>
 
 							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
@@ -736,7 +736,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							</View>
 							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
 
-							<View focusable accessible>
+							<View focusable accessible style={{ marginBottom: 40 }}>
 								<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {isSeries(data.__typename) ? 'сериала' : 'фильма'}</Text>
 								<View style={{ flexDirection: 'row' }}>
 									<RatingText />
@@ -773,6 +773,17 @@ export const Movie = ({ navigation, route }: Props) => {
 									</View>
 								)}
 							</View>
+
+							{orientation.portrait && data.mainTrailer && (
+								<>
+									<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 16 }}>Трейлер</Text>
+									<View style={{ gap: 5 }}>
+										<Trailer showTime />
+										<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
+										<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+									</View>
+								</>
+							)}
 
 							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
 
