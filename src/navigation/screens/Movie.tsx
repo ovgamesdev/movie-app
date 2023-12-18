@@ -80,7 +80,7 @@ export const Movie = ({ navigation, route }: Props) => {
 		const poster = normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
 
 		return (
-			<Button padding={0} transparent style={{ margin: -4 }} onPress={() => !disabled && data.mainTrailer && navigation.push('MovieTrailer', { data: data.mainTrailer })}>
+			<Button padding={0} transparent animation={disabled ? undefined : 'scale'} style={{ margin: -4 }} onPress={() => !disabled && data.mainTrailer && navigation.push('MovieTrailer', { data: data.mainTrailer })}>
 				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: aspectRatio ?? 302 / 169.708 }}>
 					{showPlay && (
 						<View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
@@ -682,7 +682,7 @@ export const Movie = ({ navigation, route }: Props) => {
 									</View>
 								)}
 
-								{('seriesDuration' in data || 'duration' in data) && (
+								{pickIsSeries(data, 'seriesDuration', 'duration') != null && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${pickIsSeries(data, 'seriesDuration', 'duration')} мин${pickIsSeries(data, 'seriesDuration', 'duration') > 60 ? '. / ' + formatDuration(pickIsSeries(data, 'seriesDuration', 'duration')) : ''}` + ('totalDuration' in data && 'seriesDuration' in data ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration ? '. всего' : ''}` : '')} />
