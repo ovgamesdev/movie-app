@@ -101,16 +101,16 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.reactnativetvosfocus"
+    namespace "com.movieapp"
     defaultConfig {
-        applicationId "com.reactnativetvosfocus"
+        applicationId "com.movieapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
         // https://github.com/luggit/react-native-config#advanced-android-setup
-        resValue "string", "build_config_package", "com.reactnativetvosfocus"
+        resValue "string", "build_config_package", "com.movieapp"
     }
 
     splits {

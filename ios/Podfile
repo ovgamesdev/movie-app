@@ -21,7 +21,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'ReactNativeTvOsFocus' do
+target 'MovieApp' do
   config = use_native_modules!
 
   use_react_native!(
@@ -35,7 +35,7 @@ target 'ReactNativeTvOsFocus' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'ReactNativeTvOsFocusTests' do
+  target 'MovieAppTests' do
     inherit! :complete
     # Pods for testing
   end
