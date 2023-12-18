@@ -1,4 +1,4 @@
-package com.reactnativetvosfocus
+package com.movieapp
 
 import android.app.Application
 import com.facebook.react.PackageList

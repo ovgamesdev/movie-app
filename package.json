@@ -1,6 +1,6 @@
 {
-	"repository": "https://github.com/ovgamesdev/movieapp.git",
-	"name": "movieapp",
+	"repository": "https://github.com/ovgamesdev/movie-app.git",
+	"name": "movie-app",
 	"description": "This React Native app supports both TV and mobile.",
 	"version": "0.0.1",
 	"license": "MIT",

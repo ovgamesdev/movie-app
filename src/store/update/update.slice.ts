@@ -2,14 +2,14 @@ import { PayloadAction, Unsubscribe, createSlice } from '@reduxjs/toolkit'
 import { Alert, NativeModules } from 'react-native'
 import semver from 'semver'
 import { AppStartListening } from '../listenerMiddleware'
-import { IDownload, IInitialStateUpdate, IOptions, IRemote } from './update.types'
+import { IDownload, IInitialStateUpdate, IRemote } from './update.types'
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK
 
 const initialState: IInitialStateUpdate = {
 	options: {
 		apkVersionUrl: 'https://raw.githubusercontent.com/ovgamesdev/res/main/apps/movie/version.json',
-		fileProviderAuthority: 'com.reactnativetvosfocus.provider'
+		fileProviderAuthority: 'com.movieapp.provider'
 	},
 	remote: null,
 	canUpdate: false,
