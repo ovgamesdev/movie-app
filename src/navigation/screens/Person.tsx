@@ -1,4 +1,5 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
+import { FilmographyItems } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -209,6 +210,8 @@ export const Person = ({ navigation, route }: Props) => {
 									</View>
 								)}
 							</View>
+
+							<FilmographyItems id={data.id} />
 						</View>
 					</View>
 				</View>

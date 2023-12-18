@@ -14,7 +14,7 @@ interface IItem<T> {
 type Position = { top?: number; right?: number; bottom?: number; left?: number }
 
 interface Props<T> {
-	type?: 'toLeftTop' | 'toLeftBottom' | 'toRightTop' | 'toRightBottom'
+	type?: 'toLeftTop' | 'toLeftBottom' | 'toRightTop' | 'toRightBottom' | 'fullWidthToBottom'
 	items: IItem<T>[]
 	value: T
 	onChange: (value: T) => void
@@ -61,6 +61,10 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, left: pageX - insets.left })
 			} else if (type === 'toRightBottom') {
 				setPosition({ top: height + pageY - insets.top + padding, left: pageX - insets.left })
+			} else if (type === 'fullWidthToBottom') {
+				setPosition({ top: height + pageY - insets.top + padding, right: screen.width - padding, left: padding })
+			} else {
+				//
 			}
 		})
 	}

@@ -1,4 +1,5 @@
 export * from './Episodes'
+export * from './FilmographyItems'
 export * from './SearchResults'
 export * from './SimilarMovie'
 export * from './SlugItemList'

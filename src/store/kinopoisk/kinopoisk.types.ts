@@ -232,6 +232,7 @@ export interface IMovieBaseInfo {
 	images: {
 		total: number
 	}
+	isShortFilm?: boolean
 	isTicketsAvailable: boolean // TODO ?
 	isTvOnly: boolean // TODO ?
 	keywords: {
@@ -745,5 +746,59 @@ interface Episode {
 	title: {
 		original: string | null
 		russian: string | null
+	}
+}
+
+// PERSON FilmographyItems
+
+export type IFilmographyItemsResults = { docs: OIFilmographyItem[]; total: number; limit: number; page: number; pages: number }
+
+export interface OIFilmographyItem {
+	movie: IFilmographyItemSeries | IFilmographyItemFilm
+	participations: { items: { name: string | null; notice: string | null; role: { slug: string; title: { english: string | null; russian: string } } }[] } // TODO
+	salaries: { items: [] } // TODO
+	__typename: 'FilmographyItem'
+}
+
+interface IFilmographyItemSeries extends Pick<IMovieBaseInfo, 'contentId' | 'countries' | 'genres' | 'id' | 'isShortFilm' | 'isTicketsAvailable' | 'poster' | 'releaseYears' | 'top250' | 'userData' | 'viewOption'> {
+	rating: Rating
+	title: {
+		english: string | null
+		original: string | null
+		russian: string | null
+	}
+	__typename: 'TvSeries' | 'MiniSeries'
+}
+
+interface IFilmographyItemFilm extends Pick<IMovieBaseInfo, 'contentId' | 'countries' | 'genres' | 'id' | 'isShortFilm' | 'isTicketsAvailable' | 'poster' | 'productionYear' | 'top250' | 'userData' | 'viewOption'> {
+	rating: Rating
+	title: {
+		english: string | null
+		original: string | null
+		russian: string | null
+	}
+	__typename: 'Film'
+}
+
+// FilmographyFilters
+
+export interface IFilmographyFiltersResults {
+	genres: {
+		items: { id: number; name: string; slug: string; __typename: 'Genre' }[]
+		__typename: 'PagingList_Genre'
+	}
+	roles: {
+		id: number
+		roles: { items: { movies: { total: number }; role: { slug: string; title: { english: string | null; russian: string } } }[] }
+		__typename: 'Person'
+	}
+	years: {
+		filmographyYears: {
+			end: number
+			start: number
+			__typename: 'YearsRange'
+		}
+		id: number
+		__typename: 'Person'
 	}
 }

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { ToastAndroid } from 'react-native'
-import { IFilmBaseInfo, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from './kinopoisk.types'
+import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
@@ -293,8 +293,79 @@ export const kinopoiskApi = createApi({
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
+		}),
+		getFilmographyItems: build.query<IFilmographyItemsResults, { personId: number; orderBy?: string; page?: number; limit?: number; roleSlugs?: string[]; genre?: null | number; year?: null | { start: number; end: number } }>({
+			query: ({ personId, orderBy = 'YEAR_DESC', page = 1, limit = 50, roleSlugs = ['ACTOR'], genre = null, year = null }) => ({
+				url: '?operationName=FilmographyItems',
+				method: 'post',
+				body: {
+					operationName: 'FilmographyItems',
+					variables: {
+						genre,
+						itemsLimit: limit,
+						itemsOffset: limit * (page - 1),
+						orderBy,
+						participationsLimit: 30,
+						personId,
+						regionId: 10298,
+						roleSlugs,
+						withUserData: false,
+						year
+					},
+					query:
+						'query FilmographyItems($personId: Long!, $roleSlugs: [String], $genre: Int = null, $year: YearsRangeInput = null, $orderBy: FilmographyItemOrderBy = YEAR_DESC, $itemsLimit: Int = 10, $itemsOffset: Int = 0, $participationsLimit: Int = 10, $withUserData: Boolean = false, $regionId: Int = 213) { person(id: $personId) { id filmographyRelations(roleSlugs: $roleSlugs, limit: $itemsLimit, offset: $itemsOffset, genre: $genre, year: $year, orderBy: $orderBy) { items { movie { id contentId title { russian english original __typename } genres { id name __typename } poster { avatarsUrl fallbackUrl __typename } rating { kinopoisk { isActive count value __typename } expectation { isActive count value __typename } __typename } countries { id name __typename } viewOption { buttonText originalButtonText promotionIcons { avatarsUrl fallbackUrl __typename } isAvailableOnline: isWatchable(filter: {anyDevice: false, anyRegion: false}) purchasabilityStatus type rightholderLogoUrlForPoster __typename } isTicketsAvailable(regionId: $regionId) ... on Film { productionYear isShortFilm top250 __typename } ... on TvSeries { releaseYears { start end __typename } __typename } ... on MiniSeries { releaseYears { start end __typename } __typename } ... on TvShow { releaseYears { start end __typename } __typename } ... on Video { productionYear __typename } ...FilmographyItemUserData @include(if: $withUserData) __typename } participations(limit: $participationsLimit) { items { notice role { title { russian english __typename } slug __typename } ... on CastMovieParticipation { name __typename } ... on StaffMovieParticipation { relatedCast { name person { id name url __typename } __typename } __typename } __typename } __typename } salaries { items { amount currency { symbol __typename } note __typename } __typename } __typename } limit offset total __typename } __typename } } fragment FilmographyItemUserData on Movie { userData { watchStatuses { notInterested { value __typename } watched { value __typename } __typename } folders { id name public __typename } voting { value votedAt __typename } expectation { value __typename } __typename } __typename } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				const data = (response as any)?.data?.person
+				const movies = data?.filmographyRelations ?? { items: [], total: 0 }
+
+				const total = movies.total
+				const limit = arg.limit ?? 50
+				const page = arg.page ?? 1
+				const pages = Math.ceil(total / limit)
+
+				return { docs: movies.items, total, limit, page, pages }
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
+		}),
+		getFilmographyFilters: build.query<IFilmographyFiltersResults, { personId: number }>({
+			query: ({ personId }) => ({
+				url: '?operationName=FilmographyFilters',
+				method: 'post',
+				body: {
+					operationName: 'FilmographyFilters',
+					variables: {
+						genresLimit: 32,
+						isCareer: false,
+						personId,
+						rolesLimit: 15
+					},
+					query: 'query FilmographyFilters($personId: Long!, $isCareer: Boolean = false, $rolesLimit: Int = 10, $genresLimit: Int = 10) { roles: person(id: $personId) { id roles(isCareer: $isCareer, limit: $rolesLimit) { items { movies { total __typename } role { slug title { russian english __typename } __typename } __typename } __typename } __typename } genres: genres(limit: $genresLimit) { items { id name slug __typename } __typename } years: person(id: $personId) { id filmographyYears { start end __typename } __typename } } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				const data = (response as any)?.data
+
+				return data
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
 		})
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery, useGetFilmographyItemsQuery, useGetFilmographyFiltersQuery } = kinopoiskApi
