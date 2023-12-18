@@ -134,3 +134,5 @@ export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
 export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {
 	return type[series] ?? type[notSeries]
 }
+
+export const delay = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

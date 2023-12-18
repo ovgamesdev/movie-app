@@ -42,8 +42,8 @@ export const Episodes = ({ id: tvSeriesId }: Props) => {
 
 	console.log('episodes data:', data)
 
-	const episodeNumber = data.releasedEpisodes.items[0].number
-	const seasonNumber = data.releasedEpisodes.items[0].season.number
+	const episodeNumber = data.releasedEpisodes.items[0]?.number
+	const seasonNumber = data.releasedEpisodes.items[0]?.season?.number
 
 	const totalEpisodes = ['Всего %d эпизод', 'Всего %d эпизода', 'Всего %d эпизодов']
 	const releasedEpisodes = ['Вышел %d эпизод', 'Вышло %d эпизода', 'Вышло %d эпизодов']

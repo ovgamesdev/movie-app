@@ -1,17 +1,32 @@
 import { ActivityIndicator, Button } from '@components/atoms'
 import { Episodes, SimilarMovie } from '@components/organisms'
-import { useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { addItemToContentReleaseNotify, isItemInContentReleaseNotify, removeItemToContentReleaseNotify, useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { declineSeasons, formatDuration, getRatingColor, isSeries, normalizeUrlWithNull, pickIsSeries, ratingMPAA } from '@utils'
+import { useEffect, useState } from 'react'
 import { FlatList, Image, ImageBackground, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
 import { useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
+
+const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> => {
+	try {
+		const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
+		if (!response.ok) return null
+		const json = await response.json()
+		if (!Array.isArray(json) || json.length === 0) return null
+		return json
+	} catch (e) {
+		console.error('getProviders error:', e)
+		return null
+	}
+}
 
 export const Movie = ({ navigation, route }: Props) => {
 	const insets = useSafeAreaInsets()
@@ -204,6 +219,94 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
+	const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
+		const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
+
+		useEffect(() => {
+			const init = async () => setStatus((await getProviders(data)) ? 'watch' : (await isItemInContentReleaseNotify(data)) ? 'on-notify' : 'off-notify')
+
+			init()
+		}, [])
+
+		return (
+			<Button
+				text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
+				style={{ minWidth: 54 }}
+				onPress={async () => {
+					const item = {
+						id: data.id,
+						name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+						poster: data.poster?.avatarsUrl ?? null,
+						type: data.__typename,
+						productionYear: data.productionYear,
+						releaseYears: 'releaseYears' in data ? data.releaseYears : undefined
+					}
+
+					switch (status) {
+						case 'loading':
+							break
+						case 'watch':
+							navigation.navigate('Watch', { data })
+							break
+						case 'off-notify':
+							setStatus('on-notify')
+							setStatus((await addItemToContentReleaseNotify(item)) ? 'on-notify' : 'off-notify')
+							break
+						case 'on-notify':
+							setStatus('off-notify')
+							setStatus((await removeItemToContentReleaseNotify(data)) ? 'off-notify' : 'on-notify')
+							break
+					}
+				}}>
+				{status === 'loading' ? <ActivityIndicator /> : undefined}
+			</Button>
+		)
+	}
+
+	// TODO remove this
+	const TestContentReleaseNotifyButton = () => {
+		const [status, setStatus] = useState<'loading' | 'off-notify' | 'on-notify'>('loading')
+
+		useEffect(() => {
+			const init = async () => setStatus((await isItemInContentReleaseNotify(data)) ? 'on-notify' : 'off-notify')
+
+			init()
+		}, [])
+
+		return (
+			<Button
+				text={status === 'loading' ? undefined : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
+				onPress={async () => {
+					const item = {
+						id: data.id,
+						name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+						poster: data.poster?.avatarsUrl ?? null,
+						type: data.__typename,
+						productionYear: data.productionYear,
+						releaseYears: 'releaseYears' in data ? data.releaseYears : undefined
+					}
+
+					switch (status) {
+						case 'loading':
+							break
+						case 'off-notify':
+							setStatus('on-notify')
+							setStatus((await addItemToContentReleaseNotify(item)) ? 'on-notify' : 'off-notify')
+							break
+						case 'on-notify':
+							setStatus('off-notify')
+							setStatus((await removeItemToContentReleaseNotify(data)) ? 'off-notify' : 'on-notify')
+							break
+					}
+				}}
+
+				//
+			>
+				{status === 'loading' ? <ActivityIndicator /> : undefined}
+			</Button>
+		)
+	}
+
 	// ott.promoTrailers.items[0].streamUrl
 	// //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/678x380 1x, //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/1344x756 2x
 
@@ -242,7 +345,8 @@ export const Movie = ({ navigation, route }: Props) => {
 						</View>
 						<View style={{}}>
 							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
-								<Button text='watch' onPress={() => navigation.navigate('Watch', { data })} hasTVPreferredFocus />
+								<WatchButton data={data} />
+								<TestContentReleaseNotifyButton />
 								<Button text='trailer' />
 							</TVFocusGuideView>
 

@@ -1,7 +1,10 @@
+import { createNavigationContainerRef } from '@react-navigation/native'
 import { IListSlugFilter } from 'src/store/kinopoisk/kinopoisk.types'
 
 export * from './StackNavigator'
 export * from './TabNavigator'
+
+export const navigationRef = createNavigationContainerRef<RootStackParamList>()
 
 export type RootStackParamList = {
 	Home: undefined

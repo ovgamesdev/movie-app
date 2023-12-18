@@ -1,7 +1,8 @@
 import { Button } from '@components/atoms'
 import { NetInfo } from '@components/molecules'
 import { UpdateApkModal } from '@components/organisms'
-import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useBackgroundFetch, useTheme, useTypedSelector } from '@hooks'
+import { navigationRef } from '@navigation'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
@@ -76,6 +77,8 @@ const AppContent: FC = () => {
 		getApkVersion()
 	}, [])
 
+	useBackgroundFetch()
+
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg100 }}>
 			<LoadingAppSettings>
@@ -88,7 +91,7 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
-					<NavigationContainer theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
+					<NavigationContainer ref={navigationRef} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
 						<StackNavigator />
 					</NavigationContainer>
 					<NetInfo />
