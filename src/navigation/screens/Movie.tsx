@@ -333,12 +333,12 @@ export const Movie = ({ navigation, route }: Props) => {
 						<View style={{ flexDirection: 'row', gap: 10 }}>
 							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={8} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
-								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }}>
+								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={orientation.portrait}>
 									<ProductionStatusText />
 									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : `(${data.productionYear})`}</Text>
 								</Text>
 
-								<Text style={{ color: colors.text200, fontSize: 18 }}>
+								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={orientation.portrait}>
 									{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
 									{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
 								</Text>
