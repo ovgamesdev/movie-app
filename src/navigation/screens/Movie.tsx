@@ -240,8 +240,7 @@ export const Movie = ({ navigation, route }: Props) => {
 						name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
 						poster: data.poster?.avatarsUrl ?? null,
 						type: data.__typename,
-						productionYear: data.productionYear,
-						releaseYears: 'releaseYears' in data ? data.releaseYears : undefined
+						productionYear: data.productionYear
 					}
 
 					switch (status) {
@@ -331,7 +330,7 @@ export const Movie = ({ navigation, route }: Props) => {
 					)}
 					<View style={[{ flex: 1 }, orientation.portrait && { backgroundColor: colors.bg100, marginTop: -10, paddingHorizontal: 10, paddingTop: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16 }]}>
 						<View style={{ flexDirection: 'row', gap: 10 }}>
-							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={8} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={8} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
+							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={6} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={orientation.portrait}>
 									<ProductionStatusText />
@@ -364,7 +363,7 @@ export const Movie = ({ navigation, route }: Props) => {
 															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
 															{ filterId: 'top', value: true }
 														]
-														const singleSelectFilterValues = [{ filterId: 'year', value: data.productionYear.toString() }]
+														const singleSelectFilterValues = data.productionYear !== null ? [{ filterId: 'year', value: data.productionYear.toString() }] : []
 
 														navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
 													}}

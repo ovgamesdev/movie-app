@@ -53,7 +53,7 @@ const getCloudSettings = async (): Promise<ISettings | null> => {
 	}
 }
 
-const saveCloudSettings = async (_value: ISettings): Promise<boolean> => {
+const saveCloudSettings = async (_value: object): Promise<boolean> => {
 	try {
 		const value = JSON.stringify(_value)
 
@@ -145,7 +145,7 @@ const getLocalSettings = async (): Promise<ISettings | null> => {
 	}
 }
 
-const saveLocalSettings = async (_value: ISettings): Promise<boolean> => {
+const saveLocalSettings = async (_value: object): Promise<boolean> => {
 	try {
 		const value = JSON.stringify(_value)
 
@@ -177,7 +177,7 @@ export const getSettings = createAppAsyncThunk<{ local: ISettings | null; server
 export const saveSettings = createAppAsyncThunk<{ local: boolean; server: boolean }>('settings/save-settings', async (_, thunkAPI) => {
 	try {
 		const state = thunkAPI.getState()
-		const settings = state.settings.settings ?? {}
+		const settings = (state.settings.settings as ISettings | null) ?? {}
 
 		return {
 			local: await saveLocalSettings(settings),

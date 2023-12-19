@@ -18,7 +18,7 @@ interface contentReleaseNotifyMovieFilm {
 	name: string
 	poster: string | null
 	type: 'Film'
-	productionYear?: number
+	productionYear?: number | null
 }
 
 interface contentReleaseNotifyMovieSeries {
@@ -26,7 +26,6 @@ interface contentReleaseNotifyMovieSeries {
 	name: string
 	poster: string | null
 	type: 'TvSeries' | 'MiniSeries'
-	releaseYears?: { start: number | null; end: number | null }[]
 }
 
 export type IContentReleaseNotifyMovie = contentReleaseNotifyMovieFilm | contentReleaseNotifyMovieSeries
@@ -120,6 +119,7 @@ export const backgroundTask = async (taskId: string) => {
 
 			const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
+			// TODO add date-time
 			notifee.displayNotification({
 				title: 'Новый контент доступен!',
 				body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.name}`,

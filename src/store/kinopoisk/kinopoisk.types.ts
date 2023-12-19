@@ -26,7 +26,7 @@ export interface IGraphqlMovie {
 	viewOption: ViewOption | null
 	isTicketsAvailable: boolean
 	releaseYears?: ReleaseYear[]
-	productionYear?: number
+	productionYear?: number | null
 	seriesDuration: number | null
 	totalDuration: number | null
 	top250: number | null
@@ -37,7 +37,7 @@ export interface IGraphqlSuggestMovie {
 	contentId: string | null
 	id: number
 	poster: Poster | null
-	productionYear?: number
+	productionYear?: number | null
 	rating: Rating
 	releaseYears?: ReleaseYear[]
 	title: Title
@@ -287,7 +287,7 @@ export interface IMovieBaseInfo {
 	}
 	productionStatus: string | null // 'ANNOUNCED' | 'COMPLETED' | 'FILMING' | 'POST_PRODUCTION' | 'PRE_PRODUCTION' | 'UNKNOWN'
 	productionStatusUpdateDate: string | null
-	productionYear: number // TODO
+	productionYear: number | null
 	promos: {
 		total: number
 	}

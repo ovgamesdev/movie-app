@@ -21,3 +21,9 @@ export type HomeTabParamList = {
 	Search: undefined | { data: object }
 	Bookmarks: undefined
 }
+
+export type BookmarksTabParamList = {
+	Favorites: undefined
+	ReleaseNotify: undefined
+	History: undefined
+}

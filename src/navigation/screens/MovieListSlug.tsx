@@ -127,7 +127,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		({ item, index }) => {
 			if (item.__typename === 'Skeleton') {
 				return (
-					<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24}>
+					<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10}>
 						<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: colors.bg200 }} />
 						<View style={{ height: 92, marginLeft: 20, flex: 1 }}>
 							<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: colors.bg200 }} />
@@ -149,7 +149,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 			return (
 				<>
 					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={20} paddingVertical={24} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
+					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
 						{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
 							orientation.landscape &&
 							(item.__typename === 'BoxOfficeMovieListItem' ? (
@@ -161,7 +161,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 								</View>
 							))}
 						<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
-							<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 108, width: 72, aspectRatio: 667 / 1000 }}>
+							<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6}>
 								{orientation.portrait && rating && (
 									<View style={{ position: 'absolute', top: 6, left: 6 }}>
 										<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
@@ -191,7 +191,8 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 								</View>
 
 								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
-									{[item.movie.countries[0]?.name, item.movie.genres[0]?.name].filter(it => !!it).join(' • ')}
+									{/* {[item.movie.countries[0]?.name, item.movie.genres[0]?.name].filter(it => !!it).join(' • ')} */}
+									{[item.movie.countries.map(it => it.name).join(', '), item.movie.genres.map(it => it.name).join(', ')].join(' • ')}
 									{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name ?? item.movie.directors.items[0].person.originalName}`}
 								</Text>
 
