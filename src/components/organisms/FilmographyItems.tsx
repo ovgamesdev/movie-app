@@ -27,13 +27,13 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 	const ref = useRef<FlatList>(null)
 
 	const [page, setPage] = useState(1)
-	const [roleSlugs, setRoleSlugs] = useState<string[]>(['ACTOR'])
+	const [roleSlugs, setRoleSlugs] = useState<string[]>([])
 	const [year, setYear] = useState<null | { start: number; end: number }>(null)
 	const [genre, setGenre] = useState<null | number>(null)
 	const [orderBy, setOrderBy] = useState<string>('YEAR_DESC')
 
 	const { data: dataFilters, isFetching: isFetchingFilters } = useGetFilmographyFiltersQuery({ personId })
-	const { data, isFetching: isFetchingItems } = useGetFilmographyItemsQuery({ personId, roleSlugs, year, genre, orderBy, page }, { skip: dataFilters === undefined })
+	const { data, isFetching: isFetchingItems } = useGetFilmographyItemsQuery({ personId, roleSlugs: roleSlugs.length === 0 ? [dataFilters?.roles.roles.items[0]?.role.slug ?? 'ACTOR'] : roleSlugs, year, genre, orderBy, page }, { skip: dataFilters === undefined })
 
 	const isFetching = isFetchingFilters || isFetchingItems
 
@@ -66,8 +66,8 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 				ref={ref}
 				horizontal
 				data={dataFilters.roles.roles.items}
-				renderItem={({ item: { role, movies } }) => {
-					const isActive = roleSlugs.includes(role.slug)
+				renderItem={({ item: { role, movies }, index }) => {
+					const isActive = roleSlugs.length === 0 ? index === 0 : roleSlugs.includes(role.slug)
 
 					return (
 						<Button onPress={() => (setRoleSlugs([role.slug]), setPage(1))} isActive={isActive} activeButtonColor={colors.accent100}>

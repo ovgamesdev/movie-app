@@ -79,8 +79,15 @@ export interface IBoxOfficeMovieListItem {
 }
 
 export type IListBySlugResultsDocs = IBoxOfficeMovieListItem | ITopMovieListItem | IPopularMovieListItem | IMovieItem
-export type IListBySlugResults = { docs: IListBySlugResultsDocs[]; total: number; limit: number; page: number; pages: number; name: string; availableFilters: { items: { id: string; enabled: boolean; name: { russian: string } }[] }; description: string; cover: { avatarsUrl: string } }
-export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList }[]; movies: { movie: IGraphqlSuggestMovie }[]; persons: { person: IGraphqlSuggestPerson }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList } | null }
+export type IListBySlugResults = { docs: IListBySlugResultsDocs[]; total: number; limit: number; page: number; pages: number; name: string; availableFilters: IAvailableFilters; description: string; cover: { avatarsUrl: string } }
+export type ISuggestSearchResults = { cinemas: any[]; movieLists: { movieList: IGraphqlSuggestMovieList | null }[]; movies: { movie: IGraphqlSuggestMovie | null }[]; persons: { person: IGraphqlSuggestPerson | null }[]; topResult: { global: IGraphqlSuggestMovie | IGraphqlSuggestPerson | IGraphqlSuggestMovieList | null } | null }
+
+export interface IAvailableFilters {
+	items: (BooleanFilter | SingleSelectFilter)[]
+}
+
+export type BooleanFilter = { id: string; enabled: boolean; name: { russian: string }; __typename: 'BooleanFilter' }
+export type SingleSelectFilter = { hint: { russian: string }; id: string; name: { russian: string }; values: { items: { name: { russian: string }; selectable: boolean; value: string }[] }; __typename: 'SingleSelectFilter' }
 
 export interface IGraphqlSuggestMovieList {
 	cover: Pick<Poster, 'avatarsUrl'>

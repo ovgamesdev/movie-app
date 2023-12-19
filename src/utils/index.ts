@@ -115,7 +115,7 @@ export const normalizeUrlWithNull = (url: string | null | undefined, other: { is
 		return `http:${url}` + (other.append ? other.append : '')
 	}
 
-	return url
+	return url + (other.append ? other.append : '')
 }
 
 export const normalizeUrl = (url: string): string => {

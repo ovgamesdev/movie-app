@@ -44,9 +44,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Фильмы и сериалы</Text>
 
-					{data.movies.map(({ movie }) => (
-						<SearchMovie key={movie.id} onPress={onMovie} item={movie} />
-					))}
+					{data.movies.map(({ movie }) => (movie === null ? null : <SearchMovie key={movie.id} onPress={onMovie} item={movie} />))}
 				</View>
 			) : null}
 
@@ -54,9 +52,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
 
-					{data.movieLists.map(({ movieList }) => (
-						<SearchMovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />
-					))}
+					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <SearchMovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />))}
 				</View>
 			) : null}
 
@@ -64,9 +60,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Персоны</Text>
 
-					{data.persons.map(({ person }) => (
-						<SearchPerson key={person.id} onPress={onPerson} item={person} />
-					))}
+					{data.persons.map(({ person }) => (person === null ? null : <SearchPerson key={person.id} onPress={onPerson} item={person} />))}
 				</View>
 			) : null}
 		</View>
