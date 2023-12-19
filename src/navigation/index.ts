@@ -19,4 +19,5 @@ export type HomeTabParamList = {
 	Content: undefined
 	Settings: undefined
 	Search: undefined | { data: object }
+	Bookmarks: undefined
 }

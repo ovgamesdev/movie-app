@@ -1,3 +1,4 @@
+export * from './Bookmarks'
 export * from './Home'
 export * from './Movie'
 export * from './MovieListSlug'
