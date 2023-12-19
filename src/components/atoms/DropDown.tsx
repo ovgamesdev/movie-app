@@ -2,7 +2,7 @@ import { Button, ButtonType } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
 import React, { useRef, useState } from 'react'
-import { Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { Dimensions, FlatList, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -20,7 +20,7 @@ interface Props<T> {
 	onChange: (value: T) => void
 }
 
-export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, onChange }: Props<T>) => {
+export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange }: Props<T>) => {
 	const [isVisible, setIsVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const { colors } = useTheme()
@@ -29,6 +29,8 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 	const modalRef = useRef<View>(null)
 	const optionsRef = useRef<(ButtonType | null)[]>([])
 	const [position, setPosition] = useState<Position>({})
+
+	const ITEM_HEIGHT = 38
 
 	const onClose = () => {
 		setIsVisible(false)
@@ -44,35 +46,38 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 		onChange(value)
 	}
 
+	const screen = Dimensions.get('window')
+
 	const onLayout = () => {
 		buttonRef.current?.buttonRef?.measure((x, y, width, height, pageX, pageY) => {
-			console.log('measure', { x, y, width, height, pageX, pageY })
-			const screen = Dimensions.get('window')
+			// console.log('measure', { x, y, width, height, pageX, pageY })
 			const padding = 5
 
-			if ([x, y, width, height, pageX, pageY].find(it => it === undefined)) return
+			if ([x, y, width, height, pageX, pageY].find((it: number | undefined) => it === undefined)) return
 
-			if (type === 'toLeftTop') {
-				// TODO check is quit of screen
-				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, right: screen.width - (pageX + width) - insets.right })
-			} else if (type === 'toLeftBottom') {
-				setPosition({ top: height + pageY - insets.top + padding, right: screen.width - (pageX + width) - insets.right })
-			} else if (type === 'toRightTop') {
-				setPosition({ bottom: screen.height - pageY - insets.bottom + padding, left: pageX - insets.left })
-			} else if (type === 'toRightBottom') {
-				setPosition({ top: height + pageY - insets.top + padding, left: pageX - insets.left })
-			} else if (type === 'fullWidthToBottom') {
-				setPosition({ top: height + pageY - insets.top + padding, right: screen.width - padding, left: padding })
-			} else {
-				//
+			// TODO check is quit of screen
+			switch (type) {
+				case 'toLeftTop':
+					setPosition({ bottom: screen.height - pageY - insets.bottom + padding, right: screen.width - (pageX + width) - insets.right })
+					break
+				case 'toLeftBottom':
+					setPosition({ top: height + pageY - insets.top + padding, right: screen.width - (pageX + width) - insets.right })
+					break
+				case 'toRightTop':
+					setPosition({ bottom: screen.height - pageY - insets.bottom + padding, left: pageX - insets.left })
+					break
+				case 'toRightBottom':
+					setPosition({ top: height + pageY - insets.top + padding, left: pageX - insets.left })
+					break
+				case 'fullWidthToBottom':
+					setPosition({ top: height + pageY - insets.top + padding, right: screen.width - padding, left: padding })
+					break
 			}
 		})
 	}
 
 	const onModalLayout = () => {
-		modalRef.current?.measure((x, y, width, height, pageX, pageY) => {
-			const screen = Dimensions.get('window')
-
+		modalRef.current?.measure((_x, _y, _width, height) => {
 			if (!position.top) return
 
 			const margin = 10
@@ -96,10 +101,6 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 		onModalLayout()
 	}
 
-	if (!checkedItem) {
-		return null
-	}
-
 	return (
 		<TVFocusGuideView trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
 			<Button ref={buttonRef} onLayout={onLayout} onPress={onOpen} flex={0} flexDirection='row'>
@@ -111,21 +112,23 @@ export const DropDown = <T extends any>({ type = 'toLeftBottom', items, value, o
 
 			{/* FIXME: shadow not animated { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 } */}
 			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.25} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
-				<View ref={modalRef} style={{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6, overflow: 'hidden', minWidth: 200, maxWidth: '100%', maxHeight: '100%', ...position }}>
-					<ScrollView>
-						{items.map((item, i) => {
+				<View ref={modalRef} style={{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6, overflow: 'hidden', minWidth: type === 'fullWidthToBottom' ? screen.width - 10 : 200, maxWidth: '100%', maxHeight: ITEM_HEIGHT * 6, ...position }}>
+					<FlatList
+						data={items}
+						renderItem={({ item, index }) => {
 							const isChecked = value === item.value
 
 							return (
-								<Button key={i} ref={ref => (optionsRef.current[i] = ref)} onPress={() => onSelect(item.value)} flexDirection='row' justifyContent='space-between'>
+								<Button key={index} ref={ref => (optionsRef.current[index] = ref)} onPress={() => onSelect(item.value)} flexDirection='row' justifyContent='space-between'>
 									<Text style={{ color: isChecked ? colors.text100 : colors.text200 }} numberOfLines={1}>
 										{item.label}
 									</Text>
 									{isChecked && <CheckIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 5 }} />}
 								</Button>
 							)
-						})}
-					</ScrollView>
+						}}
+						getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+					/>
 				</View>
 			</Modal>
 		</TVFocusGuideView>
