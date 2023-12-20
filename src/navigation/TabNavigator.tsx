@@ -2,9 +2,9 @@ import { Button } from '@components/atoms'
 import { useTheme, useTypedSelector } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { TabBarIcon } from './TabBarIcon'
-import { Bookmarks, Home, Search, Settings } from './screens'
+import { Bookmarks, Home, Search, Settings, TvBookmarks } from './screens'
 
 const Tab = createBottomTabNavigator<HomeTabParamList>()
 
@@ -35,7 +35,7 @@ export const TabNavigator = () => {
 			safeAreaInsets={isShowNetInfo ? { bottom: 0, left: 0, right: 0, top: 0 } : undefined}>
 			<Tab.Screen name='Content' component={Home} />
 			<Tab.Screen name='Search' component={Search} />
-			<Tab.Screen name='Bookmarks' component={Bookmarks} />
+			<Tab.Screen name='Bookmarks' component={Platform.isTV ? TvBookmarks : Bookmarks} />
 			<Tab.Screen name='Settings' component={Settings} />
 		</Tab.Navigator>
 	)

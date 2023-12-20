@@ -1,17 +1,18 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { IContentReleaseNotifyMovie, useNavigation, useTheme } from '@hooks'
-import { BookmarksTabParamList } from '@navigation'
+import { BookmarksTabParamList, navigationRef } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
-import { useFocusEffect } from '@react-navigation/native'
+import { StackActions, useFocusEffect } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, FlatList, Platform, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TabBar } from '../../TabBar'
 
-const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
-
-const Favorites = () => {
+const Favorites: React.FC = () => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
@@ -22,7 +23,7 @@ const Favorites = () => {
 		</TVFocusGuideView>
 	)
 }
-const ReleaseNotify = () => {
+const ReleaseNotify: React.FC = () => {
 	const [data, setData] = useState<IContentReleaseNotifyMovie[]>([])
 	const { colors } = useTheme()
 	const navigation = useNavigation()
@@ -108,7 +109,7 @@ const ReleaseNotify = () => {
 		</TVFocusGuideView>
 	)
 }
-const History = () => {
+const History: React.FC = () => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
@@ -120,8 +121,67 @@ const History = () => {
 	)
 }
 
+const TvTabBar = ({ activeTab, setActiveTab }: { activeTab: keyof BookmarksTabParamList; setActiveTab: (tab: keyof BookmarksTabParamList) => void }) => {
+	const insets = useSafeAreaInsets()
+	const bottomTabBarHeight = useBottomTabBarHeight()
+	const { colors } = useTheme()
+
+	const tabWidth = Dimensions.get('window').width / 3 // 120
+
+	const tabs: Record<keyof BookmarksTabParamList, string> = {
+		Favorites: 'Избранное',
+		ReleaseNotify: 'Уведомить о выходе',
+		History: 'История'
+	}
+
+	const objectTabs = Object.values(tabs)
+	const objectTabKeys = Object.keys(tabs) as (keyof BookmarksTabParamList)[]
+
+	return (
+		<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight style={{ flexDirection: 'row', borderBottomColor: colors.bg300, borderBottomWidth: 1, marginTop: insets.top }}>
+			{objectTabs.map((tab, index) => {
+				const key = objectTabKeys[index]
+				const isActive = key === activeTab
+
+				return (
+					<Button key={index} onPress={() => !isActive && setActiveTab(key)} isActive={isActive} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight - insets.bottom - 2 }} transparent>
+						<Text style={{ color: isActive ? colors.text100 : colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
+					</Button>
+				)
+			})}
+		</TVFocusGuideView>
+	)
+}
+
+export const TvBookmarks = () => {
+	const Stack = createNativeStackNavigator<BookmarksTabParamList>()
+	const [activeTab, setActiveTab] = useState<keyof BookmarksTabParamList>('ReleaseNotify')
+
+	return (
+		<View style={{ flex: 1 }}>
+			<TvTabBar activeTab={activeTab} setActiveTab={tab => navigationRef.dispatch(StackActions.replace(tab))} />
+			<Stack.Navigator
+				screenListeners={{
+					state: e => {
+						const name = (e.data as { state?: { routes?: { name: keyof BookmarksTabParamList }[] } } | undefined)?.state?.routes?.[0]?.name
+
+						if (name) {
+							setActiveTab(name)
+						}
+					}
+				}}
+				screenOptions={{ headerShown: false, freezeOnBlur: true, animation: 'none' }}
+				initialRouteName={activeTab}>
+				<Stack.Screen name='Favorites' component={Favorites} />
+				<Stack.Screen name='ReleaseNotify' component={ReleaseNotify} />
+				<Stack.Screen name='History' component={History} />
+			</Stack.Navigator>
+		</View>
+	)
+}
+
 export const Bookmarks = () => {
-	// TODO other navigator for tv
+	const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
 	return (
 		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='ReleaseNotify' tabBar={TabBar}>
