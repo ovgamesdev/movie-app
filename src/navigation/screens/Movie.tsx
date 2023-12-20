@@ -205,8 +205,8 @@ export const Movie = ({ navigation, route }: Props) => {
 			case 'UNKNOWN':
 				statusMessage = 'Неизвестно'
 				statusStyle = {
-					color: orientation.portrait ? 'rgba(31,31,31,.9)' : 'rgba(255,255,255,.8)',
-					backgroundColor: orientation.portrait ? 'rgba(31,31,31,.1)' : 'rgba(31,31,31,.24)'
+					color: 'rgba(255,255,255,.8)', // orientation.portrait ? 'rgba(31,31,31,.9)' : 'rgba(255,255,255,.8)'
+					backgroundColor: 'rgba(31,31,31,.24)' // orientation.portrait ? 'rgba(31,31,31,.1)' : 'rgba(31,31,31,.24)'
 				}
 				break
 			default:
@@ -334,7 +334,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={orientation.portrait}>
 									<ProductionStatusText />
-									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : `(${data.productionYear})`}</Text>
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
 								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={orientation.portrait}>
