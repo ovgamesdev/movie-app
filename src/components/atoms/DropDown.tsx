@@ -50,7 +50,7 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 
 	const onLayout = () => {
 		buttonRef.current?.buttonRef?.measure((x, y, width, height, pageX, pageY) => {
-			// console.log('measure', { x, y, width, height, pageX, pageY })
+			console.log('measure:', type, { x, y, width, height, pageX, pageY })
 			const padding = 5
 
 			if ([x, y, width, height, pageX, pageY].find((it: number | undefined) => it === undefined)) return
@@ -82,6 +82,8 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 
 			const margin = 10
 			const padding = 30
+
+			console.log('position:', { screenHeight: screen.height, height, padding })
 
 			if (position.top && position.top + height + padding > screen.height) {
 				if (height > screen.height) {

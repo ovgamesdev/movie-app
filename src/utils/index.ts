@@ -96,6 +96,15 @@ export const declineChildren = (count: number): string => {
 	return `${count} ${titles[count % 100 > 4 && count % 100 < 20 ? 2 : cases[Math.min(count % 10, 5)]]}`
 }
 
+// TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
+export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
+	return type === 'TvSeries' || type === 'MiniSeries'
+}
+
+export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {
+	return type[series] ?? type[notSeries]
+}
+
 // OTHER
 
 export const mapValue = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number): number => {
@@ -126,13 +135,20 @@ export const normalizeUrl = (url: string): string => {
 	return url
 }
 
-// TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
-export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
-	return type === 'TvSeries' || type === 'MiniSeries'
-}
-
-export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {
-	return type[series] ?? type[notSeries]
-}
-
 export const delay = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const getNoun = (number: number, one: string, two: string, five: string) => {
+	let n = Math.abs(number)
+	n %= 100
+	if (n >= 5 && n <= 20) {
+		return five
+	}
+	n %= 10
+	if (n === 1) {
+		return one
+	}
+	if (n >= 2 && n <= 4) {
+		return two
+	}
+	return five
+}

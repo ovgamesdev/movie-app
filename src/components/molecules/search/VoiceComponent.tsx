@@ -76,7 +76,7 @@ export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, 
 				// style={{ backgroundColor: !isSupported ? colors.primary300 + 'A6' : recognizing ? colors.warning : colors.primary300, width: 40, height: 40, borderRadius: 99, position: 'absolute', alignItems: 'center', justifyContent: 'center' }}
 
 				onPress={_onPress}>
-				<VoiceIcon width={30} height={30} fill={recognizing ? colors.warning : isSupported ? colors.text100 : colors.text200} />
+				<VoiceIcon width={24} height={24} fill={recognizing ? colors.warning : isSupported ? colors.text100 : colors.text200} />
 			</Button>
 		</View>
 	)

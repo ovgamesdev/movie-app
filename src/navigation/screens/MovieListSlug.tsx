@@ -45,7 +45,7 @@ interface FiltersProps {
 	availableFilters: IAvailableFilters
 }
 
-const Filter = ({ id, onResetPage, filters, setFilters, availableFilters }: { id: string } & FiltersProps) => {
+export const Filter = ({ id, onResetPage, filters, setFilters, availableFilters }: { id: string } & FiltersProps) => {
 	const filter = availableFilters.items.find(it => it.id === id && it.__typename === 'SingleSelectFilter') as SingleSelectFilter | undefined
 
 	// TODO add Boolean
@@ -271,14 +271,12 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 						<DescriptionText />
 					</View>
 				)}
-				<ScrollView horizontal contentContainerStyle={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5 }}>
+				<ScrollView horizontal>
 					{data.availableFilters && (
-						<>
+						<TVFocusGuideView style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 							<Filter id='country' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='genre' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='year' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
-
-							{/* <Filters availableFilters={data.availableFilters} filters={newFilters} setFilters={setNewFilters} onResetPage={setPage} /> */}
 							<DropDown
 								items={[
 									{ label: 'По порядку', value: 'POSITION_ASC' },
@@ -294,7 +292,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 								value={order}
 								type='fullWidthToBottom'
 							/>
-						</>
+						</TVFocusGuideView>
 					)}
 				</ScrollView>
 			</>

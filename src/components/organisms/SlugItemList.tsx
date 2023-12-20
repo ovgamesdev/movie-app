@@ -10,6 +10,9 @@ type Props = {
 	slug: string
 	title: string
 }
+type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
+
+const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
 export const SlugItemList = ({ slug, title }: Props) => {
 	const navigation = useNavigation()
@@ -31,7 +34,6 @@ export const SlugItemList = ({ slug, title }: Props) => {
 	}, [focusedItem.current, navigation])
 
 	const { isFetching, data } = useGetListBySlugQuery({ slug, page: 1, limit: 25 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.docs ?? [], ...otherParams }) })
-
 	const isEmpty = data.length === 0
 
 	const handleOnFocus = ({ index }: { index: number }) => {
@@ -46,7 +48,21 @@ export const SlugItemList = ({ slug, title }: Props) => {
 		focusedItem.current = { index: -1 }
 	}
 
-	const renderItem: ListRenderItem<IListBySlugResultsDocs> = ({ item, index }) => <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	const renderItem: ListRenderItem<IListBySlugResultsDocs | Skeleton> = ({ item, index }) => {
+		if (item.__typename === 'Skeleton') {
+			return (
+				<Button focusable={false} flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }}>
+					<View style={{ height: 140, aspectRatio: 667 / 1000, backgroundColor: colors.bg200, borderRadius: 6 }} />
+					<View style={{ paddingTop: 5 }}>
+						<View style={{ width: '90%', height: 14, marginTop: 2, backgroundColor: colors.bg200 }} />
+						<View style={{ width: '45%', height: 12, marginTop: 5 + 3, backgroundColor: colors.bg200 }} />
+					</View>
+				</Button>
+			)
+		}
+
+		return <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+	}
 
 	return (
 		<>
@@ -58,7 +74,8 @@ export const SlugItemList = ({ slug, title }: Props) => {
 				<FlatList
 					keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
 					ref={ref}
-					data={data}
+					data={isFetching ? skeletonData : data}
+					// data={skeletonData}
 					horizontal
 					showsHorizontalScrollIndicator={!false}
 					contentContainerStyle={{ flexGrow: 1 }}
@@ -73,6 +90,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 					}
 					ListFooterComponent={
 						<>
+							{/* TODO ??? */}
 							{!isFetching ? null : (
 								<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', height: 215.5, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
 									<ActivityIndicator size={data.length !== 0 ? 'large' : 'small'} style={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }} />

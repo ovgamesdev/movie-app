@@ -19,13 +19,12 @@ export const Search = ({ route }: Props) => {
 	const [keyword, setKeyword] = useState('')
 	const deferredKeyword = useDeferredValue(keyword)
 	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: deferredKeyword.length === 0 })
+	const isEmpty = !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
+	const isLoading = keyword !== deferredKeyword || isFetching
 
 	const ref = useRef<InputType>(null)
 
 	useEffect(() => navigation.addListener('focus', () => setTimeout(() => keyword.length === 0 && ref.current?.focus(), 0)), [navigation, ref, keyword])
-
-	const isEmpty = !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
-	const isLoading = keyword !== deferredKeyword || isFetching
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>

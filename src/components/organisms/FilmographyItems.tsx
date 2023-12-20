@@ -2,7 +2,7 @@ import { Button, DropDown } from '@components/atoms'
 import { useNavigation, useOrientation, useTheme } from '@hooks'
 import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
 import React, { useRef, useState } from 'react'
-import { FlatList, ScrollView, Text, View } from 'react-native'
+import { FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { Pagination } from '../molecules/Pagination'
 
 type Props = {
@@ -20,7 +20,7 @@ const generateYearIntervals = ({ start, end }: { start: number; end: number }, i
 }
 
 export const FilmographyItems = ({ id: personId }: Props) => {
-	const { colors } = useTheme()
+	const { colors, getColorForTheme } = useTheme()
 	const orientation = useOrientation()
 	const navigation = useNavigation()
 
@@ -62,64 +62,72 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<FlatList
-				ref={ref}
-				horizontal
-				data={dataFilters.roles.roles.items}
-				renderItem={({ item: { role, movies }, index }) => {
-					const isActive = roleSlugs.length === 0 ? index === 0 : roleSlugs.includes(role.slug)
+			<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight>
+				<FlatList
+					ref={ref}
+					horizontal
+					data={dataFilters.roles.roles.items}
+					renderItem={({ item: { role, movies }, index }) => {
+						const isActive = roleSlugs.length === 0 ? index === 0 : roleSlugs.includes(role.slug)
 
-					return (
-						<Button onPress={() => (setRoleSlugs([role.slug]), setPage(1))} isActive={isActive} activeButtonColor={colors.accent100}>
-							<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 18, fontWeight: '600' }}>{role.title.russian || role.title.english}</Text>
-							<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 13 }}>{movies.total}</Text>
-						</Button>
-					)
-				}}
-				contentContainerStyle={{ marginBottom: 9, gap: 5 }}
-			/>
+						return (
+							<Button onPress={() => (setRoleSlugs([role.slug]), setPage(1))} isActive={isActive} buttonColor={colors.bg200} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}>
+								<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 18, fontWeight: '600' }}>{role.title.russian || role.title.english}</Text>
+								<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 13 }}>{movies.total}</Text>
+							</Button>
+						)
+					}}
+					contentContainerStyle={{ marginBottom: 9, gap: 5 }}
+				/>
+			</TVFocusGuideView>
 
-			<ScrollView horizontal contentContainerStyle={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5 }}>
-				<DropDown
-					items={[{ label: 'Все десятилетия', value: null }, ...generateYearIntervals(dataFilters.years.filmographyYears, 10).map(it => ({ label: it.start + '', value: it.start + '-' + it.end }))]}
-					onChange={it => {
-						if (it === null) {
-							setYear(it)
+			<ScrollView horizontal>
+				<TVFocusGuideView style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
+					{/* TODO change to custom filter */}
+
+					<DropDown
+						items={[{ label: 'Все десятилетия', value: null }, ...generateYearIntervals(dataFilters.years.filmographyYears, 10).map(it => ({ label: it.start + '', value: it.start + '-' + it.end }))]}
+						onChange={it => {
+							if (it === null) {
+								setYear(it)
+								setPage(1)
+								return
+							}
+
+							const splitted = it.split('-')
+							setYear({ start: Number(splitted[0]), end: Number(splitted[1]) })
 							setPage(1)
-							return
-						}
+						}}
+						value={year === null ? null : year.start + '-' + year.end}
+						type='fullWidthToBottom'
+					/>
 
-						const splitted = it.split('-')
-						setYear({ start: Number(splitted[0]), end: Number(splitted[1]) })
-						setPage(1)
-					}}
-					value={year === null ? null : year.start + '-' + year.end}
-					type='fullWidthToBottom'
-				/>
-				<DropDown
-					items={[{ label: 'Все жанры', value: null }, ...dataFilters.genres.items.map(it => ({ label: it.name, value: it.id }))]}
-					onChange={it => {
-						setGenre(it)
-						setPage(1)
-					}}
-					value={genre}
-					type='fullWidthToBottom'
-				/>
-				<DropDown
-					items={[
-						{ label: 'Сортировка по году', value: 'YEAR_DESC' },
-						{ label: 'Сортировка по хронологии', value: 'YEAR_ASC' },
-						{ label: 'Сортировка по названию', value: 'TITLE_ASC' },
-						{ label: 'Сортировка по рейтингу Кинопоиска', value: 'KP_RATING_DESC' },
-						{ label: 'Сортировка по количеству оценок', value: 'VOTES_COUNT_DESC' }
-					]}
-					onChange={it => {
-						setOrderBy(it)
-						setPage(1)
-					}}
-					value={orderBy}
-					type='fullWidthToBottom'
-				/>
+					<DropDown
+						items={[{ label: 'Все жанры', value: null }, ...dataFilters.genres.items.map(it => ({ label: it.name, value: it.id }))]}
+						onChange={it => {
+							setGenre(it)
+							setPage(1)
+						}}
+						value={genre}
+						type='fullWidthToBottom'
+					/>
+
+					<DropDown
+						items={[
+							{ label: 'Сортировка по году', value: 'YEAR_DESC' },
+							{ label: 'Сортировка по хронологии', value: 'YEAR_ASC' },
+							{ label: 'Сортировка по названию', value: 'TITLE_ASC' },
+							{ label: 'Сортировка по рейтингу Кинопоиска', value: 'KP_RATING_DESC' },
+							{ label: 'Сортировка по количеству оценок', value: 'VOTES_COUNT_DESC' }
+						]}
+						onChange={it => {
+							setOrderBy(it)
+							setPage(1)
+						}}
+						value={orderBy}
+						type='fullWidthToBottom'
+					/>
+				</TVFocusGuideView>
 			</ScrollView>
 
 			<FlatList

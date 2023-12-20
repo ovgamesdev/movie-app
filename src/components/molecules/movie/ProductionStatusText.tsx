@@ -46,8 +46,8 @@ export const ProductionStatusText = ({ productionStatus, productionStatusUpdateD
 		case 'UNKNOWN':
 			statusMessage = 'Неизвестно'
 			statusStyle = {
-				color: 'rgba(255,255,255,.8)', // orientation.portrait ? 'rgba(31,31,31,.9)' : 'rgba(255,255,255,.8)'
-				backgroundColor: 'rgba(31,31,31,.24)' // orientation.portrait ? 'rgba(31,31,31,.1)' : 'rgba(31,31,31,.24)'
+				color: 'rgba(255,255,255,.8)',
+				backgroundColor: 'rgba(31,31,31,.24)'
 			}
 			break
 		default:

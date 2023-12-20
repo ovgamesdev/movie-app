@@ -1,27 +1,11 @@
 import { useTheme } from '@hooks'
 import { useGetTvSeriesEpisodesQuery } from '@store/kinopoisk'
+import { getNoun } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
 
 type Props = {
 	id: number
-}
-
-// TODO move to utils
-const getNoun = (number: number, one: string, two: string, five: string) => {
-	let n = Math.abs(number)
-	n %= 100
-	if (n >= 5 && n <= 20) {
-		return five
-	}
-	n %= 10
-	if (n === 1) {
-		return one
-	}
-	if (n >= 2 && n <= 4) {
-		return two
-	}
-	return five
 }
 
 export const Episodes = ({ id: tvSeriesId }: Props) => {
