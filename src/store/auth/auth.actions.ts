@@ -1,6 +1,6 @@
 import { GoogleSignin, User } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { getSettings } from '../settings/settings.actions'
+import { settingsExtraActions } from '@store/settings'
 import { AppDispatch, RootState } from '../store'
 
 const createAppAsyncThunk = createAsyncThunk.withTypes<{
@@ -12,7 +12,7 @@ export const getCurrentGoogleUser = createAppAsyncThunk('auth/get-google-user', 
 	try {
 		const isSignedIn = await GoogleSignin.isSignedIn()
 
-		thunkAPI.dispatch(getSettings())
+		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
 		if (isSignedIn) {
 			let userInfo = await GoogleSignin.getCurrentUser()
@@ -35,7 +35,7 @@ export const signInGoogleUser = createAppAsyncThunk<User | null>('auth/sign-in-g
 		await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
 		const userInfo = await GoogleSignin.signIn()
 
-		thunkAPI.dispatch(getSettings())
+		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
 		return userInfo
 	} catch (error: any) {
@@ -51,7 +51,7 @@ export const addScopeGoogleUser = createAppAsyncThunk<User | null>('auth/add-sco
 			scopes: ['https://www.googleapis.com/auth/drive.appdata']
 		})
 
-		thunkAPI.dispatch(getSettings())
+		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
 		return userInfo
 	} catch (error: any) {

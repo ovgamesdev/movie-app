@@ -4,13 +4,12 @@ import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FlatList, ListRenderItem, Platform, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
-import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
-import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter } from '../../store/kinopoisk/kinopoisk.types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
@@ -353,7 +352,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={contentContainerStyle}
 				renderItem={renderItem}
-				ListEmptyComponent={ListEmptyComponent}
+				ListEmptyComponent={ListEmptyComponent} // TODO fix height
 				ListFooterComponent={ListFooterComponent}
 				ListFooterComponentStyle={ListFooterComponentStyle}
 				ListHeaderComponent={ListHeaderComponent}

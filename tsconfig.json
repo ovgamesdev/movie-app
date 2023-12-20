@@ -6,12 +6,11 @@
 		"paths": {
 			// "@src/*": ["src/*"],
 			"@app": ["src/App"],
-			"@components/atoms": ["src/components/atoms/index"],
-			"@components/molecules": ["src/components/molecules/index"],
-			"@components/organisms": ["src/components/organisms/index"],
-			"@components/templates": ["src/components/templates/index"],
+			"@components/*": ["src/components/*"],
 			"@navigation": ["src/navigation/index"],
 			"@hooks": ["src/hooks/index"],
+			"@store": ["src/store"],
+			"@store/*": ["src/store/*"],
 			"@icons": ["src/assets/icons/index"],
 			"@utils": ["src/utils/index"]
 		}

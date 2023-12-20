@@ -1,8 +1,7 @@
 import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolkit'
+import { AppStartListening } from '@store'
+import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey, settingsExtraActions } from '@store/settings'
 import { ToastAndroid } from 'react-native'
-import { AppStartListening } from '../listenerMiddleware'
-import { getSettings, saveSettings } from './settings.actions'
-import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey } from './settings.types'
 
 const initialState: IInitialStateSettings = {
 	settings: {
@@ -36,11 +35,11 @@ const settingsSlice = createSlice({
 		builder
 
 			// getSettings
-			.addCase(getSettings.pending, state => {
+			.addCase(settingsExtraActions.getSettings.pending, state => {
 				state.isLoading = true
 				state.isLoaded = false
 			})
-			.addCase(getSettings.fulfilled, (state, { payload }) => {
+			.addCase(settingsExtraActions.getSettings.fulfilled, (state, { payload }) => {
 				state.isLoading = false
 
 				console.log('getSettings', payload)
@@ -77,16 +76,16 @@ const settingsSlice = createSlice({
 
 				state.isLoaded = true
 			})
-			.addCase(getSettings.rejected, (state, { error: { message } }) => {
+			.addCase(settingsExtraActions.getSettings.rejected, (state, { error: { message } }) => {
 				state.isLoading = false
 				ToastAndroid.show('Ошибка получения настроек: ' + message, ToastAndroid.LONG)
 			})
 
 			// saveSettings
-			.addCase(saveSettings.pending, state => {
+			.addCase(settingsExtraActions.saveSettings.pending, state => {
 				state.isLoading = true
 			})
-			.addCase(saveSettings.fulfilled, (state, { payload }) => {
+			.addCase(settingsExtraActions.saveSettings.fulfilled, (state, { payload }) => {
 				state.isLoading = false
 				// if (!payload.local || !payload.server) {
 				// 	console.warn(`Ошибка сохранения настроек: ${payload.server ? 'Local' : 'Server'}`)
@@ -101,6 +100,6 @@ export const setupSettingsListeners = (startListening: AppStartListening): Unsub
 	startListening({
 		matcher: isAnyOf(actions.setItem, actions.removeItem),
 		effect: async (action, listenerApi) => {
-			listenerApi.dispatch(saveSettings())
+			listenerApi.dispatch(settingsExtraActions.saveSettings())
 		}
 	})

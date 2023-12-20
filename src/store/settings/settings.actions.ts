@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { GDrive, ListQueryBuilder, MimeTypes } from '@robinbobin/react-native-google-drive-api-wrapper'
+import { ISettings } from '@store/settings'
 import { AppDispatch, RootState } from '../store'
-import { ISettings } from './settings.types'
 
 const KEY = 'settings'
 

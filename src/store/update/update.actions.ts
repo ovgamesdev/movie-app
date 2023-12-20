@@ -1,10 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { IRemote, updateActions } from '@store/update'
 import { Alert, NativeModules } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
 import { AppDispatch, RootState } from '../store'
-import { actions } from './update.slice'
-import { IRemote } from './update.types'
-
 const RNUpdateAPK = NativeModules.RNUpdateAPK
 
 let isInstalling = false
@@ -20,7 +18,7 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 	let apkSize: number | null = null
 
 	if (__DEV__) {
-		// return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
+		// return thunkAPI.dispatch(updateActions.getApkVersionSuccess({ size: 23, remote: { versionName: '999.999', versionCode: 999, apkUrl: 'https://github.com/ovgamesdev/res/releases/download/V1.1/app-release-V1_1.apk', forceUpdate: false, whatsNew: 'Initial commit', whatsNewOptions: [{ title: 'Другое:', options: [{ title: 'Добавлено что-то новое' }] }] } }))
 		return console.log('RNUpdateAPK::getApkVersion - disabled in dev mode.')
 	}
 
@@ -50,7 +48,7 @@ export const getApkVersion = createAppAsyncThunk('update/get-apk-version', async
 			})
 			.then(async response => response.json())
 
-		return thunkAPI.dispatch(actions.getApkVersionSuccess({ size: apkSize, remote: data }))
+		return thunkAPI.dispatch(updateActions.getApkVersionSuccess({ size: apkSize, remote: data }))
 	} catch (error: any) {
 		console.error('RNUpdateAPK::getApkVersion', error)
 		Alert.alert('Произошла ошибка', error.toString())
@@ -77,9 +75,9 @@ export const downloadApk = createAppAsyncThunk('update/download-apk', async (_, 
 			if (!showStartProgress) {
 				showStartProgress = true
 				// console.log('RNUpdateAPK::downloadApk - downloadApkStart')
-				thunkAPI.dispatch(actions.setDownloadProgress({ completed: false, progress: { received: 0, total: 100 } }))
+				thunkAPI.dispatch(updateActions.setDownloadProgress({ completed: false, progress: { received: 0, total: 100 } }))
 			} else {
-				thunkAPI.dispatch(actions.setDownloadProgress({ completed: false, progress: { received, total } }))
+				thunkAPI.dispatch(updateActions.setDownloadProgress({ completed: false, progress: { received, total } }))
 			}
 		})
 		.then(res => {
@@ -88,7 +86,7 @@ export const downloadApk = createAppAsyncThunk('update/download-apk', async (_, 
 			}
 
 			// console.log('RNUpdateAPK::downloadApk - downloadApkEnd')
-			thunkAPI.dispatch(actions.setDownloadProgress({ completed: true }))
+			thunkAPI.dispatch(updateActions.setDownloadProgress({ completed: true }))
 			RNUpdateAPK.getApkInfo(downloadDestPath)
 				.then((res: any) => {
 					console.log('RNUpdateAPK::downloadApk - Old Cert SHA-256: ' + RNUpdateAPK.signatures[0].thumbprint)
@@ -111,7 +109,7 @@ export const downloadApk = createAppAsyncThunk('update/download-apk', async (_, 
 		.catch(err => {
 			console.log('RNUpdateAPK::downloadApkError - downloadApkError', err)
 			Alert.alert('Произошла ошибка', err.toString())
-			thunkAPI.dispatch(actions.setDownloadProgress({ completed: false, error: err.toString() }))
+			thunkAPI.dispatch(updateActions.setDownloadProgress({ completed: false, error: err.toString() }))
 
 			isInstalling = false
 		})

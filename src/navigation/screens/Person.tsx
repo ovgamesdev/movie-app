@@ -3,11 +3,11 @@ import { FilmographyItems } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
 import { declineAge, declineChildren, getRatingColor, getSpouseStatus, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useGetPersonBaseInfoQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Person'>
 

@@ -1,8 +1,7 @@
 import { statusCodes } from '@react-native-google-signin/google-signin'
 import { createSlice } from '@reduxjs/toolkit'
+import { authExtraActions, IInitialStateAuth } from '@store/auth'
 import { ToastAndroid } from 'react-native'
-import { addScopeGoogleUser, getCurrentGoogleUser, signInGoogleUser, signOutGoogleUser } from './auth.actions'
-import { IInitialStateAuth } from './auth.types'
 
 const initialState: IInitialStateAuth = {
 	user: null,
@@ -18,30 +17,30 @@ const authSlice = createSlice({
 		builder
 
 			// getCurrentGoogleUser
-			.addCase(getCurrentGoogleUser.pending, state => {
+			.addCase(authExtraActions.getCurrentGoogleUser.pending, state => {
 				state.isLoading = true
 			})
-			.addCase(getCurrentGoogleUser.fulfilled, (state, { payload }) => {
+			.addCase(authExtraActions.getCurrentGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
 				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
-			.addCase(getCurrentGoogleUser.rejected, state => {
+			.addCase(authExtraActions.getCurrentGoogleUser.rejected, state => {
 				state.user = null
 				state.isLoading = false
 				state.isAllScopeAllowed = false
 			})
 
 			// signInGoogleUser
-			.addCase(signInGoogleUser.pending, state => {
+			.addCase(authExtraActions.signInGoogleUser.pending, state => {
 				state.isLoading = true
 			})
-			.addCase(signInGoogleUser.fulfilled, (state, { payload }) => {
+			.addCase(authExtraActions.signInGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
 				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
-			.addCase(signInGoogleUser.rejected, (state, { error: { message } }) => {
+			.addCase(authExtraActions.signInGoogleUser.rejected, (state, { error: { message } }) => {
 				state.user = null
 				state.isLoading = false
 				state.isAllScopeAllowed = false
@@ -58,15 +57,15 @@ const authSlice = createSlice({
 			})
 
 			// addScopeGoogleUser
-			.addCase(addScopeGoogleUser.pending, state => {
+			.addCase(authExtraActions.addScopeGoogleUser.pending, state => {
 				state.isLoading = true
 			})
-			.addCase(addScopeGoogleUser.fulfilled, (state, { payload }) => {
+			.addCase(authExtraActions.addScopeGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
 				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
-			.addCase(addScopeGoogleUser.rejected, (state, { error: { message } }) => {
+			.addCase(authExtraActions.addScopeGoogleUser.rejected, (state, { error: { message } }) => {
 				state.user = null
 				state.isLoading = false
 				state.isAllScopeAllowed = false
@@ -83,15 +82,15 @@ const authSlice = createSlice({
 			})
 
 			// signOutGoogleUser
-			.addCase(signOutGoogleUser.pending, state => {
+			.addCase(authExtraActions.signOutGoogleUser.pending, state => {
 				state.isLoading = true
 			})
-			.addCase(signOutGoogleUser.fulfilled, (state, { payload }) => {
+			.addCase(authExtraActions.signOutGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
 				state.isAllScopeAllowed = false
 			})
-			.addCase(signOutGoogleUser.rejected, state => {
+			.addCase(authExtraActions.signOutGoogleUser.rejected, state => {
 				state.user = null
 				state.isLoading = false
 				state.isAllScopeAllowed = false

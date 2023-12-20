@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
 import { ToastAndroid } from 'react-native'
-import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from './kinopoisk.types'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',

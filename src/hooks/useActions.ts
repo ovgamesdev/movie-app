@@ -2,13 +2,10 @@ import { bindActionCreators } from '@reduxjs/toolkit'
 import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 
-import * as authExtraActions from '../store/auth/auth.actions'
-import { actions as authActions } from '../store/auth/auth.slice'
-import { actions as safeAreaActions } from '../store/safeArea/safeArea.slice'
-import * as settingsExtraActions from '../store/settings/settings.actions'
-import { actions as settingsActions } from '../store/settings/settings.slice'
-import * as updateExtraActions from '../store/update/update.actions'
-import { actions as updateActions } from '../store/update/update.slice'
+import { authActions, authExtraActions } from '@store/auth'
+import { safeAreaActions } from '@store/safeArea'
+import { settingsActions, settingsExtraActions } from '@store/settings'
+import { updateActions, updateExtraActions } from '@store/update'
 
 const rootActions = {
 	...authActions,

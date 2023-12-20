@@ -1,8 +1,8 @@
 import { PayloadAction, Unsubscribe, createSlice } from '@reduxjs/toolkit'
+import { AppStartListening } from '@store'
+import { IDownload, IInitialStateUpdate, IRemote } from '@store/update'
 import { Alert, NativeModules } from 'react-native'
 import semver from 'semver'
-import { AppStartListening } from '../listenerMiddleware'
-import { IDownload, IInitialStateUpdate, IRemote } from './update.types'
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK
 

@@ -3,10 +3,10 @@ import { SearchResults } from '@components/organisms'
 import { useNavigation, useTheme } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useGetSuggestSearchQuery } from '@store/kinopoisk'
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useGetSuggestSearchQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 

@@ -10,6 +10,8 @@
 		"android:tv": "set ENVFILE=.env.tv && react-native run-android --active-arch-only",
 		"build-android": "cd android && ./gradlew assembleRelease",
 		"build-android:tv": "cd android && set ENVFILE=.env.tv && ./gradlew assembleRelease",
+		"start:reset-cache": "react-native start --experimental-debugger --reset-cache",
+		"start:reset-cache-full": "cd android && ./gradlew cleanBuildCache && cd .. && watchman watch-del-all && rm -rf node_modules/ && rm -rf $TMPDIR/react-native-packager-cache-* && rm -rf $TMPDIR/metro-bundler-cache-* && yarn cache clean && yarn install && yarn start --reset-cache",
 		"start": "react-native start --experimental-debugger",
 		"start:clean": "yarn clean:packager && react-native start",
 		"ios": "react-native run-ios",
@@ -53,6 +55,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.20.0",
 		"@babel/plugin-proposal-decorators": "^7.22.7",
+		"@babel/plugin-transform-export-namespace-from": "^7.23.4",
 		"@babel/preset-env": "^7.20.0",
 		"@babel/runtime": "^7.20.0",
 		"@react-native/babel-preset": "^0.74.0",

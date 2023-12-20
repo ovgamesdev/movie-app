@@ -1,6 +1,6 @@
 // MOVIE
 
-import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
+import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
 
 export const getRatingColor = (rating: number): string => {
 	if (rating >= 7) {

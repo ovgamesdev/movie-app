@@ -1,4 +1,5 @@
-import { SettingsInput, SettingsSelect, SettingsSwitch, UpdateApk, User } from '@components/molecules'
+import { UpdateApk, User } from '@components/molecules'
+import { Input, Select, Switch } from '@components/molecules/settings'
 import { useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
@@ -34,7 +35,7 @@ export const Settings = () => {
 
 			<User />
 
-			<SettingsSelect
+			<Select
 				item='theme'
 				options={[
 					{ value: 'light', title: 'light' },
@@ -42,8 +43,8 @@ export const Settings = () => {
 					{ value: null, title: 'default' }
 				]}
 			/>
-			<SettingsInput item='kinopoiskToken' />
-			<SettingsSwitch item='showDevOptions' />
+			<Input item='kinopoiskToken' />
+			<Switch item='showDevOptions' />
 		</TVFocusGuideView>
 	)
 }

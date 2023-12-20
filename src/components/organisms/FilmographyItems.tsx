@@ -1,8 +1,8 @@
 import { Button, DropDown } from '@components/atoms'
 import { useNavigation, useOrientation, useTheme } from '@hooks'
+import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
 import React, { useRef, useState } from 'react'
 import { FlatList, ScrollView, Text, View } from 'react-native'
-import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '../../store/kinopoisk/kinopoisk.api'
 import { Pagination } from '../molecules/Pagination'
 
 type Props = {

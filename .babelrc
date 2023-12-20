@@ -1,6 +1,7 @@
 {
 	"presets": ["module:@react-native/babel-preset"],
 	"plugins": [
+		"@babel/plugin-transform-export-namespace-from",
 		["@babel/plugin-proposal-decorators", { "legacy": true }],
 		[
 			"module-resolver",
@@ -10,17 +11,15 @@
 				"alias": {
 					// "@src/*": "./src/*",
 					"@app": "./src/App",
-					"@components/atoms": "./src/components/atoms/index",
-					"@components/molecules": "./src/components/molecules/index",
-					"@components/organisms": "./src/components/organisms/index",
-					"@components/templates": "./src/components/templates/index",
+					"@components": "./src/components",
+					// NOTE: "^@test/(.+)": "../\\1/src",
 					"@navigation": "./src/navigation/index",
 					// "@api": "./src/api/index",
 					// "@context": "./src/context/index",
 					"@hooks": "./src/hooks/index",
 					// "@provider": "./src/provider/index",
 					// "@screens": "./src/screens/index",
-					// "@store": "./src/store/index",
+					"@store": "./src/store",
 					// "@types": "./src/types/index",
 					// "@types/*": "./src/types/*",
 					"@utils": "./src/utils/index",

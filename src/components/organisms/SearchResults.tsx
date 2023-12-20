@@ -1,8 +1,8 @@
-import { SearchMovie, SearchMovieList, SearchPerson } from '@components/molecules'
+import { Movie, MovieList, Person } from '@components/molecules/search'
 import { useNavigation, useTheme } from '@hooks'
+import { ISuggestSearchResults } from '@store/kinopoisk'
 import React from 'react'
 import { Text, View } from 'react-native'
-import { ISuggestSearchResults } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	data: ISuggestSearchResults
@@ -36,7 +36,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Возможно, вы искали</Text>
 
-					{data.topResult.global.__typename === 'Person' ? <SearchPerson onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <SearchMovieList key={data.topResult.global.id} onPress={onMovieList} onFilter={onFilter} item={data.topResult.global} /> : <SearchMovie onPress={onMovie} item={data.topResult.global} />}
+					{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} onFilter={onFilter} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
 				</View>
 			) : null}
 
@@ -44,7 +44,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Фильмы и сериалы</Text>
 
-					{data.movies.map(({ movie }) => (movie === null ? null : <SearchMovie key={movie.id} onPress={onMovie} item={movie} />))}
+					{data.movies.map(({ movie }) => (movie === null ? null : <Movie key={movie.id} onPress={onMovie} item={movie} />))}
 				</View>
 			) : null}
 
@@ -52,7 +52,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
 
-					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <SearchMovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />))}
+					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <MovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />))}
 				</View>
 			) : null}
 
@@ -60,7 +60,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Персоны</Text>
 
-					{data.persons.map(({ person }) => (person === null ? null : <SearchPerson key={person.id} onPress={onPerson} item={person} />))}
+					{data.persons.map(({ person }) => (person === null ? null : <Person key={person.id} onPress={onPerson} item={person} />))}
 				</View>
 			) : null}
 		</View>

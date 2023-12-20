@@ -1,5 +1,5 @@
 import { createNavigationContainerRef } from '@react-navigation/native'
-import { IListSlugFilter, IMainTrailer } from 'src/store/kinopoisk/kinopoisk.types'
+import { IListSlugFilter, IMainTrailer } from '@store/kinopoisk'
 
 export * from './StackNavigator'
 export * from './TabNavigator'

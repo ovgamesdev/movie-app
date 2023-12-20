@@ -1,10 +1,9 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
+import { ISimilarMovieResults, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, TVFocusGuideView, Text, View } from 'react-native'
-import { useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '../../store/kinopoisk/kinopoisk.api'
-import { ISimilarMovieResults } from '../../store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	id: number

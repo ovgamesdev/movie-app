@@ -1,9 +1,9 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
+import { IGraphqlMovie } from '@store/kinopoisk'
 import { normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
-import { IGraphqlMovie } from 'src/store/kinopoisk/kinopoisk.types'
 
 type Props = {
 	data: IGraphqlMovie

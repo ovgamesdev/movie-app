@@ -1,11 +1,11 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { authReducer } from '@store/auth'
+import { kinopoiskApi } from '@store/kinopoisk'
+import { safeAreaReducer } from '@store/safeArea'
+import { settingsReducer } from '@store/settings'
+import { updateReducer } from '@store/update'
 import { reducer as network } from 'react-native-offline'
-import { reducer as authReducer } from './auth/auth.slice'
-import { kinopoiskApi } from './kinopoisk/kinopoisk.api'
 import { listenerMiddleware } from './listenerMiddleware'
-import { reducer as safeAreaReducer } from './safeArea/safeArea.slice'
-import { reducer as settingsReducer } from './settings/settings.slice'
-import { reducer as updateReducer } from './update/update.slice'
 
 const reducers = combineReducers({
 	auth: authReducer,

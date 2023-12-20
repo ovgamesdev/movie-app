@@ -2,10 +2,9 @@ import { ActivityIndicator, Button } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
+import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
 import React, { useEffect, useRef, useState } from 'react'
 import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
-import { IListBySlugResultsDocs } from 'src/store/kinopoisk/kinopoisk.types'
-import { useGetListBySlugQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = {
 	slug: string

@@ -1,32 +1,18 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
-import { Episodes, SimilarMovie } from '@components/organisms'
+import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
+import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
 import { addItemToContentReleaseNotify, isItemInContentReleaseNotify, removeItemToContentReleaseNotify, useOrientation, useTheme, useTypedSelector } from '@hooks'
-import { Kp3dIcon, KpImaxIcon, KpTop250LIcon, KpTop250RIcon, PlayIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { declineSeasons, formatDuration, getRatingColor, isSeries, normalizeUrlWithNull, pickIsSeries, ratingMPAA } from '@utils'
+import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
+import { isSeries, normalizeUrlWithNull } from '@utils'
 import { useEffect, useState } from 'react'
-import { FlatList, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
-import Config from 'react-native-config'
+import { ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
-import { IFilmBaseInfo, ITvSeriesBaseInfo } from 'src/store/kinopoisk/kinopoisk.types'
-import { useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '../../store/kinopoisk/kinopoisk.api'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 
-const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> => {
-	try {
-		const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
-		if (!response.ok) return null
-		const json = await response.json()
-		if (!Array.isArray(json) || json.length === 0) return null
-		return json
-	} catch (e) {
-		console.error('getProviders error:', e)
-		return null
-	}
-}
+// TODO releaseYears to string (releaseYears) => string
 
 export const Movie = ({ navigation, route }: Props) => {
 	const insets = useSafeAreaInsets()
@@ -52,6 +38,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	}
 
 	if (!data) {
+		// TODO add Not found
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 				<Text>Not found</Text>
@@ -73,28 +60,6 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
-	const Trailer = ({ showTime, aspectRatio, disabled, showPlay = true }: { showTime?: boolean; aspectRatio?: number; disabled?: boolean; showPlay?: boolean }) => {
-		if (!data.mainTrailer) {
-			return null
-		}
-		const poster = normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
-
-		return (
-			<Button padding={0} transparent animation={disabled ? undefined : 'scale'} style={{ margin: -4 }} onPress={() => !disabled && data.mainTrailer && navigation.push('MovieTrailer', { data: data.mainTrailer })}>
-				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: aspectRatio ?? 302 / 169.708 }}>
-					{showPlay && (
-						<View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-							<View style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 99, padding: 10 }}>
-								<PlayIcon width={40} height={40} fill={colors.primary300} />
-							</View>
-						</View>
-					)}
-					{showTime && <Text style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: colors.primary300, position: 'absolute', bottom: 0, right: 0, paddingHorizontal: 5, paddingVertical: 3, fontSize: 13 }}>{data.mainTrailer.duration < 60 ? `${data.mainTrailer.duration.toFixed()} сек` : `${(data.mainTrailer.duration / 60).toFixed()} мин`}</Text>}
-				</ImageBackground>
-			</Button>
-		)
-	}
-
 	const Cover = (props: ViewProps) => {
 		if (!data.cover) {
 			return null
@@ -106,161 +71,6 @@ export const Movie = ({ navigation, route }: Props) => {
 			<View {...props}>
 				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 16 / 9, justifyContent: 'center', alignItems: 'center', gap: 10 }} />
 			</View>
-		)
-	}
-
-	const RatingText = () => {
-		if (data.rating.expectation && data.rating.expectation.isActive && data.rating.expectation.value && data.rating.expectation.value > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.expectation.value / 10) }}>{data.rating.expectation.value.toFixed(0)}%</Text>
-		if (!data.rating.kinopoisk?.value || !data.rating.kinopoisk.isActive) return null
-		const top = data.rating.kinopoisk.value.toFixed(1)
-		if (data.top250 === null) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(data.rating.kinopoisk.value) }}>{top}</Text>
-		const width = top.length === 3 ? 65 : 93
-
-		return (
-			<Svg height={43} width={width}>
-				<DefsSvg>
-					<LinearGradientSvg id='gradient' x1='0%' y1='0%' x2='25%' y2='125%'>
-						<StopSvg offset='16.44%' stopColor='#ffd25e' />
-						<StopSvg offset='63.42%' stopColor='#b59646' />
-					</LinearGradientSvg>
-				</DefsSvg>
-				<TextSvg x={width / 2} y={38.5} textAnchor='middle' fill='url(#gradient)' fontSize={48} fontWeight='500'>
-					{top}
-				</TextSvg>
-			</Svg>
-		)
-	}
-
-	const Text250 = () => {
-		if (data.top250 === null) return null
-		const length = data.top250.toString().length
-		const width = length === 1 ? 60 : length === 2 ? 64 : 72
-
-		return (
-			<View style={{ flexDirection: 'row', marginLeft: 13, alignItems: 'center' }}>
-				<KpTop250LIcon width={18} height={43} viewBox='0 0 10 24' />
-				<View style={{ marginHorizontal: 7 }}>
-					<Svg height={43} width={width}>
-						<DefsSvg>
-							<LinearGradientSvg id='gradient' x1='0%' y1='0%' x2='25%' y2='125%'>
-								<StopSvg offset='16.44%' stopColor='#ffd25e' />
-								<StopSvg offset='63.42%' stopColor='#b59646' />
-							</LinearGradientSvg>
-						</DefsSvg>
-						<TextSvg x={width / 2} y={18} textAnchor='middle' fill='url(#gradient)' fontSize={15} fontWeight='600'>
-							ТОП 250
-						</TextSvg>
-						<TextSvg x={width / 2} y={36} textAnchor='middle' fill='url(#gradient)' fontSize={15} fontWeight='400'>
-							{data.top250 + ' место'}
-						</TextSvg>
-					</Svg>
-				</View>
-				<KpTop250RIcon width={18} height={43} viewBox='0 0 10 24' />
-			</View>
-		)
-	}
-
-	const ProductionStatusText = () => {
-		if (!data.productionStatus || !data.productionStatusUpdateDate) return null
-
-		let statusMessage = ''
-		let statusStyle = {}
-
-		switch (data.productionStatus) {
-			case 'FILMING':
-				statusMessage = 'Съемочный процесс'
-				statusStyle = {
-					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
-					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
-				}
-				break
-			case 'PRE_PRODUCTION':
-				statusMessage = 'Подготовка к съемкам'
-				statusStyle = {
-					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
-					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
-				}
-				break
-			case 'COMPLETED':
-				statusMessage = 'Производство завершено'
-				statusStyle = {
-					color: 'rgba(0,153,51,.9)',
-					backgroundColor: '#d9f0e1'
-				}
-				break
-			case 'ANNOUNCED':
-				statusMessage = 'Проект объявлен'
-				statusStyle = {
-					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
-					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
-				}
-				break
-			case 'POST_PRODUCTION':
-				statusMessage = 'Постпродакшн'
-				statusStyle = {
-					color: orientation.portrait ? 'rgba(255,101,0,.9)' : 'rgba(255,255,255,.8)',
-					backgroundColor: orientation.portrait ? 'rgba(255,101,0,.1)' : 'rgba(234,95,4,.24)'
-				}
-				break
-			case 'UNKNOWN':
-				statusMessage = 'Неизвестно'
-				statusStyle = {
-					color: 'rgba(255,255,255,.8)', // orientation.portrait ? 'rgba(31,31,31,.9)' : 'rgba(255,255,255,.8)'
-					backgroundColor: 'rgba(31,31,31,.24)' // orientation.portrait ? 'rgba(31,31,31,.1)' : 'rgba(31,31,31,.24)'
-				}
-				break
-			default:
-				break
-		}
-
-		return (
-			<View style={{ flexDirection: 'row', paddingBottom: 8 }}>
-				<Text style={{ ...statusStyle, fontSize: 13, fontWeight: '500', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>{statusMessage}</Text>
-				<Text style={{ color: colors.text200, fontSize: 13, fontWeight: '500', paddingVertical: 2 }}> – обновлено {new Date(data.productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
-			</View>
-		)
-	}
-
-	const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
-		const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
-
-		useEffect(() => {
-			const init = async () => setStatus((await getProviders(data)) ? 'watch' : (await isItemInContentReleaseNotify(data)) ? 'on-notify' : 'off-notify')
-
-			init()
-		}, [])
-
-		return (
-			<Button
-				text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
-				style={{ minWidth: 54 }}
-				onPress={async () => {
-					const item = {
-						id: data.id,
-						name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-						poster: data.poster?.avatarsUrl ?? null,
-						type: data.__typename,
-						productionYear: data.productionYear
-					}
-
-					switch (status) {
-						case 'loading':
-							break
-						case 'watch':
-							navigation.navigate('Watch', { data })
-							break
-						case 'off-notify':
-							setStatus('on-notify')
-							setStatus((await addItemToContentReleaseNotify(item)) ? 'on-notify' : 'off-notify')
-							break
-						case 'on-notify':
-							setStatus('off-notify')
-							setStatus((await removeItemToContentReleaseNotify(data)) ? 'off-notify' : 'on-notify')
-							break
-					}
-				}}>
-				{status === 'loading' ? <ActivityIndicator /> : undefined}
-			</Button>
 		)
 	}
 
@@ -308,20 +118,17 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
-	// ott.promoTrailers.items[0].streamUrl
-	// //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/678x380 1x, //avatars.mds.yandex.net/get-ott/1652588/2a000001840a505882a77df419eb5eb60623/1344x756 2x
-
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				{orientation.portrait && (data.cover ? <Cover /> : data.mainTrailer ? <Trailer aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />)}
+				{orientation.portrait && (data.cover ? <Cover /> : data.mainTrailer ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />)}
 				<View style={[{}, orientation.landscape && { flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10 + insets.top, gap: 20 }]}>
 					{orientation.landscape && (
 						<View style={{ width: 300, gap: 20 }}>
 							<PosterImage />
 							{data.mainTrailer && (
 								<View style={{ gap: 5 }}>
-									<Trailer showTime />
+									<Trailer mainTrailer={data.mainTrailer} showTime />
 									<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
 									<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 								</View>
@@ -333,7 +140,7 @@ export const Movie = ({ navigation, route }: Props) => {
 							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={6} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={orientation.portrait}>
-									<ProductionStatusText />
+									{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
@@ -352,382 +159,11 @@ export const Movie = ({ navigation, route }: Props) => {
 							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
 
 							<View style={{ gap: 5, marginTop: 5, marginBottom: 40 }}>
-								{!!data.productionYear && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Год производства</Text>
-										<View style={{ flexDirection: 'row', flex: 1 }}>
-											{!!data.productionYear && (
-												<Button
-													onPress={() => {
-														const booleanFilterValues = [
-															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
-															{ filterId: 'top', value: true }
-														]
-														const singleSelectFilterValues = data.productionYear !== null ? [{ filterId: 'year', value: data.productionYear.toString() }] : []
-
-														navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
-													}}
-													padding={0}
-													text={data.productionYear.toString()}
-													transparent
-												/>
-											)}
-											{'seasons' in data && (
-												<Button padding={0} transparent focusable={false}>
-													<Text style={{}}>{'(' + declineSeasons(data.seasons.total) + ')'}</Text>
-												</Button>
-											)}
-										</View>
-									</TVFocusGuideView>
-								)}
-
-								{data.distribution.originals.items.length > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Платформа</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.originals.items.map(it => it.companies.map(it => it.displayName).join(' ')).join(' ')} />
-									</View>
-								)}
-
-								{data.countries.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Страна</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.countries.map(it => (
-												<Button
-													onPress={() => {
-														const booleanFilterValues = [
-															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
-															{ filterId: 'top', value: true }
-														]
-														const singleSelectFilterValues = [{ filterId: 'country', value: it.id + '' }]
-
-														navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
-													}}
-													padding={0}
-													key={it.id}
-													text={it.name}
-													transparent
-												/>
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.genres.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Жанр</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.genres.map(it => (
-												<Button
-													padding={0}
-													key={it.id}
-													text={it.name}
-													transparent
-													onPress={() => {
-														const booleanFilterValues = [
-															{ filterId: isSeries(data.__typename) ? 'series' : 'films', value: true },
-															{ filterId: 'top', value: true }
-														]
-														const singleSelectFilterValues = [{ filterId: 'genre', value: it.slug }]
-
-														navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
-													}}
-												/>
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								<View style={{ flexDirection: 'row' }}>
-									<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Слоган</Text>
-									<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.tagline ? `«${data.tagline.replace(/(\s+\(season \d+\))/gi, '').replace(/\.$/g, '')}»` : '—'} />
-								</View>
-
-								{data.actors.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>В главных ролях</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.actors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.voiceOverActors.total > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Роли дублировали</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.voiceOverActors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.directors.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Режиссер</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.directors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.writers.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сценарий</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.writers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.producers.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Продюсер</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.producers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.operators.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Оператор</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.operators.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.composers.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Композитор</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.composers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.designers.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Художник</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.designers.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.filmEditors.items.length > 0 && (
-									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Монтаж</Text>
-										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.filmEditors.items.map(({ person }) => (
-												<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-											))}
-										</ScrollView>
-									</TVFocusGuideView>
-								)}
-
-								{data.boxOffice.budget && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Бюджет</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.budget.currency.symbol + data.boxOffice.budget.amount.toLocaleString()} />
-									</View>
-								)}
-
-								{data.boxOffice.usaBox && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в США</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.usaBox.currency.symbol + data.boxOffice.usaBox.amount.toLocaleString()} />
-									</View>
-								)}
-
-								{data.boxOffice.worldBox && data.boxOffice.usaBox && data.boxOffice.worldBox.amount !== data.boxOffice.usaBox.amount && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в мире</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`+ ${data.boxOffice.usaBox.currency.symbol}${(data.boxOffice.worldBox.amount - data.boxOffice.usaBox.amount).toLocaleString()} = ${data.boxOffice.worldBox.currency.symbol}${data.boxOffice.worldBox.amount.toLocaleString()}`} />
-									</View>
-								)}
-
-								{'audience' in data && data.audience.total > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Зрители</Text>
-										<ScrollView horizontal style={{ flex: 1, paddingLeft: 5 }}>
-											{data.audience.items.map((it, i) => (
-												<View key={it.country.id} style={{ flexDirection: 'row' }}>
-													<View style={{ marginLeft: i !== 0 ? 5 : undefined, flexDirection: 'row', alignItems: 'center' }}>
-														<ImageBackground style={{ width: 16, height: 11, marginRight: 5 }} source={{ uri: `https://st.kp.yandex.net/images/flags/flag-${it.country.id}.gif` }} />
-														<Text style={{ color: colors.text200, fontSize: 13 }}>{it.count >= 1000000 ? `${(it.count / 1000000).toFixed(1)} млн` : it.count >= 1000 ? `${(it.count / 1000).toFixed(1)} тыс` : it.count.toFixed(1)}</Text>
-													</View>
-													{data.audience.total !== i + 1 && <Text style={{ color: colors.text200, fontSize: 13, lineHeight: 18 }}>,</Text>}
-												</View>
-											))}
-										</ScrollView>
-									</View>
-								)}
-
-								{data.boxOffice.rusBox && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сборы в России</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.boxOffice.rusBox.currency.symbol + data.boxOffice.rusBox.amount.toLocaleString()} />
-									</View>
-								)}
-
-								{data.distribution.rusRelease.items.length > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в России</Text>
-										<View style={{ flex: 1, flexDirection: 'row' }}>
-											<Button padding={0} transparent focusable={false} textColor={colors.text200} text={[data.distribution.rusRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.rusRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
-											{'releaseOptions' in data && data.releaseOptions.isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
-											{'releaseOptions' in data && data.releaseOptions.is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
-										</View>
-									</View>
-								)}
-
-								{data.worldPremiere && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в мире</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={new Date(data.worldPremiere.incompleteDate.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')} />
-									</View>
-								)}
-
-								{data.distribution.digitalRelease.items.length > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Цифровой релиз</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.digitalRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.digitalRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
-									</View>
-								)}
-
-								{data.distribution.reRelease.items.length > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Ре-релиз (РФ)</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.reRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.reRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
-									</View>
-								)}
-
-								{data.releases.find(it => it.type === 'DVD') && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Релиз на DVD</Text>
-										<Button
-											padding={0}
-											flex={1}
-											transparent
-											focusable={false}
-											textColor={colors.text200}
-											text={
-												new Date(data.releases.find(it => it.type === 'DVD')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
-												data.releases
-													.find(it => it.type === 'DVD')
-													?.releasers.map(it => `, «${it.name}»`)
-													.join(' ')
-											}
-										/>
-									</View>
-								)}
-
-								{data.releases.find(it => it.type === 'BLURAY') && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Релиз на Blu-ray</Text>
-										<Button
-											padding={0}
-											flex={1}
-											transparent
-											focusable={false}
-											textColor={colors.text200}
-											text={
-												new Date(data.releases.find(it => it.type === 'BLURAY')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
-												data.releases
-													.find(it => it.type === 'BLURAY')
-													?.releasers.map(it => `, «${it.name}»`)
-													.join(' ')
-											}
-										/>
-									</View>
-								)}
-
-								{data.restriction.age && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Возраст</Text>
-										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 5 }}>
-											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
-												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{data.restriction.age.replace('age', '')}+</Text>
-											</View>
-										</View>
-									</View>
-								)}
-
-								{data.restriction.mpaa && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Рейтинг MPAA</Text>
-										<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 5 }}>
-											<View style={{ borderColor: colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
-												<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: colors.text100 + 'cc' }}>{ratingMPAA(data.restriction.mpaa).value}</Text>
-											</View>
-										</View>
-									</View>
-								)}
-
-								{pickIsSeries(data, 'seriesDuration', 'duration') != null && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Время</Text>
-										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={`${pickIsSeries(data, 'seriesDuration', 'duration')} мин${pickIsSeries(data, 'seriesDuration', 'duration') > 60 ? '. / ' + formatDuration(pickIsSeries(data, 'seriesDuration', 'duration')) : ''}` + ('totalDuration' in data && 'seriesDuration' in data ? `${data.totalDuration && data.seriesDuration ? `. серия (${data.totalDuration} мин. всего)` : data.totalDuration ? '. всего' : ''}` : '')} />
-									</View>
-								)}
+								<Encyclopedic data={data} />
 
 								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} />}
 
-								{data.sequelsPrequels.total > 0 && (
-									<View style={{ marginTop: 40 }}>
-										<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Сиквелы и приквелы</Text>
-										<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
-											<FlatList
-												keyExtractor={data => `sequels_prequels_item_${data.movie.id}`}
-												data={data.sequelsPrequels.items}
-												horizontal
-												showsHorizontalScrollIndicator={!false}
-												renderItem={({ item: { movie } }) => {
-													const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
-													const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
-
-													return (
-														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })}>
-															<ImageBackground source={{ uri: poster }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}>
-																{rating && (
-																	<View style={{ position: 'absolute', top: 6, left: 6 }}>
-																		<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
-																	</View>
-																)}
-															</ImageBackground>
-
-															<View style={{ paddingTop: 5 }}>
-																<Text style={{ color: colors.text100, fontSize: 14 }} numberOfLines={2}>
-																	{movie.title.russian ?? movie.title.original ?? movie.title.english}
-																</Text>
-																<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-																	{[isSeries(movie.__typename) ? movie.releaseYears[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
-																</Text>
-															</View>
-														</Button>
-													)
-												}}
-											/>
-										</TVFocusGuideView>
-									</View>
-								)}
+								<SequelsPrequels sequelsPrequels={data.sequelsPrequels} />
 							</View>
 
 							<View style={{ borderColor: colors.bg300, borderBottomWidth: 1, marginBottom: 40, flexDirection: 'row' }}>
@@ -735,49 +171,13 @@ export const Movie = ({ navigation, route }: Props) => {
 							</View>
 							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
 
-							<View focusable accessible style={{ marginBottom: 40 }}>
-								<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {isSeries(data.__typename) ? 'сериала' : 'фильма'}</Text>
-								<View style={{ flexDirection: 'row' }}>
-									<RatingText />
-									<Text250 />
-								</View>
-
-								{data.rating.kinopoisk?.value === null && data.rating.kinopoisk.isActive && (
-									<View>
-										<Text style={{ fontSize: 48, fontWeight: '500', color: colors.text200 }}>–</Text>
-										{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
-											<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
-												<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
-											</Text>
-										)}
-										<Text style={{ fontSize: 13, color: colors.text200 }}>Недостаточно оценок, рейтинг формируется</Text>
-									</View>
-								)}
-
-								{data.rating.kinopoisk?.value != null && data.rating.kinopoisk.isActive && data.rating.kinopoisk.value > 0 && (
-									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>{data.rating.kinopoisk.count.toLocaleString()} оценок</Text>
-										{data.rating.imdb?.value != null && data.rating.imdb.isActive && (
-											<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>
-												<Text style={{ fontWeight: '500' }}>IMDb: {data.rating.imdb.value.toFixed(2)}</Text> {data.rating.imdb.count.toLocaleString()} оценок
-											</Text>
-										)}
-									</View>
-								)}
-
-								{data.rating.expectation?.value != null && data.rating.expectation.isActive && data.rating.expectation.value > 0 && (
-									<View>
-										<Text style={{ fontSize: 13, marginRight: 12, color: colors.text200 }}>Рейтинг ожидания</Text>
-										<Text style={{ fontSize: 13, flex: 1, color: colors.text200 }}>{data.rating.expectation.count.toLocaleString()} ждут премьеры</Text>
-									</View>
-								)}
-							</View>
+							<Rating __typename={data.__typename} rating={data.rating} top250={data.top250} />
 
 							{orientation.portrait && data.mainTrailer && (
 								<>
 									<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 16 }}>Трейлер</Text>
 									<View style={{ gap: 5 }}>
-										<Trailer showTime />
+										<Trailer mainTrailer={data.mainTrailer} showTime />
 										<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
 										<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 									</View>

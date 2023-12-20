@@ -1,5 +1,5 @@
 import { Button, ButtonType } from '@components/atoms'
-import { VoiceComponent } from '@components/molecules'
+import { VoiceComponent } from '@components/molecules/search'
 import { useTheme } from '@hooks'
 import { CloseIcon, SearchIcon } from '@icons'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
