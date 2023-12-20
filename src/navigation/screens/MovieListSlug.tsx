@@ -233,7 +233,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		if (isFetching) return null
 
 		return (
-			<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
+			<View style={{ width: '100%', flexGrow: 1, flexShrink: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
 				<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
 					<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
 					<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
@@ -301,7 +301,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 		)
 	}, [navigation, orientation, order, data])
 
-	const ListFooterComponentStyle = useMemo(() => ({ flexGrow: 1 }), [])
+	const ListFooterComponentStyle = useMemo(() => (data.page != null && data.pages != null && data.pages > 1 ? { flexGrow: 1 } : {}), [data.page, data.pages])
 	const ListHeaderComponentStyle = useMemo(() => ({ marginTop: insets.top, marginBottom: 5 }), [insets.top])
 
 	const CoverImage = () => {
@@ -352,7 +352,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={contentContainerStyle}
 				renderItem={renderItem}
-				ListEmptyComponent={ListEmptyComponent} // TODO fix height
+				ListEmptyComponent={ListEmptyComponent}
 				ListFooterComponent={ListFooterComponent}
 				ListFooterComponentStyle={ListFooterComponentStyle}
 				ListHeaderComponent={ListHeaderComponent}
