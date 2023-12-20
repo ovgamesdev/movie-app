@@ -3,10 +3,11 @@ import { IContentReleaseNotifyMovie, useNavigation, useTheme } from '@hooks'
 import { BookmarksTabParamList } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
+import { useFocusEffect } from '@react-navigation/native'
 import { normalizeUrlWithNull } from '@utils'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Dimensions, FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TabBar } from '../../TabBar'
 
 const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
@@ -26,24 +27,26 @@ const ReleaseNotify = () => {
 	const { colors } = useTheme()
 	const navigation = useNavigation()
 
-	useEffect(() => {
-		const init = async () => {
-			const data = await AsyncStorage.getItem('contentReleaseNotify')
-			if (data === null) return
+	useFocusEffect(
+		useCallback(() => {
+			const init = async () => {
+				const data = await AsyncStorage.getItem('contentReleaseNotify')
+				if (data === null) return
 
-			try {
-				const parsedData = JSON.parse(data)
-				const arrayData: IContentReleaseNotifyMovie[] = Object.values(parsedData)
+				try {
+					const parsedData = JSON.parse(data)
+					const arrayData: IContentReleaseNotifyMovie[] = Object.values(parsedData)
 
-				console.log('data:', arrayData)
-				setData(arrayData)
-			} catch (e) {
-				console.error(e)
+					console.log('data:', arrayData)
+					setData(arrayData)
+				} catch (e) {
+					console.error(e)
+				}
 			}
-		}
 
-		init()
-	}, [])
+			init()
+		}, [])
+	)
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
@@ -89,20 +92,8 @@ const History = () => {
 }
 
 export const Bookmarks = () => {
-	const insets = useSafeAreaInsets()
-	const { colors } = useTheme()
-
 	return (
-		<Tab.Navigator
-			initialLayout={Dimensions.get('window')}
-			initialRouteName='ReleaseNotify'
-			screenOptions={{
-				tabBarIndicatorStyle: { backgroundColor: colors.accent100 },
-				tabBarStyle: { marginTop: insets.top },
-				tabBarLabelStyle: { fontSize: 14 },
-				tabBarActiveTintColor: colors.text100,
-				tabBarInactiveTintColor: colors.text200
-			}}>
+		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='ReleaseNotify' tabBar={TabBar}>
 			<Tab.Screen name='Favorites' component={Favorites} options={{ tabBarLabel: 'Избранное' }} />
 			<Tab.Screen name='ReleaseNotify' component={ReleaseNotify} options={{ tabBarLabel: 'Уведомить о выходе' }} />
 			<Tab.Screen name='History' component={History} options={{ tabBarLabel: 'История' }} />
