@@ -8,7 +8,7 @@ export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__t
 	const { colors } = useTheme()
 
 	return (
-		<View focusable accessible style={{ marginBottom: 40 }}>
+		<View focusable accessible>
 			<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Рейтинг {isSeries(__typename) ? 'сериала' : 'фильма'}</Text>
 			<View style={{ flexDirection: 'row' }}>
 				<RatingText rating={rating} top250={top250} />

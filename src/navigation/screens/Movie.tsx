@@ -175,7 +175,7 @@ export const Movie = ({ navigation, route }: Props) => {
 
 							{orientation.portrait && data.mainTrailer && (
 								<>
-									<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 16 }}>Трейлер</Text>
+									<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 16, marginTop: 40 }}>Трейлер</Text>
 									<View style={{ gap: 5 }}>
 										<Trailer mainTrailer={data.mainTrailer} showTime />
 										<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>

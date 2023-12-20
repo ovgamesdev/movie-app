@@ -5,15 +5,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { useFocusEffect } from '@react-navigation/native'
 import { normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useState } from 'react'
-import { Dimensions, FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Dimensions, FlatList, Platform, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { TabBar } from '../../TabBar'
 
 const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
 const Favorites = () => {
 	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
+		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
 				<View style={{ flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10, gap: 20 }}>
 					<Text>Favorites</Text>
@@ -26,6 +26,10 @@ const ReleaseNotify = () => {
 	const [data, setData] = useState<IContentReleaseNotifyMovie[]>([])
 	const { colors } = useTheme()
 	const navigation = useNavigation()
+
+	const ref = useRef<FlatList>(null)
+	const focusedItem = useRef<{ index: number }>({ index: -1 })
+	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
 
 	useFocusEffect(
 		useCallback(() => {
@@ -48,9 +52,34 @@ const ReleaseNotify = () => {
 		}, [])
 	)
 
+	useEffect(() => {
+		if (!Platform.isTV) return
+
+		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(it => ({ focus: it.blur, blur: { index: -1 } })))
+		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem({ focus: { index: -1 }, blur: focusedItem.current }))
+
+		return () => {
+			listenerFocus()
+			listenerBlur()
+		}
+	}, [focusedItem.current, navigation])
+
+	const handleOnFocus = ({ index }: { index: number }) => {
+		if (index < data.length) {
+			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+		}
+
+		focusedItem.current = { index }
+	}
+
+	const handleOnBlur = () => {
+		focusedItem.current = { index: -1 }
+	}
+
 	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
+		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight>
 			<FlatList
+				ref={ref}
 				data={data}
 				renderItem={({ item, index }) => {
 					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
@@ -58,7 +87,7 @@ const ReleaseNotify = () => {
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onPress={() => navigation.push('Movie', { data: item })}>
+							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
@@ -81,7 +110,7 @@ const ReleaseNotify = () => {
 }
 const History = () => {
 	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
+		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
 				<View style={{ flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10, gap: 20 }}>
 					<Text>History</Text>
@@ -92,6 +121,8 @@ const History = () => {
 }
 
 export const Bookmarks = () => {
+	// TODO other navigator for tv
+
 	return (
 		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='ReleaseNotify' tabBar={TabBar}>
 			<Tab.Screen name='Favorites' component={Favorites} options={{ tabBarLabel: 'Избранное' }} />
