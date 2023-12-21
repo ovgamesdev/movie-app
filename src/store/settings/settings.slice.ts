@@ -1,6 +1,7 @@
 import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from '@store'
-import { AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey, settingsExtraActions } from '@store/settings'
+import { AtLeastOneMergeSettings, AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey, settingsExtraActions } from '@store/settings'
+import mergeOptions from 'merge-options'
 import { ToastAndroid } from 'react-native'
 
 const initialState: IInitialStateSettings = {
@@ -20,10 +21,22 @@ const settingsSlice = createSlice({
 	name: 'settings',
 	initialState,
 	reducers: {
-		setItem: (state: IInitialStateSettings, { payload }: PayloadAction<AtLeastOneSettings>) => {
+		setItem: (state, { payload }: PayloadAction<AtLeastOneSettings>) => {
 			state.settings._settings_time = Date.now()
 			for (const option in payload) {
 				state.settings[option as SettingKey] = payload[option as SettingKey] as never
+			}
+		},
+		mergeItem: (state, { payload }: PayloadAction<AtLeastOneMergeSettings>) => {
+			state.settings._settings_time = Date.now()
+			for (const option in payload) {
+				const itemValue = (payload as any)[option as SettingKey]
+
+				if (option in state.settings && state.settings[option as SettingKey] && itemValue) {
+					state.settings[option as SettingKey] = mergeOptions.call({ concatArrays: true, ignoreUndefined: true }, state.settings[option as SettingKey] as object, itemValue as object) as never
+				} else {
+					state.settings[option as SettingKey] = itemValue as never
+				}
 			}
 		},
 		removeItem: (state, { payload: { key } }: PayloadAction<{ key: SettingKey }>) => {
@@ -98,7 +111,7 @@ export const { actions, reducer } = settingsSlice
 
 export const setupSettingsListeners = (startListening: AppStartListening): Unsubscribe =>
 	startListening({
-		matcher: isAnyOf(actions.setItem, actions.removeItem),
+		matcher: isAnyOf(actions.setItem, actions.mergeItem, actions.removeItem),
 		effect: async (action, listenerApi) => {
 			listenerApi.dispatch(settingsExtraActions.saveSettings())
 		}

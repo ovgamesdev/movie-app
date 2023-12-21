@@ -14,3 +14,9 @@ declare module 'react-native-config' {
 	export const Config: NativeConfig
 	export default Config
 }
+
+declare module 'merge-options' {
+	export default {
+		call: (value: { concatArrays: boolean; ignoreUndefined: boolean }, object: object, object: object) => object
+	}
+}

@@ -13,7 +13,7 @@ import { FC, ReactNode, useEffect } from 'react'
 import { Text, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReduxNetworkProvider } from 'react-native-offline'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { StackNavigator } from './navigation/StackNavigator'
 
@@ -22,7 +22,20 @@ GoogleSignin.configure({
 })
 
 const Temp: FC = () => {
-	const { getSettings, saveSettings, removeItem, setItem } = useActions()
+	const insets = useSafeAreaInsets()
+	const { getSettings, saveSettings, removeItem, setItem, mergeItem } = useActions()
+
+	function generateRandomString(length: number): string {
+		const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+		let result = ''
+
+		for (let i = 0; i < length; i++) {
+			const randomIndex = Math.floor(Math.random() * characters.length)
+			result += characters.charAt(randomIndex)
+		}
+
+		return result
+	}
 
 	const setTestItem = () => {
 		setItem({ 'test:123:qwerty': { id: 123, name: '123' } })
@@ -32,8 +45,23 @@ const Temp: FC = () => {
 		removeItem({ key: 'test:123:qwerty' })
 	}
 
+	const setTestMergeItem = () => {
+		const randomNumber = Math.floor(Math.random() * 5) + 1
+
+		console.log('add value', randomNumber)
+		mergeItem({ 'test:123:qwerty': { value: randomNumber } })
+	}
+
+	const setTestMergeArray = () => {
+		const randomNumber = Math.floor(Math.random() * 5) + 1
+		const randomString = generateRandomString(5)
+
+		console.log('add testArray', randomNumber, randomString)
+		mergeItem({ 'test:123:qwerty': { testArray: [{ id: randomNumber }], name: randomString } })
+	}
+
 	return (
-		<>
+		<View style={{ marginTop: insets.top, marginHorizontal: 10 }}>
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
 				<Button text='getSettings' onPress={getSettings} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
 				<Button text='saveSettings' onPress={saveSettings} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
@@ -43,7 +71,12 @@ const Temp: FC = () => {
 				<Button text='setItem' onPress={setTestItem} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
 				<Button text='removeItem' onPress={removeTestItem} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
 			</View>
-		</>
+
+			<View style={{ flexDirection: 'row', marginTop: 10 }}>
+				<Button text='mergeItem' onPress={setTestMergeItem} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
+				<Button text='mergeItem array' onPress={setTestMergeArray} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
+			</View>
+		</View>
 	)
 }
 
