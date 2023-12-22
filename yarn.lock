@@ -6290,6 +6290,11 @@ react-native-offline@^6.0.2:
     redux ">=3"
     redux-saga "^1.0.2"
 
+react-native-orientation-manager@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-orientation-manager/-/react-native-orientation-manager-1.1.2.tgz#9626e323b0c8435b3c080d0247e71f93e4d87436"
+  integrity sha512-lKVEX0R0ORw17updo0rd0naZ7vQ68yTgY5fCddZYT4/kXzXg8hU6XSLA8N10vmB3cy+H19hEfoUS5ElIfOL7eA==
+
 react-native-pager-view@^6.2.3:
   version "6.2.3"
   resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.2.3.tgz#698f6387fdf06cecc3d8d4792604419cb89cb775"

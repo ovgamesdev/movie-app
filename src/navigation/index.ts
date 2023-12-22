@@ -11,7 +11,7 @@ export type RootStackParamList = {
 	Movie: { data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' } }
 	MovieTrailer: { data: IMainTrailer }
 	Person: { data: { id: number } }
-	Watch: { data: { id: number } }
+	Watch: { data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries'; title: string; poster: string | null; year: number | null } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 }
 

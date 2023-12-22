@@ -28,6 +28,7 @@ const ReleaseNotify: React.FC = () => {
 	const { colors } = useTheme()
 	const navigation = useNavigation()
 
+	// TODO FlatList to FocusableFlatList with save focus index and scroll to index
 	const ref = useRef<FlatList>(null)
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
 	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })

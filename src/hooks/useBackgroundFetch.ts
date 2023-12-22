@@ -15,17 +15,18 @@ const config: BackgroundFetchConfig = {
 
 interface contentReleaseNotifyMovieFilm {
 	id: number
-	name: string
+	title: string
 	poster: string | null
 	type: 'Film'
-	productionYear?: number | null
+	year: number | null
 }
 
 interface contentReleaseNotifyMovieSeries {
 	id: number
-	name: string
+	title: string
 	poster: string | null
 	type: 'TvSeries' | 'MiniSeries'
+	year: number | null
 }
 
 export type IContentReleaseNotifyMovie = contentReleaseNotifyMovieFilm | contentReleaseNotifyMovieSeries
@@ -122,12 +123,22 @@ export const backgroundTask = async (taskId: string) => {
 			// TODO add date-time
 			notifee.displayNotification({
 				title: 'Новый контент доступен!',
-				body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.name}`,
-				data: {
-					id: movie.id,
-					type: movie.type
+				body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
+				data: Object.assign(
+					{
+						id: movie.id,
+						type: movie.type,
+						title: movie.title
+					},
+					'poster' in movie && movie.poster ? { poster: movie.poster } : {},
+					'year' in movie && movie.year ? { year: movie.year } : {}
+				) as {
+					id: number
+					title: string
+					poster?: string
+					type: 'Film' | 'TvSeries' | 'MiniSeries'
+					year?: number
 				},
-
 				android: {
 					channelId: 'content-release-channel',
 					largeIcon: poster,

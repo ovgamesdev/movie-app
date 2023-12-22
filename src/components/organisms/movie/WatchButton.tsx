@@ -36,17 +36,17 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 			onPress={async () => {
 				const item = {
 					id: data.id,
-					name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+					title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
 					poster: data.poster?.avatarsUrl ?? null,
 					type: data.__typename,
-					productionYear: data.productionYear
+					year: data.productionYear ?? null
 				}
 
 				switch (status) {
 					case 'loading':
 						break
 					case 'watch':
-						navigation.navigate('Watch', { data })
+						navigation.navigate('Watch', { data: item })
 						break
 					case 'off-notify':
 						setStatus('on-notify')

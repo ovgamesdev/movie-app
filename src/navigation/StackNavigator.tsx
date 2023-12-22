@@ -23,13 +23,14 @@ export const StackNavigator = () => {
 		})
 
 		const openScreenFromNotify = ({ notification, pressAction }: { notification?: Notification; pressAction?: NotificationPressAction }) => {
-			if (notification && pressAction) {
+			if (notification && pressAction && notification.data) {
+				const data = notification.data
 				switch (pressAction.id) {
 					case 'movie':
-						navigationRef.dispatch(StackActions.push('Movie', { data: notification.data }))
+						navigationRef.dispatch(StackActions.push('Movie', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null } }))
 						break
 					case 'watch':
-						navigationRef.dispatch(StackActions.push('Watch', { data: notification.data }))
+						navigationRef.dispatch(StackActions.push('Watch', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null } }))
 						break
 				}
 			}

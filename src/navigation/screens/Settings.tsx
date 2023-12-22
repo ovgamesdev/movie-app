@@ -1,5 +1,5 @@
 import { UpdateApk, User } from '@components/molecules'
-import { Input, Select, Switch } from '@components/molecules/settings'
+import { Select, Switch } from '@components/molecules/settings'
 import { useTheme, useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
@@ -43,7 +43,6 @@ export const Settings = () => {
 					{ value: null, title: 'default' }
 				]}
 			/>
-			<Input item='kinopoiskToken' />
 			<Switch item='showDevOptions' />
 		</TVFocusGuideView>
 	)

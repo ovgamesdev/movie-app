@@ -90,11 +90,11 @@ export const Movie = ({ navigation, route }: Props) => {
 				onPress={async () => {
 					const item = {
 						id: data.id,
-						name: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+						title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
 						poster: data.poster?.avatarsUrl ?? null,
 						type: data.__typename,
-						productionYear: data.productionYear,
-						releaseYears: 'releaseYears' in data ? data.releaseYears : undefined
+						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+						year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null)
 					}
 
 					switch (status) {

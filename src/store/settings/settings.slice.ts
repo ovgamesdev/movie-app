@@ -8,9 +8,9 @@ const initialState: IInitialStateSettings = {
 	settings: {
 		_settings_time: 0,
 		_settings_version: 1,
-		kinopoiskToken: '',
 		theme: null,
-		showDevOptions: false
+		showDevOptions: false,
+		watchHistory: {}
 	},
 	isLoading: true,
 	isLoaded: false,
