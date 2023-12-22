@@ -5,21 +5,25 @@ export interface IInitialStateSettings {
 	lastSaveTime: number
 }
 
+export type WatchHistoryStatus = 'watch' | 'pause' | 'end'
+
+export type WatchHistory = {
+	id: number
+	type: 'Film' | 'TvSeries' | 'MiniSeries'
+	title: string
+	poster: string | null
+	year: number | null
+	timestamp: number
+	status: WatchHistoryStatus
+	//
+	duration?: number
+	lastTime?: number
+}
+
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number; value?: number; testArray?: { id: number; value?: string }[] }
 	watchHistory: {
-		[key: `${number}:${string}`]: {
-			id: number
-			type: 'Film' | 'TvSeries' | 'MiniSeries'
-			title: string
-			poster: string | null
-			year: number | null
-			timestamp: number
-			//
-			duration?: number
-			lastTime?: number
-			status?: 'watch' | 'pause' | 'end'
-		}
+		[key: `${number}:${string}`]: WatchHistory
 	}
 	_settings_time: number
 	_settings_version: number

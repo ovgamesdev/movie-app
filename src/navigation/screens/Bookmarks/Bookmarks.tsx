@@ -6,9 +6,10 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { StackActions, useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { WatchHistoryStatus } from '@store/settings'
 import { getNoun, normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useState } from 'react'
-import { Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { Animated, Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TabBar } from '../../TabBar'
 
@@ -78,23 +79,65 @@ const ReleaseNotify: React.FC = () => {
 					)
 				}}
 				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 }}
+				// stickyHeaderIndices={[0]}
+				// stickyHeaderHiddenOnScroll
+				// ListHeaderComponent={
+				// 	<View style={{ height: 100, backgroundColor: 'red' }}>
+				// 		<View style={{}}>
+				// 			<Text>1</Text>
+				// 			<Text>2</Text>
+				// 		</View>
+				// 	</View>
+				// }
 			/>
 		</TVFocusGuideView>
 	)
 }
 const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { colors } = useTheme()
+	const { colors, getColorForTheme } = useTheme()
 	const navigation = useNavigation()
 
-	const data = Object.values(watchHistory).sort((a, b) => b.timestamp - a.timestamp)
+	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
+
+	const data = Object.values(watchHistory)
+		.sort((a, b) => b.timestamp - a.timestamp)
+		.filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
+	const barHeight = 45
+
+	const scrollY = new Animated.Value(0)
+	const diffClamp = Animated.diffClamp(scrollY, 0, barHeight)
+	const translateY = diffClamp.interpolate({ inputRange: [0, barHeight], outputRange: [0, -barHeight] })
 
 	console.log('History data:', data)
 
-	// TODO add filters
+	const filters: Record<'all' | WatchHistoryStatus, string> = {
+		all: 'Все',
+		watch: 'Смотрю',
+		pause: 'Пауза',
+		end: 'Просмотрено'
+	}
+
+	const objectFilters = Object.values(filters)
+	const objectFilterKeys = Object.keys(filters) as ('all' | WatchHistoryStatus)[]
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
+			<Animated.View style={{ transform: [{ translateY }], zIndex: 1, height: barHeight, position: 'absolute', top: 0, left: 0, right: 0 }}>
+				<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight style={{ flexDirection: 'row', borderBottomColor: colors.bg300, borderBottomWidth: 1, paddingVertical: 4, backgroundColor: colors.bg100 }}>
+					{objectFilters.map((tab, index) => {
+						const key = objectFilterKeys[index]
+						const isActive = key === activeFilter
+
+						return (
+							<Button key={index} onPress={() => !isActive && setActiveFilter(key)} isActive={isActive} paddingVertical={6} paddingHorizontal={12} alignItems='center' justifyContent='center' activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48, marginLeft: 12 }}>
+								<Text style={{ color: isActive ? colors.text100 : colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
+							</Button>
+						)
+					})}
+				</TVFocusGuideView>
+			</Animated.View>
+
 			<FocusableFlatList
 				data={data}
 				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
@@ -105,7 +148,7 @@ const History: React.FC = () => {
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
 							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
-								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
+								<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
 										{item.title}
 									</Text>
@@ -126,7 +169,11 @@ const History: React.FC = () => {
 						</>
 					)
 				}}
-				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 }}
+				bounces={false}
+				overScrollMode='never'
+				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 + barHeight }}
+				animated
+				onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
 			/>
 		</TVFocusGuideView>
 	)

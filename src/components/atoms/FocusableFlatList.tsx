@@ -1,6 +1,6 @@
 import { useNavigation } from '@hooks'
 import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, FlatListProps, Platform } from 'react-native'
+import { Animated, FlatList, FlatListProps, Platform } from 'react-native'
 
 interface FocusableListRenderItemInfo<ItemT> {
 	item: ItemT
@@ -20,7 +20,7 @@ interface FocusableListRenderItemInfo<ItemT> {
 // TODO movie to types
 export type FocusableListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => React.ReactElement | null
 
-export const FocusableFlatList = <ItemT,>({ renderItem, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: FocusableListRenderItem<ItemT> | null | undefined }) => {
+export const FocusableFlatList = <ItemT,>({ renderItem, animated, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: FocusableListRenderItem<ItemT> | null | undefined; animated?: boolean }) => {
 	const navigation = useNavigation()
 
 	const ref = useRef<FlatList>(null)
@@ -52,8 +52,10 @@ export const FocusableFlatList = <ItemT,>({ renderItem, ...props }: Omit<FlatLis
 		focusedItem.current = { index: -1 }
 	}
 
+	const FL = animated ? Animated.FlatList : FlatList
+
 	return (
-		<FlatList
+		<FL
 			{...props}
 			ref={ref}
 			renderItem={

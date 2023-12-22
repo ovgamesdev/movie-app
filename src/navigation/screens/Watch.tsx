@@ -3,6 +3,7 @@ import { useActions } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { WatchHistory } from '@store/settings'
 import { useCallback, useEffect } from 'react'
 import { AppState, StatusBar, View } from 'react-native'
 import { lockToLandscape, resetInterfaceOrientationSetting } from 'react-native-orientation-manager'
@@ -48,8 +49,8 @@ export const Watch = ({ navigation, route }: Props) => {
 	)
 
 	useEffect(() => {
-		console.log('watchHistory init', { [`${data.id}:watch`]: { ...data, timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}:watch`]: { ...data, timestamp: Date.now() } } })
+		console.log('watchHistory init', { [`${data.id}:watch`]: { ...data, status: 'watch', timestamp: Date.now() } })
+		mergeItem({ watchHistory: { [`${data.id}:watch`]: { ...data, status: 'watch', timestamp: Date.now() } as WatchHistory } })
 
 		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
