@@ -1,4 +1,4 @@
-import { Button, DropDown, ImageBackground } from '@components/atoms'
+import { Button, DropDown, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
@@ -6,8 +6,8 @@ import { RootStackParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FlatList, ListRenderItem, Platform, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 
@@ -82,20 +82,6 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const orientation = useOrientation()
 	const { colors } = useTheme()
 	const ref = useRef<FlatList>(null)
-	const focusedItem = useRef<{ index: number }>({ index: -1 })
-	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
-
-	useEffect(() => {
-		if (!Platform.isTV) return
-
-		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(it => ({ focus: it.blur, blur: { index: -1 } })))
-		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem({ focus: { index: -1 }, blur: focusedItem.current }))
-
-		return () => {
-			listenerFocus()
-			listenerBlur()
-		}
-	}, [focusedItem.current, navigation])
 
 	const [page, setPage] = useState(1)
 	const [order, setOrder] = useState('POSITION_ASC')
@@ -103,27 +89,14 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const { isFetching, data } = useGetListBySlugQuery({ slug, filters: newFilters, order, page, limit: 50 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: { ...data, docs: data?.docs ?? [] }, ...otherParams }) })
 	const isEmpty = data.docs.length === 0
 
-	const handleOnFocus = ({ index }: { index: number }) => {
-		if (index < data.docs.length) {
-			// FIXME scrollToIndex not correct scroll
-			// ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-			// ref.current?.scrollToIndex({ index, animated: true })
-		}
-
-		focusedItem.current = { index }
-	}
-
-	const handleOnBlur = () => {
-		focusedItem.current = { index: -1 }
-	}
-
 	const onPageChange = (page: number) => {
 		setPage(page)
+		// TODO add ref
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	const renderItem: ListRenderItem<Skeleton | IListBySlugResultsDocs> = useCallback(
-		({ item, index }) => {
+	const renderItem: FocusableListRenderItem<Skeleton | IListBySlugResultsDocs> = useCallback(
+		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 			if (item.__typename === 'Skeleton') {
 				return (
 					<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10}>
@@ -148,7 +121,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 			return (
 				<>
 					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
+					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
 						{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
 							orientation.landscape &&
 							(item.__typename === 'BoxOfficeMovieListItem' ? (
@@ -341,11 +314,10 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
-			<FlatList
+			<FocusableFlatList
 				//
 				keyExtractor={keyExtractor}
 				getItemLayout={getItemLayout}
-				ref={ref}
 				data={isFetching ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={contentContainerStyle}

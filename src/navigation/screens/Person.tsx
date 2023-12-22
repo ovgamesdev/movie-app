@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
+import { ActivityIndicator, Button, FocusableFlatList, ImageBackground } from '@components/atoms'
 import { FilmographyItems } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
 import { declineAge, declineChildren, getRatingColor, getSpouseStatus, normalizeUrlWithNull } from '@utils'
 import React from 'react'
-import { FlatList, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
+import { ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Person'>
@@ -155,6 +155,7 @@ export const Person = ({ navigation, route }: Props) => {
 								{data.bestFilms.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Лучшие фильмы</Text>
+										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.bestFilms.items.map(({ movie }, i, { length }) => (
 												<Button padding={0} key={movie.id} transparent text={(movie.title.russian ?? '') + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} />
@@ -166,6 +167,7 @@ export const Person = ({ navigation, route }: Props) => {
 								{data.bestSeries.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Лучшие сериалы</Text>
+										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.bestSeries.items.map(({ movie }, i, { length }) => (
 												<Button padding={0} key={movie.id} transparent text={(movie.title.russian ?? '') + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} />
@@ -178,17 +180,17 @@ export const Person = ({ navigation, route }: Props) => {
 									<View style={{ marginTop: 40 }}>
 										<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Популярное сейчас</Text>
 										<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
-											<FlatList
+											<FocusableFlatList
 												keyExtractor={data => `popular_movies_item_${data.movie.id}`}
 												data={data.popularMovies.items}
 												horizontal
 												showsHorizontalScrollIndicator={!false}
-												renderItem={({ item: { movie } }) => {
+												renderItem={({ item: { movie }, hasTVPreferredFocus, onBlur, onFocus }) => {
 													const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
 													const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 													return (
-														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })}>
+														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onBlur={onBlur} onFocus={onFocus} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
 															<ImageBackground source={{ uri: poster }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}>
 																{rating && (
 																	<View style={{ position: 'absolute', top: 6, left: 6 }}>

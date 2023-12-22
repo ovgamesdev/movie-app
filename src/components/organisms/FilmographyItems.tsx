@@ -1,4 +1,4 @@
-import { Button, DropDown } from '@components/atoms'
+import { Button, DropDown, FocusableFlatList } from '@components/atoms'
 import { useNavigation, useOrientation, useTheme } from '@hooks'
 import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
 import React, { useRef, useState } from 'react'
@@ -130,9 +130,9 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 				</TVFocusGuideView>
 			</ScrollView>
 
-			<FlatList
+			<FocusableFlatList
 				data={data.docs}
-				renderItem={({ item: { movie, participations }, index }) => {
+				renderItem={({ item: { movie, participations }, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 					const title = movie.title.russian ?? movie.title.original ?? movie.title.english
 					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? movie.title.original + ' ' : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null].filter(it => !!it).join(', ')
 					const tertiaryInfo = [
@@ -145,7 +145,7 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button transparent animation='scale' padding={0} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} style={{ paddingVertical: 24 }}>
+							<Button transparent animation='scale' padding={0} paddingVertical={24} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<Text style={{ color: colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={1}>
 									{title}
 								</Text>

@@ -51,7 +51,7 @@ export const Watch = ({ navigation, route }: Props) => {
 		console.log('watchHistory init', { [`${data.id}:watch`]: { ...data, timestamp: Date.now() } })
 		mergeItem({ watchHistory: { [`${data.id}:watch`]: { ...data, timestamp: Date.now() } } })
 
-		const lastTime = Math.floor(Math.random() * 500) + 1
+		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
 
 		setTimeout(() => {
@@ -60,7 +60,7 @@ export const Watch = ({ navigation, route }: Props) => {
 		}, 10 * 1000)
 
 		const saveWatchStatus = () => {
-			const newLastTime = Math.floor(Math.random() * 500) + lastTime
+			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
 
 			console.log('watchHistory end', { [`${data.id}:watch`]: { lastTime: newLastTime } })
 			mergeItem({ watchHistory: { [`${data.id}:watch`]: { lastTime: newLastTime } } })

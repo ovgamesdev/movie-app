@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
 import { isSeries, normalizeUrlWithNull } from '@utils'
 import { useEffect, useState } from 'react'
-import { ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
@@ -139,12 +139,12 @@ export const Movie = ({ navigation, route }: Props) => {
 						<View style={{ flexDirection: 'row', gap: 10 }}>
 							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={6} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
 							<View style={{ flex: 1 }}>
-								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={orientation.portrait}>
+								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={!Platform.isTV}>
 									{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
-								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={orientation.portrait}>
+								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={!Platform.isTV}>
 									{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
 									{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
 								</Text>

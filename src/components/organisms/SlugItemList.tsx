@@ -1,10 +1,10 @@
-import { ActivityIndicator, Button } from '@components/atoms'
+import { ActivityIndicator, Button, FocusableFlatList, FocusableListRenderItem } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
 import { useNavigation, useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
-import React, { useEffect, useRef, useState } from 'react'
-import { FlatList, ListRenderItem, Platform, TVFocusGuideView, Text, View } from 'react-native'
+import React from 'react'
+import { Platform, TVFocusGuideView, Text, View } from 'react-native'
 
 type Props = {
 	slug: string
@@ -17,38 +17,20 @@ const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __t
 export const SlugItemList = ({ slug, title }: Props) => {
 	const navigation = useNavigation()
 	const { colors } = useTheme()
-	const ref = useRef<FlatList>(null)
-	const focusedItem = useRef<{ index: number }>({ index: -1 })
-	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
-
-	useEffect(() => {
-		if (!Platform.isTV) return
-
-		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(it => ({ focus: it.blur, blur: { index: -1 } })))
-		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem({ focus: { index: -1 }, blur: focusedItem.current }))
-
-		return () => {
-			listenerFocus()
-			listenerBlur()
-		}
-	}, [focusedItem.current, navigation])
 
 	const { isFetching, data } = useGetListBySlugQuery({ slug, page: 1, limit: 25 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.docs ?? [], ...otherParams }) })
 	const isEmpty = data.length === 0
 
-	const handleOnFocus = ({ index }: { index: number }) => {
-		if (index < data.length) {
-			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-		}
+	// TODO add scrollToIndex
+	// const handleOnFocus = ({ index }: { index: number }) => {
+	// 	if (index < data.length) {
+	// 		ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+	// 	}
 
-		focusedItem.current = { index }
-	}
+	// 	focusedItem.current = { index }
+	// }
 
-	const handleOnBlur = () => {
-		focusedItem.current = { index: -1 }
-	}
-
-	const renderItem: ListRenderItem<IListBySlugResultsDocs | Skeleton> = ({ item, index }) => {
+	const renderItem: FocusableListRenderItem<IListBySlugResultsDocs | Skeleton> = ({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 		if (item.__typename === 'Skeleton') {
 			return (
 				<Button focusable={false} flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }}>
@@ -61,7 +43,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 			)
 		}
 
-		return <SlugItem data={item.movie} index={index} onFocus={handleOnFocus} onBlur={handleOnBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index} />
+		return <SlugItem data={item.movie} index={index} onFocus={onFocus} onBlur={onBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={hasTVPreferredFocus} />
 	}
 
 	return (
@@ -71,9 +53,8 @@ export const SlugItemList = ({ slug, title }: Props) => {
 				{!Platform.isTV && <NavigateNextIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10 }} />}
 			</Button>
 			<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
-				<FlatList
+				<FocusableFlatList
 					keyExtractor={data => `list_${slug}_item_${data.movie.id}`}
-					ref={ref}
 					data={isFetching ? skeletonData : data}
 					// data={skeletonData}
 					horizontal
@@ -97,7 +78,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 								</View>
 							)}
 							{!Platform.isTV || isEmpty ? null : (
-								<Button onFocus={() => handleOnFocus({ index: data.length })} onBlur={handleOnBlur} onPress={() => navigation.push('MovieListSlug', { data: { slug } })} hasTVPreferredFocus={data.length === refreshFocusedItem.focus.index} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
+								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
 									<Text style={{ color: colors.text200, paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }}>More..</Text>
 								</Button>
 							)}

@@ -1,14 +1,14 @@
-import { Button, ImageBackground } from '@components/atoms'
-import { IContentReleaseNotifyMovie, useNavigation, useTheme } from '@hooks'
+import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
+import { IContentReleaseNotifyMovie, useNavigation, useTheme, useTypedSelector } from '@hooks'
 import { BookmarksTabParamList, navigationRef } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { StackActions, useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, FlatList, Platform, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { getNoun, normalizeUrlWithNull } from '@utils'
+import React, { useCallback, useState } from 'react'
+import { Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TabBar } from '../../TabBar'
 
@@ -28,11 +28,7 @@ const ReleaseNotify: React.FC = () => {
 	const { colors } = useTheme()
 	const navigation = useNavigation()
 
-	// TODO FlatList to FocusableFlatList with save focus index and scroll to index
-	const ref = useRef<FlatList>(null)
-	const focusedItem = useRef<{ index: number }>({ index: -1 })
-	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
-
+	// TODO move to settings
 	useFocusEffect(
 		useCallback(() => {
 			const init = async () => {
@@ -54,50 +50,26 @@ const ReleaseNotify: React.FC = () => {
 		}, [])
 	)
 
-	useEffect(() => {
-		if (!Platform.isTV) return
-
-		const listenerFocus = navigation.addListener('focus', () => setRefreshFocusedItem(it => ({ focus: it.blur, blur: { index: -1 } })))
-		const listenerBlur = navigation.addListener('blur', () => setRefreshFocusedItem({ focus: { index: -1 }, blur: focusedItem.current }))
-
-		return () => {
-			listenerFocus()
-			listenerBlur()
-		}
-	}, [focusedItem.current, navigation])
-
-	const handleOnFocus = ({ index }: { index: number }) => {
-		if (index < data.length) {
-			ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-		}
-
-		focusedItem.current = { index }
-	}
-
-	const handleOnBlur = () => {
-		focusedItem.current = { index: -1 }
-	}
-
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight>
-			<FlatList
-				ref={ref}
+			<FocusableFlatList
 				data={data}
-				renderItem={({ item, index }) => {
+				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={() => handleOnFocus({ index })} onBlur={handleOnBlur} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={index === refreshFocusedItem.focus.index}>
+							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
-										{item.name}
+										{item.title ?? item.name}
+										{/* TODO name: old value */}
 									</Text>
-									{'productionYear' in item && item.productionYear !== null && (
+									{item.year !== null && (
 										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }} numberOfLines={1}>
-											{item.productionYear}
+											{item.year}
 										</Text>
 									)}
 								</View>
@@ -111,13 +83,51 @@ const ReleaseNotify: React.FC = () => {
 	)
 }
 const History: React.FC = () => {
+	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
+	const { colors } = useTheme()
+	const navigation = useNavigation()
+
+	const data = Object.values(watchHistory).sort((a, b) => b.timestamp - a.timestamp)
+
+	console.log('History data:', data)
+
+	// TODO add filters
+
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
-			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
-				<View style={{ flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10, gap: 20 }}>
-					<Text>History</Text>
-				</View>
-			</ScrollView>
+			<FocusableFlatList
+				data={data}
+				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
+					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+
+					return (
+						<>
+							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
+							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
+								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
+								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
+									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
+										{item.title}
+									</Text>
+									{item.year !== null && (
+										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }} numberOfLines={1}>
+											{item.year}
+										</Text>
+									)}
+
+									{item.duration && item.lastTime && (
+										<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8 }}>
+											<Text style={{ color: colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : `Осталось ${item.duration - item.lastTime} ${getNoun(item.duration - item.lastTime, 'минута', 'минуты', 'минут')}`}</Text>
+											<Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} />
+										</View>
+									)}
+								</View>
+							</Button>
+						</>
+					)
+				}}
+				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 }}
+			/>
 		</TVFocusGuideView>
 	)
 }
