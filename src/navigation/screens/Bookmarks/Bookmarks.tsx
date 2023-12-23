@@ -66,7 +66,6 @@ const ReleaseNotify: React.FC = () => {
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
 										{item.title}
-										{/* TODO name: old value */}
 									</Text>
 									{item.year !== null && (
 										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }} numberOfLines={1}>

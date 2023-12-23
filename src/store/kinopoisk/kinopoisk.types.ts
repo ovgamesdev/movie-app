@@ -111,7 +111,7 @@ interface Item {
 	__typename: string
 }
 
-interface Person {
+export interface Person {
 	id?: number
 	name: string | null
 	originalName: string // | null

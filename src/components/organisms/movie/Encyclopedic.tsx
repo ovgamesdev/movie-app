@@ -1,12 +1,30 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
 import { Kp3dIcon, KpImaxIcon } from '@icons'
-import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
+import { IFilmBaseInfo, ITvSeriesBaseInfo, Person } from '@store/kinopoisk'
 import { declineSeasons, formatDuration, isSeries, pickIsSeries, ratingMPAA } from '@utils'
 import React from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 
 // TODO EncyclopedicItem
+
+const PersonItem = ({ title, data }: { title: string; data: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]; total?: number } }) => {
+	const navigation = useNavigation()
+	const { colors } = useTheme()
+
+	if (data.items.length === 0) return null
+
+	return (
+		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
+			<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>{title}</Text>
+			<ScrollView horizontal style={{ flex: 1 }}>
+				{data.items.map(({ person }, i, { length }) => (
+					<Button padding={0} key={person.id} text={(person.name ?? person.originalName) + (i !== length - 1 ? ', ' : '')} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
+				))}
+			</ScrollView>
+		</TVFocusGuideView>
+	)
+}
 
 export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
 	const navigation = useNavigation()
@@ -46,7 +64,17 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 			{data.distribution.originals.items.length > 0 && (
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Платформа</Text>
-					<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.distribution.originals.items.map(it => it.companies.map(it => it.displayName).join(' ')).join(' ')} />
+					<Button
+						padding={0}
+						flex={1}
+						transparent
+						focusable={false}
+						textColor={colors.text200}
+						text={data.distribution.originals.items
+							.map(it => it.companies.map(it => it.displayName))
+							.flat()
+							.join(', ')}
+					/>
 				</View>
 			)}
 
@@ -54,7 +82,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Страна</Text>
 					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.countries.map(it => (
+						{data.countries.map((it, i, { length }) => (
 							<Button
 								onPress={() => {
 									const booleanFilterValues = [
@@ -67,7 +95,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 								}}
 								padding={0}
 								key={it.id}
-								text={it.name}
+								text={it.name + (i !== length - 1 ? ', ' : '')}
 								transparent
 							/>
 						))}
@@ -79,11 +107,11 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Жанр</Text>
 					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.genres.map(it => (
+						{data.genres.map((it, i, { length }) => (
 							<Button
 								padding={0}
 								key={it.id}
-								text={it.name}
+								text={it.name + (i !== length - 1 ? ', ' : '')}
 								transparent
 								onPress={() => {
 									const booleanFilterValues = [
@@ -105,104 +133,23 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 				<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.tagline ? `«${data.tagline.replace(/(\s+\(season \d+\))/gi, '').replace(/\.$/g, '')}»` : '—'} />
 			</View>
 
-			{data.actors.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>В главных ролях</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.actors.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.actors} title='В главных ролях' />
 
-			{data.voiceOverActors.total > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Роли дублировали</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.voiceOverActors.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.voiceOverActors} title='Роли дублировали' />
 
-			{data.directors.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Режиссер</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.directors.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.directors} title='Режиссер' />
 
-			{data.writers.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Сценарий</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.writers.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.writers} title='Сценарий' />
 
-			{data.producers.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Продюсер</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.producers.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.producers} title='Продюсер' />
 
-			{data.operators.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Оператор</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.operators.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.operators} title='Оператор' />
 
-			{data.composers.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Композитор</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.composers.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.composers} title='Композитор' />
 
-			{data.designers.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Художник</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.designers.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.designers} title='Художник' />
 
-			{data.filmEditors.items.length > 0 && (
-				<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Монтаж</Text>
-					<ScrollView horizontal style={{ flex: 1 }}>
-						{data.filmEditors.items.map(({ person }) => (
-							<Button padding={0} key={person.id} text={person.name ?? person.originalName} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-						))}
-					</ScrollView>
-				</TVFocusGuideView>
-			)}
+			<PersonItem data={data.filmEditors} title='Монтаж' />
 
 			{data.boxOffice.budget && (
 				<View style={{ flexDirection: 'row' }}>
@@ -253,7 +200,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Премьера в России</Text>
 					<View style={{ flex: 1, flexDirection: 'row' }}>
-						<Button padding={0} transparent focusable={false} textColor={colors.text200} text={[data.distribution.rusRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.rusRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
+						<Button padding={0} transparent focusable={false} textColor={colors.text200} text={[data.distribution.rusRelease.items.map((it, i, { length }) => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.rusRelease.items.map((it, i, { length }) => it.companies.map((it, i, { length }) => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 						{'releaseOptions' in data && data.releaseOptions.isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
 						{'releaseOptions' in data && data.releaseOptions.is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
 					</View>
@@ -270,14 +217,14 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 			{data.distribution.digitalRelease.items.length > 0 && (
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Цифровой релиз</Text>
-					<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.digitalRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.digitalRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
+					<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.digitalRelease.items.map((it, i, { length }) => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.digitalRelease.items.map((it, i, { length }) => it.companies.map((it, i, { length }) => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 				</View>
 			)}
 
 			{data.distribution.reRelease.items.length > 0 && (
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Ре-релиз (РФ)</Text>
-					<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.reRelease.items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.reRelease.items.map(it => it.companies.map(it => `«${it.displayName}»`).join('')).join(' ')].filter(it => !!it).join(', ')} />
+					<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={[data.distribution.reRelease.items.map((it, i, { length }) => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), data.distribution.reRelease.items.map((it, i, { length }) => it.companies.map((it, i, { length }) => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 				</View>
 			)}
 
@@ -294,7 +241,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 							new Date(data.releases.find(it => it.type === 'DVD')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
 							data.releases
 								.find(it => it.type === 'DVD')
-								?.releasers.map(it => `, «${it.name}»`)
+								?.releasers.map((it, i, { length }) => `, «${it.name}»`)
 								.join(' ')
 						}
 					/>
@@ -314,7 +261,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 							new Date(data.releases.find(it => it.type === 'BLURAY')?.date ?? '').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') +
 							data.releases
 								.find(it => it.type === 'BLURAY')
-								?.releasers.map(it => `, «${it.name}»`)
+								?.releasers.map((it, i, { length }) => `, «${it.name}»`)
 								.join(' ')
 						}
 					/>

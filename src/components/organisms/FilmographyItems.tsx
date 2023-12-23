@@ -169,12 +169,12 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 									{title}
 								</Text>
 								{secondaryInfo && (
-									<Text style={{ color: colors.text100, fontSize: 13 }} numberOfLines={1}>
+									<Text style={{ color: colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
 										{secondaryInfo}
 									</Text>
 								)}
 								{tertiaryInfo && (
-									<Text style={{ color: colors.text200, fontSize: 13, marginTop: 4 }} numberOfLines={1}>
+									<Text style={{ color: colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
 										{tertiaryInfo}
 									</Text>
 								)}

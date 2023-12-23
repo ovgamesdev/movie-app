@@ -120,6 +120,7 @@ export const Person = ({ navigation, route }: Props) => {
 								{data.mainGenres.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
 										<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Жанры</Text>
+										{/* { textTransform: 'capitalize' } */}
 										<Button padding={0} flex={1} transparent focusable={false} textColor={colors.text200} text={data.mainGenres.map(it => it.name).join(', ')} />
 									</View>
 								)}
