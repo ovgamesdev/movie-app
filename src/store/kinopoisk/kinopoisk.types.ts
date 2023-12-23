@@ -9,6 +9,10 @@ export interface IListSlugFilter {
 type SingleSelectFilterValues = { filterId: string; value: string }
 type BooleanFilterValues = { filterId: string; value: boolean }
 
+export type MovieType = 'TvSeries' | 'Film' | 'MiniSeries' | 'Video'
+export type MovieFilmType = 'Film' | 'Video'
+export type MovieSeriesType = 'TvSeries' | 'MiniSeries'
+
 export interface IGraphqlMovie {
 	id: number
 	contentId: string | null
@@ -30,7 +34,7 @@ export interface IGraphqlMovie {
 	seriesDuration: number | null
 	totalDuration: number | null
 	top250: number | null
-	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
+	__typename: MovieType
 }
 
 export interface IGraphqlSuggestMovie {
@@ -41,9 +45,9 @@ export interface IGraphqlSuggestMovie {
 	rating: Rating
 	releaseYears?: ReleaseYear[]
 	title: Title
-	type: string // TV_ONLY | NORMAL
+	type: string // TV_ONLY | NORMAL | VIDEO_ONLY
 	viewOption: ViewOption | null
-	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
+	__typename: MovieType
 }
 
 export interface IGraphqlSuggestPerson {
@@ -389,7 +393,7 @@ export interface IMovieBaseInfo {
 		incompleteDate: { accuracy: string; date: string }
 	} | null
 	writers: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[] }
-	__typename: 'TvSeries' | 'Film' | 'MiniSeries'
+	__typename: MovieType
 }
 
 export interface IFilmBaseInfo
@@ -562,7 +566,7 @@ export interface ITvSeriesBaseInfo
 		| 'worldPremiere'
 		| 'writers'
 	> {
-	__typename: 'TvSeries' | 'MiniSeries'
+	__typename: MovieSeriesType
 }
 
 export interface IMainTrailer {
@@ -774,7 +778,7 @@ interface IFilmographyItemSeries extends Pick<IMovieBaseInfo, 'contentId' | 'cou
 		original: string | null
 		russian: string | null
 	}
-	__typename: 'TvSeries' | 'MiniSeries'
+	__typename: MovieSeriesType
 }
 
 interface IFilmographyItemFilm extends Pick<IMovieBaseInfo, 'contentId' | 'countries' | 'genres' | 'id' | 'isShortFilm' | 'isTicketsAvailable' | 'poster' | 'productionYear' | 'top250' | 'userData' | 'viewOption'> {
@@ -784,7 +788,7 @@ interface IFilmographyItemFilm extends Pick<IMovieBaseInfo, 'contentId' | 'count
 		original: string | null
 		russian: string | null
 	}
-	__typename: 'Film'
+	__typename: MovieFilmType
 }
 
 // FilmographyFilters

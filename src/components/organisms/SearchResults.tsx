@@ -1,6 +1,6 @@
 import { Movie, MovieList, Person } from '@components/molecules/search'
 import { useNavigation, useTheme } from '@hooks'
-import { ISuggestSearchResults } from '@store/kinopoisk'
+import { ISuggestSearchResults, MovieType } from '@store/kinopoisk'
 import React from 'react'
 import { Text, View } from 'react-native'
 
@@ -22,7 +22,7 @@ export const SearchResults = ({ data }: Props) => {
 		navigation.push('MovieListSlug', { data: { slug } })
 	}
 
-	const onMovie = (data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' }) => {
+	const onMovie = (data: { id: number; type: MovieType }) => {
 		navigation.push('Movie', { data })
 	}
 

@@ -1,6 +1,6 @@
 // MOVIE
 
-import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
+import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType } from '@store/kinopoisk'
 
 export const getRatingColor = (rating: number): string => {
 	if (rating >= 7) {
@@ -97,7 +97,7 @@ export const declineChildren = (count: number): string => {
 }
 
 // TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
-export const isSeries = (type: 'Film' | 'TvSeries' | 'MiniSeries'): boolean => {
+export const isSeries = (type: MovieType): boolean => {
 	return type === 'TvSeries' || type === 'MiniSeries'
 }
 

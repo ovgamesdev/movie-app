@@ -1,5 +1,6 @@
 import notifee, { AndroidImportance } from '@notifee/react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { MovieFilmType, MovieSeriesType, MovieType } from '@store/kinopoisk'
 import { delay, normalizeUrlWithNull } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
@@ -17,7 +18,7 @@ interface contentReleaseNotifyMovieFilm {
 	id: number
 	title: string
 	poster: string | null
-	type: 'Film'
+	type: MovieFilmType
 	year: number | null
 }
 
@@ -25,7 +26,7 @@ interface contentReleaseNotifyMovieSeries {
 	id: number
 	title: string
 	poster: string | null
-	type: 'TvSeries' | 'MiniSeries'
+	type: MovieSeriesType
 	year: number | null
 }
 
@@ -136,7 +137,7 @@ export const backgroundTask = async (taskId: string) => {
 					id: number
 					title: string
 					poster?: string
-					type: 'Film' | 'TvSeries' | 'MiniSeries'
+					type: MovieType
 					year?: number
 				},
 				android: {

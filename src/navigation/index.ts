@@ -1,5 +1,5 @@
 import { createNavigationContainerRef } from '@react-navigation/native'
-import { IListSlugFilter, IMainTrailer } from '@store/kinopoisk'
+import { IListSlugFilter, IMainTrailer, MovieType } from '@store/kinopoisk'
 
 export * from './StackNavigator'
 export * from './TabBar'
@@ -9,10 +9,10 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>()
 
 export type RootStackParamList = {
 	Home: undefined
-	Movie: { data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' } }
+	Movie: { data: { id: number; type: MovieType } }
 	MovieTrailer: { data: IMainTrailer }
 	Person: { data: { id: number } }
-	Watch: { data: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries'; title: string; poster: string | null; year: number | null } }
+	Watch: { data: { id: number; type: MovieType; title: string; poster: string | null; year: number | null } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 }
 

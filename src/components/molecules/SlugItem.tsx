@@ -1,6 +1,6 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
-import { IGraphqlMovie } from '@store/kinopoisk'
+import { IGraphqlMovie, MovieType } from '@store/kinopoisk'
 import { normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
@@ -11,7 +11,7 @@ type Props = {
 	hasTVPreferredFocus: boolean
 	onFocus: ({ index }: { index: number }) => void
 	onBlur: ({ index }: { index: number }) => void
-	onPress: ({ id }: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' }) => void
+	onPress: ({ id }: { id: number; type: MovieType }) => void
 }
 
 export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }: Props) => {

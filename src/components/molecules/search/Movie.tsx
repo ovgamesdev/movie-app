@@ -1,13 +1,13 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
-import { IGraphqlSuggestMovie } from '@store/kinopoisk'
+import { IGraphqlSuggestMovie, MovieType } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
 
 type Props = {
 	item: IGraphqlSuggestMovie
-	onPress: ({ id, type }: { id: number; type: 'Film' | 'TvSeries' | 'MiniSeries' }) => void
+	onPress: ({ id, type }: { id: number; type: MovieType }) => void
 }
 
 export const Movie = ({ item, onPress }: Props) => {

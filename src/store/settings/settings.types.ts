@@ -1,3 +1,5 @@
+import { MovieType } from '@store/kinopoisk'
+
 export interface IInitialStateSettings {
 	settings: ISettings
 	isLoading: boolean
@@ -9,7 +11,7 @@ export type WatchHistoryStatus = 'watch' | 'pause' | 'end'
 
 export type WatchHistory = {
 	id: number
-	type: 'Film' | 'TvSeries' | 'MiniSeries'
+	type: MovieType
 	title: string
 	poster: string | null
 	year: number | null

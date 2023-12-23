@@ -1,20 +1,20 @@
 import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
 import { useNavigation, useTheme } from '@hooks'
-import { ISimilarMovieResults, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
+import { ISimilarMovieResults, MovieType, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, TVFocusGuideView, Text, View } from 'react-native'
 
 type Props = {
 	id: number
-	type: 'Film' | 'TvSeries' | 'MiniSeries'
+	type: MovieType
 }
 
 export const SimilarMovie = ({ id, type }: Props) => {
 	const { colors } = useTheme()
 	const navigation = useNavigation()
 
-	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' })
+	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' && type !== 'Video' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })
 
 	const data: ISimilarMovieResults | undefined = dataFilm ?? dataTvSeries
