@@ -2,7 +2,7 @@ import { Button, ButtonType } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
 import React, { useRef, useState } from 'react'
-import { Dimensions, FlatList, TVFocusGuideView, Text, View } from 'react-native'
+import { Dimensions, FlatList, PressableProps, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -20,7 +20,7 @@ interface Props<T> {
 	onChange: (value: T) => void
 }
 
-export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange }: Props<T>) => {
+export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange, ...props }: Props<T> & PressableProps) => {
 	const [isVisible, setIsVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const { colors } = useTheme()
@@ -105,7 +105,7 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 
 	return (
 		<TVFocusGuideView trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
-			<Button ref={buttonRef} onLayout={onLayout} onPress={onOpen} flex={0} flexDirection='row'>
+			<Button ref={buttonRef} {...props} onLayout={onLayout} onPress={onOpen} flex={0} flexDirection='row'>
 				<Text style={{ color: colors.text100 }} numberOfLines={1}>
 					{checkedItem.label}
 				</Text>

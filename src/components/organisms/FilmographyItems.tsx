@@ -43,12 +43,33 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 	}
 
 	if (isFetching) {
-		// TODO skeleton
 		return (
-			<View style={{ marginTop: 40, marginBottom: 2 }}>
-				<View style={{ width: '60%', height: 22, marginTop: 5, backgroundColor: colors.bg200 }} />
-				<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
-				<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+			<View style={{ marginTop: 40 }}>
+				<View style={{ marginBottom: 9, gap: 5, flexDirection: 'row' }}>
+					<View style={{ height: 63.3, width: 69.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 63.3, width: 149.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 63.3, width: 242.6, borderRadius: 6, backgroundColor: colors.bg200 }} />
+				</View>
+
+				<View style={{ paddingVertical: 10, gap: 5, flexDirection: 'row' }}>
+					<View style={{ height: 40, width: 160.6, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 40, width: 121.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 40, width: 179.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
+				</View>
+
+				<FlatList
+					data={Array(10).map(({ index }) => ({ id: index }))}
+					renderItem={({ index }) => (
+						<>
+							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
+							<View style={{ paddingVertical: 24, margin: 3 }}>
+								<View style={{ width: '60%', height: 18, marginTop: 5, backgroundColor: colors.bg200 }} />
+								<View style={{ width: '15%', height: 12 + 4, marginTop: 5, backgroundColor: colors.bg200 }} />
+								<View style={{ width: '30%', height: 12, marginTop: 12, marginBottom: 2.5, backgroundColor: colors.bg200 }} />
+							</View>
+						</>
+					)}
+				/>
 			</View>
 		)
 	}
@@ -57,8 +78,6 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 
 	console.log('filmography data:', data)
 	console.log('dataFilters data:', dataFilters)
-
-	// TODO TV focus
 
 	return (
 		<View style={{ marginTop: 40 }}>
