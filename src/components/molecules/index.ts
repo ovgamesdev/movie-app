@@ -1,3 +1,4 @@
+export * from './Filters'
 export * from './NetInfo'
 export * from './Pagination'
 export * from './SlugItem'

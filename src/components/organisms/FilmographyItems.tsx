@@ -166,8 +166,8 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 				}}
 				ListEmptyComponent={() => {
 					return (
-						<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
-							<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
+						<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 30, borderRadius: 6, paddingHorizontal: 30 }}>
+							<View style={{ justifyContent: 'center', alignItems: 'center' }}>
 								<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
 								<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
 							</View>

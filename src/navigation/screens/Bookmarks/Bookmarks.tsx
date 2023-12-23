@@ -1,6 +1,7 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
+import { Filters } from '@components/molecules'
 import { IContentReleaseNotifyMovie, useNavigation, useTheme, useTypedSelector } from '@hooks'
-import { BookmarksTabParamList, navigationRef } from '@navigation'
+import { BookmarksTabParamList, TabBar, navigationRef } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
@@ -11,7 +12,6 @@ import { getNoun, normalizeUrlWithNull } from '@utils'
 import React, { useCallback, useState } from 'react'
 import { Animated, Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { TabBar } from '../../TabBar'
 
 const Favorites: React.FC = () => {
 	return (
@@ -65,7 +65,7 @@ const ReleaseNotify: React.FC = () => {
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
-										{item.title ?? item.name}
+										{item.title}
 										{/* TODO name: old value */}
 									</Text>
 									{item.year !== null && (
@@ -78,7 +78,7 @@ const ReleaseNotify: React.FC = () => {
 						</>
 					)
 				}}
-				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 }}
+				contentContainerStyle={{ padding: 10, paddingBottom: 0, paddingTop: 0 }}
 				// stickyHeaderIndices={[0]}
 				// stickyHeaderHiddenOnScroll
 				// ListHeaderComponent={
@@ -93,9 +93,12 @@ const ReleaseNotify: React.FC = () => {
 		</TVFocusGuideView>
 	)
 }
+const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', pause: 'Пауза', end: 'Просмотрено' }
 const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { colors, getColorForTheme } = useTheme()
+	const insets = useSafeAreaInsets()
+	const bottomTabBarHeight = useBottomTabBarHeight()
+	const { colors } = useTheme()
 	const navigation = useNavigation()
 
 	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
@@ -103,40 +106,15 @@ const History: React.FC = () => {
 	const data = Object.values(watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
 		.filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
-	const barHeight = 45
+	const barHeight = bottomTabBarHeight - insets.bottom + 2
 
 	const scrollY = new Animated.Value(0)
-	const diffClamp = Animated.diffClamp(scrollY, 0, barHeight)
-	const translateY = diffClamp.interpolate({ inputRange: [0, barHeight], outputRange: [0, -barHeight] })
 
 	console.log('History data:', data)
 
-	const filters: Record<'all' | WatchHistoryStatus, string> = {
-		all: 'Все',
-		watch: 'Смотрю',
-		pause: 'Пауза',
-		end: 'Просмотрено'
-	}
-
-	const objectFilters = Object.values(filters)
-	const objectFilterKeys = Object.keys(filters) as ('all' | WatchHistoryStatus)[]
-
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
-			<Animated.View style={{ transform: [{ translateY }], zIndex: 1, height: barHeight, position: 'absolute', top: 0, left: 0, right: 0 }}>
-				<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight style={{ flexDirection: 'row', borderBottomColor: colors.bg300, borderBottomWidth: 1, paddingVertical: 4, backgroundColor: colors.bg100 }}>
-					{objectFilters.map((tab, index) => {
-						const key = objectFilterKeys[index]
-						const isActive = key === activeFilter
-
-						return (
-							<Button key={index} onPress={() => !isActive && setActiveFilter(key)} isActive={isActive} paddingVertical={6} paddingHorizontal={12} alignItems='center' justifyContent='center' activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48, marginLeft: 12 }}>
-								<Text style={{ color: isActive ? colors.text100 : colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
-							</Button>
-						)
-					})}
-				</TVFocusGuideView>
-			</Animated.View>
+			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={setActiveFilter} scrollY={scrollY} />
 
 			<FocusableFlatList
 				data={data}
@@ -159,7 +137,7 @@ const History: React.FC = () => {
 									)}
 
 									{item.duration && item.lastTime && (
-										<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8 }}>
+										<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
 											<Text style={{ color: colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : `Осталось ${item.duration - item.lastTime} ${getNoun(item.duration - item.lastTime, 'минута', 'минуты', 'минут')}`}</Text>
 											<Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} />
 										</View>
@@ -170,8 +148,18 @@ const History: React.FC = () => {
 					)
 				}}
 				bounces={false}
-				overScrollMode='never'
-				contentContainerStyle={{ padding: 10, paddingBottom: 5, paddingTop: 10 + barHeight }}
+				// overScrollMode='never'
+				contentContainerStyle={{ padding: 10, paddingBottom: 0, paddingTop: barHeight, flexGrow: 1 }}
+				ListEmptyComponent={() => (
+					<View style={{ padding: 10, paddingHorizontal: 30, paddingTop: 57 }}>
+						<Text onLayout={e => console.log('onL', e.nativeEvent)} style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
+							{activeFilter === 'all' ? 'История просмотров пуста' : 'Ничего не найдено'}
+						</Text>
+						<Text onLayout={e => console.log('onL', e.nativeEvent)} style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>
+							{activeFilter === 'all' ? 'Начни смотреть, я сохраню место на котором ты остановился.' : 'Попробуйте изменить параметры фильтра'}
+						</Text>
+					</View>
+				)}
 				animated
 				onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
 			/>

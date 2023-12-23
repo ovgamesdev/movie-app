@@ -2,6 +2,7 @@ import { createNavigationContainerRef } from '@react-navigation/native'
 import { IListSlugFilter, IMainTrailer } from '@store/kinopoisk'
 
 export * from './StackNavigator'
+export * from './TabBar'
 export * from './TabNavigator'
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>()
