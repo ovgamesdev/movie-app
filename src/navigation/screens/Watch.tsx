@@ -49,22 +49,22 @@ export const Watch = ({ navigation, route }: Props) => {
 	)
 
 	useEffect(() => {
-		console.log('watchHistory init', { [`${data.id}:watch`]: { ...data, status: 'watch', timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}:watch`]: { ...data, status: 'watch', timestamp: Date.now() } as WatchHistory } })
+		console.log('watchHistory init', { [`${data.id}:${data.provider}`]: { ...data, status: 'watch', timestamp: Date.now() } })
+		mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { ...data, status: 'watch', timestamp: Date.now() } as WatchHistory } })
 
 		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
 
 		setTimeout(() => {
-			console.log('watchHistory loaded', { [`${data.id}:watch`]: { lastTime, duration } })
-			mergeItem({ watchHistory: { [`${data.id}:watch`]: { lastTime, duration } } })
+			console.log('watchHistory loaded', { [`${data.id}:${data.provider}`]: { lastTime, duration } })
+			mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { lastTime, duration } } })
 		}, 10 * 1000)
 
 		const saveWatchStatus = () => {
 			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
 
-			console.log('watchHistory end', { [`${data.id}:watch`]: { lastTime: newLastTime } })
-			mergeItem({ watchHistory: { [`${data.id}:watch`]: { lastTime: newLastTime } } })
+			console.log('watchHistory end', { [`${data.id}:${data.provider}`]: { lastTime: newLastTime } })
+			mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { lastTime: newLastTime } } })
 		}
 
 		const subscription = AppState.addEventListener('change', nextAppState => nextAppState === 'background' && saveWatchStatus())

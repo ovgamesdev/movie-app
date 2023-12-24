@@ -7,10 +7,11 @@ export interface IInitialStateSettings {
 	lastSaveTime: number
 }
 
-export type WatchHistoryStatus = 'watch' | 'pause' | 'end'
+export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new'
 
 export type WatchHistory = {
 	id: number
+	provider: 'provider'
 	type: MovieType
 	title: string
 	poster: string | null

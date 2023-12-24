@@ -1,6 +1,7 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { addItemToContentReleaseNotify, isItemInContentReleaseNotify, removeItemToContentReleaseNotify, useNavigation } from '@hooks'
+import { useActions, useNavigation, useTypedSelector } from '@hooks'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
+import { WatchHistory } from '@store/settings'
 import { useEffect, useState } from 'react'
 import Config from 'react-native-config'
 
@@ -20,11 +21,13 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 
 export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
 	const navigation = useNavigation()
+	const { mergeItem, removeItemByPath } = useActions()
+	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 
 	const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
 
 	useEffect(() => {
-		const init = async () => setStatus((await getProviders(data)) ? 'watch' : (await isItemInContentReleaseNotify(data)) ? 'on-notify' : 'off-notify')
+		const init = async () => setStatus((await getProviders(data)) ? 'watch' : (watchHistory[`${data.id}:provider`] as WatchHistory | undefined)?.status === 'pause' ? 'on-notify' : 'off-notify')
 
 		init()
 	}, [])
@@ -34,12 +37,16 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
 			style={{ minWidth: 54 }}
 			onPress={async () => {
-				const item = {
+				const item: WatchHistory = {
 					id: data.id,
-					title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-					poster: data.poster?.avatarsUrl ?? null,
 					type: data.__typename,
-					year: data.productionYear ?? null
+					title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+					// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+					year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
+					poster: data.poster?.avatarsUrl ?? null,
+					provider: 'provider',
+					timestamp: Date.now(),
+					status: 'pause'
 				}
 
 				switch (status) {
@@ -50,11 +57,11 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 						break
 					case 'off-notify':
 						setStatus('on-notify')
-						setStatus((await addItemToContentReleaseNotify(item)) ? 'on-notify' : 'off-notify')
+						mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: item } })
 						break
 					case 'on-notify':
 						setStatus('off-notify')
-						setStatus((await removeItemToContentReleaseNotify(data)) ? 'off-notify' : 'on-notify')
+						removeItemByPath(['watchHistory', `${item.id}:${item.provider}`])
 						break
 				}
 			}}>

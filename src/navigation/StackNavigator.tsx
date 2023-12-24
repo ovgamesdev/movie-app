@@ -30,7 +30,7 @@ export const StackNavigator = () => {
 						navigationRef.dispatch(StackActions.push('Movie', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null } }))
 						break
 					case 'watch':
-						navigationRef.dispatch(StackActions.push('Watch', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null } }))
+						navigationRef.dispatch(StackActions.push('Watch', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null, provider: data.provider } }))
 						break
 				}
 			}

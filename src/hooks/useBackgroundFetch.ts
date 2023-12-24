@@ -1,6 +1,7 @@
 import notifee, { AndroidImportance } from '@notifee/react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { MovieFilmType, MovieSeriesType, MovieType } from '@store/kinopoisk'
+import { startAppListening, store } from '@store'
+import { MovieType } from '@store/kinopoisk'
+import { settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
 import { delay, normalizeUrlWithNull } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
@@ -14,105 +15,18 @@ const config: BackgroundFetchConfig = {
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
 }
 
-interface contentReleaseNotifyMovieFilm {
-	id: number
-	title: string
-	poster: string | null
-	type: MovieFilmType
-	year: number | null
-}
-
-interface contentReleaseNotifyMovieSeries {
-	id: number
-	title: string
-	poster: string | null
-	type: MovieSeriesType
-	year: number | null
-}
-
-export type IContentReleaseNotifyMovie = contentReleaseNotifyMovieFilm | contentReleaseNotifyMovieSeries
-
-type Key = Pick<IContentReleaseNotifyMovie, 'id'>
-
-const store = {
-	key: 'contentReleaseNotify',
-	get: async (key: Key): Promise<IContentReleaseNotifyMovie | null> => {
-		try {
-			const data = await AsyncStorage.getItem(store.key)
-			if (data !== null && data.length > 0) {
-				const parsedData = JSON.parse(data)
-				return parsedData[store._toInternalKey(key)] ?? null
-			}
-			return null
-		} catch {
-			return null
-		}
-	},
-	set: async (key: Key, value: unknown): Promise<boolean> => {
-		try {
-			const data = await AsyncStorage.getItem(store.key)
-			const newData = data !== null && data.length > 0 ? JSON.parse(data) : {}
-			newData[store._toInternalKey(key)] = value
-			await AsyncStorage.setItem(store.key, JSON.stringify(newData))
-			return true
-		} catch {
-			return false
-		}
-	},
-	all: async (): Promise<IContentReleaseNotifyMovie[]> => {
-		try {
-			const data = await AsyncStorage.getItem(store.key)
-			if (data !== null && data.length > 0) {
-				const parsedData = JSON.parse(data)
-				return Object.values(parsedData)
-			}
-			return []
-		} catch {
-			return []
-		}
-	},
-	remove: async (key: Key): Promise<boolean> => {
-		try {
-			const data = await AsyncStorage.getItem(store.key)
-			if (data !== null && data.length > 0) {
-				const parsedData = JSON.parse(data)
-				delete parsedData[store._toInternalKey(key)]
-				await AsyncStorage.setItem(store.key, JSON.stringify(parsedData))
-				return true
-			}
-			return false
-		} catch {
-			return false
-		}
-	},
-	_toInternalKey: ({ id }: Key): string => '' + id
-}
-
-export const addItemToContentReleaseNotify = async (movie: IContentReleaseNotifyMovie): Promise<boolean> => {
-	try {
-		return await store.set(movie, movie)
-	} catch {
-		return false
-	}
-}
-
-export const removeItemToContentReleaseNotify = async (key: Key): Promise<boolean> => store.remove(key)
-
-export const isItemInContentReleaseNotify = async (key: Key): Promise<boolean> => {
-	try {
-		const data = await store.get(key)
-		return !!data
-	} catch {
-		return false
-	}
-}
-
+// TODO add https://notifee.app/react-native/docs/android/background-restrictions
 export const backgroundTask = async (taskId: string) => {
 	console.log('[BackgroundFetch] taskId', taskId)
 
-	const contentReleaseNotify = await store.all()
+	const unsubscribe = setupSettingsListeners(startAppListening)
+	await store.dispatch(settingsExtraActions.getSettings())
 
-	for (const movie of contentReleaseNotify) {
+	const data = Object.values(store.getState().settings.settings.watchHistory)
+		.sort((a, b) => b.timestamp - a.timestamp)
+		.filter(it => it.status === 'pause')
+
+	for (const movie of data) {
 		try {
 			const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
 			if (!response.ok) continue
@@ -129,7 +43,8 @@ export const backgroundTask = async (taskId: string) => {
 					{
 						id: movie.id,
 						type: movie.type,
-						title: movie.title
+						title: movie.title,
+						provider: movie.provider
 					},
 					'poster' in movie && movie.poster ? { poster: movie.poster } : {},
 					'year' in movie && movie.year ? { year: movie.year } : {}
@@ -155,14 +70,17 @@ export const backgroundTask = async (taskId: string) => {
 								launchActivity: 'default'
 							}
 						}
-					]
+					],
+					timestamp: Date.now(),
+					showTimestamp: true
 				},
 				ios: {
 					attachments: [{ url: poster }]
 				}
 			})
 
-			await store.remove(movie)
+			store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}:${movie.provider}`]: { status: 'new' as const } } }))
+			await delay(500)
 		} catch (e) {
 			console.error('BackgroundFetch error:', e)
 		}
@@ -171,6 +89,7 @@ export const backgroundTask = async (taskId: string) => {
 	}
 
 	// Finish.
+	unsubscribe()
 	BackgroundFetch.finish(taskId)
 }
 

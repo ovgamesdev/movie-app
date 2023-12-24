@@ -43,6 +43,12 @@ const settingsSlice = createSlice({
 		removeItem: (state, { payload: { key } }: PayloadAction<{ key: SettingKey }>) => {
 			state.settings._settings_time = Date.now()
 			delete state.settings[key]
+		},
+		removeItemByPath: (state, { payload }: PayloadAction<[SettingKey, string]>) => {
+			state.settings._settings_time = Date.now()
+			if (state.settings[payload[0]] && (state.settings[payload[0]] as any)[payload[1]]) {
+				delete (state.settings[payload[0]] as any)[payload[1]]
+			}
 		}
 	},
 	extraReducers: builder => {
@@ -112,7 +118,7 @@ export const { actions, reducer } = settingsSlice
 
 export const setupSettingsListeners = (startListening: AppStartListening): Unsubscribe =>
 	startListening({
-		matcher: isAnyOf(actions.setItem, actions.mergeItem, actions.removeItem),
+		matcher: isAnyOf(actions.setItem, actions.mergeItem, actions.removeItem, actions.removeItemByPath),
 		effect: async (action, listenerApi) => {
 			listenerApi.dispatch(settingsExtraActions.saveSettings())
 		}

@@ -12,7 +12,7 @@ export type RootStackParamList = {
 	Movie: { data: { id: number; type: MovieType } }
 	MovieTrailer: { data: IMainTrailer }
 	Person: { data: { id: number } }
-	Watch: { data: { id: number; type: MovieType; title: string; poster: string | null; year: number | null } }
+	Watch: { data: { id: number; type: MovieType; title: string; poster: string | null; year: number | null; provider: 'provider' } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 }
 
@@ -25,6 +25,5 @@ export type HomeTabParamList = {
 
 export type BookmarksTabParamList = {
 	Favorites: undefined
-	ReleaseNotify: undefined
 	History: undefined
 }

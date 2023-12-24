@@ -27,7 +27,7 @@ export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, on
 					{data.title.russian ?? data.title.original}
 				</Text>
 				<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
-					{data.releaseYears && data.releaseYears.length !== 0 ? (data.releaseYears[0]?.start === data.releaseYears[0]?.end ? data.releaseYears[0].start ?? '' : data.releaseYears[0].start != null || data.releaseYears[0].end != null ? (data.releaseYears[0].start ?? '...') + ' - ' + (data.releaseYears[0].end ?? '...') : '') : data.productionYear}
+					{data.releaseYears && data.releaseYears.length !== 0 ? (data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0].start === 0 ? null : data.releaseYears[0].start) ?? '' : data.releaseYears[0].start != null || data.releaseYears[0].end != null ? (data.releaseYears[0].start ?? '...') + ' - ' + (data.releaseYears[0].end ?? '...') : '') : data.productionYear === 0 ? null : data.productionYear}
 				</Text>
 			</View>
 		</Button>

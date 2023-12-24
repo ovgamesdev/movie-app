@@ -1,10 +1,11 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { addItemToContentReleaseNotify, isItemInContentReleaseNotify, removeItemToContentReleaseNotify, useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
+import { WatchHistory } from '@store/settings'
 import { isSeries, normalizeUrlWithNull } from '@utils'
 import { useEffect, useState } from 'react'
 import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
@@ -77,9 +78,11 @@ export const Movie = ({ navigation, route }: Props) => {
 	// TODO remove this
 	const TestContentReleaseNotifyButton = () => {
 		const [status, setStatus] = useState<'loading' | 'off-notify' | 'on-notify'>('loading')
+		const { mergeItem, removeItemByPath } = useActions()
+		const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 
 		useEffect(() => {
-			const init = async () => setStatus((await isItemInContentReleaseNotify(data)) ? 'on-notify' : 'off-notify')
+			const init = async () => setStatus((watchHistory[`${data.id}:provider`] as WatchHistory | undefined)?.status === 'pause' ? 'on-notify' : 'off-notify')
 
 			init()
 		}, [])
@@ -88,13 +91,16 @@ export const Movie = ({ navigation, route }: Props) => {
 			<Button
 				text={status === 'loading' ? undefined : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
 				onPress={async () => {
-					const item = {
+					const item: WatchHistory = {
 						id: data.id,
+						type: data.__typename,
 						title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
 						poster: data.poster?.avatarsUrl ?? null,
-						type: data.__typename,
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-						year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null)
+						year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
+						timestamp: Date.now(),
+						provider: 'provider',
+						status: 'pause'
 					}
 
 					switch (status) {
@@ -102,11 +108,11 @@ export const Movie = ({ navigation, route }: Props) => {
 							break
 						case 'off-notify':
 							setStatus('on-notify')
-							setStatus((await addItemToContentReleaseNotify(item)) ? 'on-notify' : 'off-notify')
+							mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: item } })
 							break
 						case 'on-notify':
 							setStatus('off-notify')
-							setStatus((await removeItemToContentReleaseNotify(data)) ? 'off-notify' : 'on-notify')
+							removeItemByPath(['watchHistory', `${item.id}:${item.provider}`])
 							break
 					}
 				}}
@@ -141,7 +147,8 @@ export const Movie = ({ navigation, route }: Props) => {
 							<View style={{ flex: 1 }}>
 								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={!Platform.isTV}>
 									{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
-									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null ? '' : data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
+									{/* TODO releaseYears to utils */}
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'}${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null || data.releaseYears[0]?.start === 0 ? '' : ' ' + data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? ' ' + (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
 								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={!Platform.isTV}>

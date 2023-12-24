@@ -1,16 +1,15 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { IContentReleaseNotifyMovie, useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
 import { BookmarksTabParamList, TabBar, navigationRef } from '@navigation'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
-import { StackActions, useFocusEffect } from '@react-navigation/native'
+import { StackActions } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { WatchHistoryStatus } from '@store/settings'
+import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { getNoun, normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Animated, Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import React, { useState } from 'react'
+import { Alert, Animated, Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const Favorites: React.FC = () => {
@@ -24,86 +23,14 @@ const Favorites: React.FC = () => {
 		</TVFocusGuideView>
 	)
 }
-const ReleaseNotify: React.FC = () => {
-	const [data, setData] = useState<IContentReleaseNotifyMovie[]>([])
-	const { colors } = useTheme()
-	const navigation = useNavigation()
-
-	useEffect(() => {
-		//
-	}, [])
-
-	// TODO move to settings
-	useFocusEffect(
-		useCallback(() => {
-			const init = async () => {
-				const data = await AsyncStorage.getItem('contentReleaseNotify')
-				if (data === null) return
-
-				try {
-					const parsedData = JSON.parse(data)
-					const arrayData: IContentReleaseNotifyMovie[] = Object.values(parsedData)
-
-					console.log('data:', arrayData)
-					setData(arrayData)
-				} catch (e) {
-					console.error(e)
-				}
-			}
-
-			init()
-		}, [])
-	)
-
-	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight>
-			<FocusableFlatList
-				data={data}
-				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
-					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
-
-					return (
-						<>
-							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
-								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
-								<View style={{ marginLeft: 20, flex: 1, minHeight: 92 }}>
-									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
-										{item.title}
-									</Text>
-									{item.year !== null && (
-										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }} numberOfLines={1}>
-											{item.year}
-										</Text>
-									)}
-								</View>
-							</Button>
-						</>
-					)
-				}}
-				contentContainerStyle={{ padding: 10, paddingBottom: 0, paddingTop: 0 }}
-				// stickyHeaderIndices={[0]}
-				// stickyHeaderHiddenOnScroll
-				// ListHeaderComponent={
-				// 	<View style={{ height: 100, backgroundColor: 'red' }}>
-				// 		<View style={{}}>
-				// 			<Text>1</Text>
-				// 			<Text>2</Text>
-				// 		</View>
-				// 	</View>
-				// }
-			/>
-		</TVFocusGuideView>
-	)
-}
-const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', pause: 'Пауза', end: 'Просмотрено' }
+const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
 const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
+	const { removeItemByPath } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { colors } = useTheme()
 	const navigation = useNavigation()
-
 	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
 
 	const data = Object.values(watchHistory)
@@ -114,6 +41,28 @@ const History: React.FC = () => {
 	const scrollY = new Animated.Value(0)
 
 	console.log('History data:', data)
+
+	const handleOnLongPress = (item: WatchHistory) => {
+		Alert.alert(
+			`«${item.title}»`,
+			'Удалить из истории?',
+			[
+				{
+					text: 'Cancel',
+					style: 'cancel'
+				},
+				{
+					text: 'Детали',
+					onPress: () => navigation.push('Movie', { data: item })
+				},
+				{
+					text: 'Удалить',
+					onPress: () => removeItemByPath(['watchHistory', `${item.id}:${item.provider}`])
+				}
+			],
+			{ cancelable: true }
+		)
+	}
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
@@ -127,7 +76,7 @@ const History: React.FC = () => {
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
+							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.push('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
@@ -175,11 +124,10 @@ const TvTabBar = ({ activeTab, setActiveTab }: { activeTab: keyof BookmarksTabPa
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { colors } = useTheme()
 
-	const tabWidth = Dimensions.get('window').width / 3 // 120
+	const tabWidth = Dimensions.get('window').width / 2 // 120
 
 	const tabs: Record<keyof BookmarksTabParamList, string> = {
 		Favorites: 'Избранное',
-		ReleaseNotify: 'Уведомить о выходе',
 		History: 'История'
 	}
 
@@ -222,7 +170,6 @@ export const TvBookmarks = () => {
 				screenOptions={{ headerShown: false, freezeOnBlur: true, animation: 'none' }}
 				initialRouteName={activeTab}>
 				<Stack.Screen name='Favorites' component={Favorites} />
-				<Stack.Screen name='ReleaseNotify' component={ReleaseNotify} />
 				<Stack.Screen name='History' component={History} />
 			</Stack.Navigator>
 		</View>
@@ -235,7 +182,6 @@ export const Bookmarks = () => {
 	return (
 		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='History' tabBar={TabBar}>
 			<Tab.Screen name='Favorites' component={Favorites} options={{ tabBarLabel: 'Избранное' }} />
-			<Tab.Screen name='ReleaseNotify' component={ReleaseNotify} options={{ tabBarLabel: 'Уведомить о выходе' }} />
 			<Tab.Screen name='History' component={History} options={{ tabBarLabel: 'История' }} />
 		</Tab.Navigator>
 	)
