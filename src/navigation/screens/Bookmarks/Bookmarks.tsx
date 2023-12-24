@@ -147,7 +147,7 @@ const History: React.FC = () => {
 					)
 				}}
 				bounces={false}
-				// overScrollMode='never'
+				overScrollMode='never'
 				contentContainerStyle={{ padding: 10, paddingBottom: 0, paddingTop: barHeight, flexGrow: 1 }}
 				ListEmptyComponent={() => (
 					<View style={{ padding: 10, paddingHorizontal: 30, paddingTop: 57 }}>
@@ -200,7 +200,7 @@ const TvTabBar = ({ activeTab, setActiveTab }: { activeTab: keyof BookmarksTabPa
 
 export const TvBookmarks = () => {
 	const Stack = createNativeStackNavigator<BookmarksTabParamList>()
-	const [activeTab, setActiveTab] = useState<keyof BookmarksTabParamList>('ReleaseNotify')
+	const [activeTab, setActiveTab] = useState<keyof BookmarksTabParamList>('History')
 
 	return (
 		<View style={{ flex: 1 }}>
@@ -229,7 +229,7 @@ export const Bookmarks = () => {
 	const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
 	return (
-		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='ReleaseNotify' tabBar={TabBar}>
+		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='History' tabBar={TabBar}>
 			<Tab.Screen name='Favorites' component={Favorites} options={{ tabBarLabel: 'Избранное' }} />
 			<Tab.Screen name='ReleaseNotify' component={ReleaseNotify} options={{ tabBarLabel: 'Уведомить о выходе' }} />
 			<Tab.Screen name='History' component={History} options={{ tabBarLabel: 'История' }} />

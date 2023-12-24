@@ -23,7 +23,7 @@ export const Movie = ({ navigation, route }: Props) => {
 	// const orientation = { portrait: true, landscape: false }
 	// const orientation = { portrait: false, landscape: true }
 
-	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' })
+	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' })
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
