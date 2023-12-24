@@ -106,63 +106,63 @@ export interface IGraphqlSuggestMovieList {
 
 interface Cast {
 	items: Item[]
-	__typename: string
+	// __typename: string
 }
 
 interface Item {
 	details: null | string
 	person: Pick<Person, 'name' | 'originalName'>
-	__typename: string
+	// __typename: string
 }
 
 export interface Person {
 	id?: number
 	name: string | null
 	originalName: string // | null
-	__typename: string
+	// __typename: string
 }
 
 interface Country {
 	id: number
 	name: string
-	__typename: string
+	// __typename: string
 }
 
 interface MainTrailer {
 	id: number
 	isEmbedded: boolean
-	__typename: string
+	// __typename: string
 }
 
 interface Poster {
 	avatarsUrl: string | null
 	fallbackUrl: string | null
-	__typename: string
+	// __typename: string
 }
 
 interface Rating {
 	kinopoisk: Expectation
 	expectation: Expectation
-	__typename: string
+	// __typename: string
 }
 
 interface Expectation {
 	isActive: boolean
 	count: number
 	value: number | null
-	__typename: string
+	// __typename: string
 }
 
 interface ReleaseYear {
 	start: number | null
 	end: number | null
-	__typename: string
+	// __typename: string
 }
 
 interface Title {
 	russian: string | null
 	original: string | null
-	__typename: string
+	// __typename: string
 }
 
 interface ViewOption {}

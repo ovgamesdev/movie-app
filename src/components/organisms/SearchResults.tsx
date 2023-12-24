@@ -1,6 +1,8 @@
 import { Movie, MovieList, Person } from '@components/molecules/search'
-import { useNavigation, useTheme } from '@hooks'
-import { ISuggestSearchResults, MovieType } from '@store/kinopoisk'
+import { useActions, useNavigation, useTheme } from '@hooks'
+import { ISuggestSearchResults } from '@store/kinopoisk'
+import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson } from '@store/settings'
+import { movieListUrlToFilters } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
 
@@ -12,22 +14,26 @@ export const SearchResults = ({ data }: Props) => {
 	const { colors } = useTheme()
 	const navigation = useNavigation()
 
-	const onFilter = (filter: string[][]) => {
-		const singleSelectFilterValues = filter.map(filter => ({ filterId: filter[0], value: filter[1] }))
+	const { mergeItem } = useActions()
 
-		navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
+	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
+		mergeItem({ searchHistory: { [`${props.type}:${props.id}`]: { ...props, timestamp: Date.now() } } })
 	}
 
-	const onMovieList = (slug: string) => {
-		navigation.push('MovieListSlug', { data: { slug } })
+	const onMovieList = (data: Omit<SearchHistoryMovieList, 'timestamp'>) => {
+		addToHistory(data)
+		const { isFilter, slug, filters } = movieListUrlToFilters(data.url)
+		navigation.push('MovieListSlug', { data: isFilter ? { slug: '', filters } : { slug } })
 	}
 
-	const onMovie = (data: { id: number; type: MovieType }) => {
-		navigation.push('Movie', { data })
+	const onMovie = (data: Omit<SearchHistoryMovie, 'timestamp'>) => {
+		addToHistory(data)
+		navigation.push('Movie', { data: { id: data.id, type: data.type } })
 	}
 
-	const onPerson = (id: number) => {
-		navigation.push('Person', { data: { id } })
+	const onPerson = (data: Omit<SearchHistoryPerson, 'timestamp'>) => {
+		addToHistory(data)
+		navigation.push('Person', { data: { id: data.id } })
 	}
 
 	return (
@@ -36,7 +42,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Возможно, вы искали</Text>
 
-					{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} onFilter={onFilter} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
+					{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
 				</View>
 			) : null}
 
@@ -52,7 +58,7 @@ export const SearchResults = ({ data }: Props) => {
 				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
 					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
 
-					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <MovieList key={movieList.id} onPress={onMovieList} onFilter={onFilter} item={movieList} />))}
+					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <MovieList key={movieList.id} onPress={onMovieList} item={movieList} />))}
 				</View>
 			) : null}
 

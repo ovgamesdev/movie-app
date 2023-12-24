@@ -1,4 +1,5 @@
 export * from './FilmographyItems'
+export * from './SearchHistory'
 export * from './SearchResults'
 export * from './SlugItemList'
 export * from './UpdateApkModal'

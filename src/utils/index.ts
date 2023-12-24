@@ -1,6 +1,6 @@
-// MOVIE
+import { IFilmBaseInfo, IListSlugFilter, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType } from '@store/kinopoisk'
 
-import { IFilmBaseInfo, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType } from '@store/kinopoisk'
+// MOVIE
 
 export const getRatingColor = (rating: number): string => {
 	if (rating >= 7) {
@@ -151,4 +151,33 @@ export const getNoun = (number: number, one: string, two: string, five: string) 
 		return two
 	}
 	return five
+}
+
+// Search
+
+export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: string; filters: IListSlugFilter } => {
+	const isFilter = url.includes('--') || url.includes('?ss_')
+	const slug = url.split('/')[url.split('/').length - (url.endsWith('/') ? 2 : 1)]
+
+	const stringFilters = url.split('movies/')[1]
+
+	const arrayStringFilters = stringFilters
+		.split('/')
+		.filter(filter => filter.length > 0)
+		.filter(it => !it.includes('?ss_'))
+	const arrayFilters = arrayStringFilters.map(filter => filter.split('--'))
+
+	const search =
+		url
+			.split('?')[1]
+			?.split('&')
+			.map(search => search.replace('ss_', '').split('=')) ?? []
+
+	const singleSelectFilterValues = [...arrayFilters, ...search].map(filter => ({ filterId: filter[0], value: filter[1] }))
+
+	return {
+		isFilter,
+		slug,
+		filters: { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues }
+	}
 }

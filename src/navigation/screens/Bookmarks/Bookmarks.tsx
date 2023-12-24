@@ -1,6 +1,6 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { IContentReleaseNotifyMovie, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { IContentReleaseNotifyMovie, useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
 import { BookmarksTabParamList, TabBar, navigationRef } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
@@ -9,7 +9,7 @@ import { StackActions, useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { WatchHistoryStatus } from '@store/settings'
 import { getNoun, normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Animated, Dimensions, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -28,6 +28,10 @@ const ReleaseNotify: React.FC = () => {
 	const [data, setData] = useState<IContentReleaseNotifyMovie[]>([])
 	const { colors } = useTheme()
 	const navigation = useNavigation()
+
+	useEffect(() => {
+		//
+	}, [])
 
 	// TODO move to settings
 	useFocusEffect(

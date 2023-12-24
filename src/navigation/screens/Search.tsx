@@ -1,5 +1,5 @@
 import { ActivityIndicator, Input, InputType } from '@components/atoms'
-import { SearchResults } from '@components/organisms'
+import { SearchHistory, SearchResults } from '@components/organisms'
 import { useNavigation, useTheme } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -33,11 +33,7 @@ export const Search = ({ route }: Props) => {
 			</View>
 
 			{keyword.length === 0 ? (
-				<>
-					<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
-						<Text style={{ color: colors.text200, fontSize: 15, paddingHorizontal: 30, textAlign: 'center' }}>Смотри то, что нравится</Text>
-					</View>
-				</>
+				<SearchHistory />
 			) : isLoading ? (
 				<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
 					<ActivityIndicator size='small' />

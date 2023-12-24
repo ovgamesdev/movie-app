@@ -14,7 +14,7 @@ export const useTheme = () => {
 		return () => listener.remove()
 	}, [])
 
-	const theme = useTypedSelector(store => store.settings.settings.theme)
+	const theme = useTypedSelector(state => state.settings.settings.theme)
 
 	const colors: ColorTypes = COLORS[theme ?? deviceTheme ?? 'light']
 	const scale = {}

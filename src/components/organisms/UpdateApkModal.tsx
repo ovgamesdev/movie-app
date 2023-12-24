@@ -6,7 +6,7 @@ import { Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 
 export const UpdateApkModal = () => {
-	const { canUpdate, remote, size, isVisibleModal } = useTypedSelector(store => store.update)
+	const { canUpdate, remote, size, isVisibleModal } = useTypedSelector(state => state.update)
 	const { setIsVisibleModal, downloadApk } = useActions()
 	const [isExpand, setIsExpand] = useState(false)
 	const { colors } = useTheme()

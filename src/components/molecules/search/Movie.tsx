@@ -1,21 +1,31 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
-import { IGraphqlSuggestMovie, MovieType } from '@store/kinopoisk'
+import { IGraphqlSuggestMovie } from '@store/kinopoisk'
+import { SearchHistoryMovie } from '@store/settings'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
 
 type Props = {
 	item: IGraphqlSuggestMovie
-	onPress: ({ id, type }: { id: number; type: MovieType }) => void
+	onPress: (item: Omit<SearchHistoryMovie, 'timestamp'>) => void
 }
 
 export const Movie = ({ item, onPress }: Props) => {
 	const { colors } = useTheme()
 	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
+	const handleOnPress = () => {
+		onPress({
+			id: item.id,
+			type: item.__typename,
+			title: item.title.russian ?? item.title.original ?? '',
+			poster: item.poster?.avatarsUrl ?? null
+		})
+	}
+
 	return (
-		<Button onPress={() => onPress({ id: item.id, type: item.__typename })} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>

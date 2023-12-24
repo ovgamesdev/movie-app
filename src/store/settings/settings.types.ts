@@ -22,10 +22,38 @@ export type WatchHistory = {
 	lastTime?: number
 }
 
+export type SearchHistoryMovie = {
+	id: number
+	type: MovieType
+	title: string
+	poster: string | null
+	timestamp: number
+}
+export type SearchHistoryPerson = {
+	id: number
+	type: 'Person'
+	title: string
+	poster: string | null
+	timestamp: number
+}
+export type SearchHistoryMovieList = {
+	id: number
+	url: string
+	type: 'MovieListMeta'
+	title: string
+	poster: string | null
+	timestamp: number
+}
+
+export type SearchHistory = SearchHistoryMovie | SearchHistoryPerson | SearchHistoryMovieList
+
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number; value?: number; testArray?: { id: number; value?: string }[] }
 	watchHistory: {
 		[key: `${number}:${string}`]: WatchHistory
+	}
+	searchHistory: {
+		[key: `${number}`]: SearchHistory
 	}
 	_settings_time: number
 	_settings_version: number

@@ -5,7 +5,7 @@ import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 
 export const UpdateApk: FC = () => {
-	const { canUpdate, download, remote } = useTypedSelector(store => store.update)
+	const { canUpdate, download, remote } = useTypedSelector(state => state.update)
 	const { downloadApk, installDownloadedApk, setIsVisibleModal } = useActions()
 	const { colors } = useTheme()
 

@@ -1,21 +1,31 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useTheme } from '@hooks'
 import { IGraphqlSuggestPerson } from '@store/kinopoisk'
+import { SearchHistoryPerson } from '@store/settings'
 import { normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
 
 type Props = {
 	item: IGraphqlSuggestPerson
-	onPress: (id: number) => void
+	onPress: (item: Omit<SearchHistoryPerson, 'timestamp'>) => void
 }
 
 export const Person = ({ item, onPress }: Props) => {
 	const { colors } = useTheme()
 	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/40x60' })
 
+	const handleOnPress = () => {
+		onPress({
+			id: item.id,
+			type: 'Person',
+			title: item.name ?? item.originalName,
+			poster: item.poster?.avatarsUrl ?? null
+		})
+	}
+
 	return (
-		<Button onPress={() => onPress(item.id)} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
 			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>

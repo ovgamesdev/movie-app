@@ -10,7 +10,8 @@ const initialState: IInitialStateSettings = {
 		_settings_version: 1,
 		theme: null,
 		showDevOptions: false,
-		watchHistory: {}
+		watchHistory: {},
+		searchHistory: {}
 	},
 	isLoading: true,
 	isLoaded: false,
