@@ -1,12 +1,14 @@
-import { ActivityIndicator } from '@components/atoms'
-import { useActions } from '@hooks'
+import { ActivityIndicator, Button } from '@components/atoms'
+import { useActions, useTheme } from '@hooks'
+import { CheckIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
-import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { WatchHistory } from '@store/settings'
-import { useCallback, useEffect } from 'react'
-import { AppState, StatusBar, View } from 'react-native'
-import { lockToLandscape, resetInterfaceOrientationSetting } from 'react-native-orientation-manager'
+import { WatchHistory, WatchHistoryProvider } from '@store/settings'
+import { useEffect, useRef, useState } from 'react'
+import { AppState, ScrollView, StatusBar, TVFocusGuideView, Text, ToastAndroid, View } from 'react-native'
+import Config from 'react-native-config'
+import Orientations, { lockToLandscape } from 'react-native-orientation-manager'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SystemNavigationBar from 'react-native-system-navigation-bar'
 import WebView from 'react-native-webview'
 
@@ -14,88 +16,212 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Watch'>
 
 const Loading = () => {
 	return (
-		<View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, justifyContent: 'center', alignItems: 'center' }}>
+		<View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
 			<ActivityIndicator size='large' />
 		</View>
 	)
 }
 
+const ERROR_MESSAGE = 'Произошла непредвиденная ошибка, пожалуйста, попробуйте снова позже.'
+
+export interface kinoboxPlayersData {
+	source: WatchHistoryProvider
+	translation: string | null
+	quality: string | null
+	iframeUrl: string | null
+}
+
+interface kinoboxPlayers {
+	data: kinoboxPlayersData[] | null
+	error: string
+	message: string
+}
+
 export const Watch = ({ navigation, route }: Props) => {
 	const { data } = route.params
 
+	const insets = useSafeAreaInsets()
+	const { colors } = useTheme()
 	const { mergeItem } = useActions()
+	const [providers, setProviders] = useState<kinoboxPlayersData[] | null>(null)
+	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
+	const [error, setError] = useState<{ error: string; message: string } | null>(null)
+	const [isLoading, setIsLoading] = useState(true)
 
-	useFocusEffect(
-		useCallback(() => {
-			SystemNavigationBar.navigationHide()
-			StatusBar.setHidden(true)
-			lockToLandscape()
-
-			const subscription = AppState.addEventListener('change', nextAppState => {
-				if (nextAppState === 'active') {
-					SystemNavigationBar.navigationHide()
-					StatusBar.setHidden(true)
-					lockToLandscape()
-				}
-			})
-
-			return () => {
-				subscription.remove()
-				SystemNavigationBar.navigationShow()
-				StatusBar.setHidden(false)
-				resetInterfaceOrientationSetting()
-			}
-		}, [])
-	)
+	const isLandscape = useRef(Orientations.interfaceOrientation.isLandscape())
 
 	useEffect(() => {
-		console.log('watchHistory init', { [`${data.id}:${data.provider}`]: { ...data, status: 'watch', timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { ...data, status: 'watch', timestamp: Date.now() } as WatchHistory } })
+		if (provider === null) return
+
+		console.log('watchHistory init', { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
+		mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } as WatchHistory } })
 
 		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
 
 		setTimeout(() => {
-			console.log('watchHistory loaded', { [`${data.id}:${data.provider}`]: { lastTime, duration } })
-			mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { lastTime, duration } } })
+			console.log('watchHistory loaded', { [`${data.id}:${provider}`]: { lastTime, duration } })
+			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { lastTime, duration } } })
 		}, 10 * 1000)
 
 		const saveWatchStatus = () => {
 			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
 
-			console.log('watchHistory end', { [`${data.id}:${data.provider}`]: { lastTime: newLastTime } })
-			mergeItem({ watchHistory: { [`${data.id}:${data.provider}`]: { lastTime: newLastTime } } })
+			console.log('watchHistory end', { [`${data.id}:${provider}`]: { lastTime: newLastTime } })
+			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { lastTime: newLastTime } } })
 		}
 
 		const subscription = AppState.addEventListener('change', nextAppState => nextAppState === 'background' && saveWatchStatus())
 		return () => {
-			resetInterfaceOrientationSetting() // TODO test
 			subscription.remove()
 			saveWatchStatus()
 		}
+	}, [provider])
+
+	useEffect(() => {
+		const getKinoboxPlayers = async ({ id }: { id: number }): Promise<kinoboxPlayers> => {
+			try {
+				const res = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
+				// X-Settings: {"Collaps":{"enable":true,"token":"{token}","position":0},"Bazon":{"enable":true,"token":"${Config.KINOBOX_BAZON_TOKEN}"},"Alloha":{"enable":true,"token":"{token}"},"Ashdi":{"enable":true,"token":"{token}"},"Cdnmovies":{"enable":true,"token":"{token}"},"Hdvb":{"enable":true,"token":"{token}"},"Iframe":{"enable":true,"token":"{token}"},"Kodik":{"enable":true,"token":"{token}"},"Videocdn":{"enable":true,"token":"{token}"},"Voidboost":{"enable":true,"token":"{token}"}}
+
+				if (!res.ok) {
+					ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+					return { data: null, error: res.statusText, message: await res.text() }
+				}
+
+				let json = await res.json()
+
+				if (Array.isArray(json)) {
+					json = {
+						success: true,
+						data: json.map(it => ({ ...it, source: it.source.toUpperCase() }))
+					}
+				} else if (typeof json.statusCode === 'number') {
+					json = {
+						success: false,
+						data: null,
+						error: {
+							code: json.statusCode,
+							message: json.message
+						}
+					}
+				} else {
+					json = {
+						success: false,
+						data: null,
+						error: {
+							code: 400,
+							message: 'Возникла неопознанная ошибка'
+						}
+					}
+				}
+
+				console.log('json', json)
+
+				if (json.success === false) {
+					ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+					return { data: null, error: `code: ${json.error.code.toString()}`, message: json.error.message }
+				}
+
+				return { data: json.data, error: res.statusText, message: res.statusText }
+			} catch (e) {
+				ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+				return { data: null, error: (e as Error).name, message: (e as Error).message }
+			}
+		}
+
+		getKinoboxPlayers(data).then(({ data, error, message }) => {
+			if (error) {
+				setError({ error, message })
+				return
+			}
+
+			if (data && data.length > 0) {
+				setProviders(data)
+				setProvider(route.params.data.provider ?? data[0]?.source)
+			} else {
+				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
+			}
+		})
 	}, [])
+
+	const handleProviderChange = (it: kinoboxPlayersData) => {
+		setIsLoading(true)
+		setProvider(it.source)
+	}
 
 	const run = `
 		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
-		document.querySelector('#logo').setAttribute('style', 'display: none;');
-		document.querySelector('#container').setAttribute('id', 'player_container');
-		document.querySelector('#player_container').setAttribute('style', 'width: 100%; height: 100%;');
+		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(e.type), false) );
+
 		true;
 	`
 
+	if (!providers || providers.length === 0 || !provider) {
+		return null
+	}
+
+	const currentProvider = providers.find(it => it.source === provider) ?? providers[0]
+	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
+
+	console.log('currentProvider', currentProvider.source, provider)
+
 	return (
-		<View style={{ flex: 1 }}>
-			<WebView
-				source={{
-					uri: `https://kinopoisk-watch.org/player/?id=${data.id}`
-				}}
-				style={{ flex: 1 }}
-				injectedJavaScript={run}
-				allowsFullscreenVideo
-				webviewDebuggingEnabled={__DEV__}
-				startInLoadingState
-				renderLoading={Loading}
-			/>
-		</View>
+		<TVFocusGuideView style={{ flex: 1, marginTop: insets.top }} trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
+			<View style={{ width: '100%', aspectRatio: 16 / 9 }}>
+				{currentProvider.iframeUrl && !error ? (
+					<WebView
+						source={currentProvider.source !== 'ALLOHA' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
+						style={{ flex: 1 }}
+						containerStyle={{ backgroundColor: '#000' }}
+						injectedJavaScript={run}
+						onMessage={data => {
+							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(data.nativeEvent.data)) {
+								if (!isLandscape.current) {
+									isLandscape.current = true
+									setTimeout(() => {
+										lockToLandscape()
+										SystemNavigationBar.navigationHide()
+										StatusBar.setHidden(true)
+									}, 200)
+								} else {
+									isLandscape.current = false
+									SystemNavigationBar.navigationShow()
+									StatusBar.setHidden(false)
+								}
+							}
+
+							return true
+						}}
+						allowsFullscreenVideo
+						webviewDebuggingEnabled={__DEV__}
+						onLoadStart={() => setIsLoading(true)}
+						onLoadEnd={() => setIsLoading(false)}
+					/>
+				) : (
+					<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+						<Text style={{ fontSize: 14, color: colors.text100, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
+					</View>
+				)}
+				{isLoading && <Loading />}
+			</View>
+			<View style={{ flex: 1 }}>
+				<ScrollView contentContainerStyle={{ gap: 6, padding: 10 }}>
+					<Text style={{ fontSize: 14, color: colors.text100 }}>Выбор провайдера:</Text>
+					{providers.map(it => {
+						const isActive = currentProvider.source === it.source
+
+						return (
+							<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
+								{isActive && <CheckIcon width={20} height={20} fill={colors.text100} style={{ marginRight: 10 }} />}
+								<Text style={{ fontSize: 14, color: colors.text100 }}>
+									{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
+								</Text>
+							</Button>
+						)
+					})}
+				</ScrollView>
+			</View>
+		</TVFocusGuideView>
 	)
 }

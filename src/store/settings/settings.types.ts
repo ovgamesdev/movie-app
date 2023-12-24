@@ -8,10 +8,11 @@ export interface IInitialStateSettings {
 }
 
 export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new'
+export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | 'HDVB' | 'VOIDBOOST'
 
 export type WatchHistory = {
 	id: number
-	provider: 'provider'
+	provider: WatchHistoryProvider | null
 	type: MovieType
 	title: string
 	poster: string | null

@@ -21,7 +21,13 @@ const SearchHistoryItem: React.FC<Props> = ({ item, onPress }) => {
 
 	return (
 		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			{item.type === 'MovieListMeta' ? (
+				<View style={{ width: 32, height: 48, alignItems: 'center' }}>
+					<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 32 }} />
+				</View>
+			) : (
+				<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			)}
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.title}

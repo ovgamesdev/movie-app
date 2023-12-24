@@ -1,7 +1,8 @@
 import notifee, { AndroidImportance } from '@notifee/react-native'
+import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
 import { MovieType } from '@store/kinopoisk'
-import { settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
+import { WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
 import { delay, normalizeUrlWithNull } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
@@ -19,8 +20,11 @@ const config: BackgroundFetchConfig = {
 export const backgroundTask = async (taskId: string) => {
 	console.log('[BackgroundFetch] taskId', taskId)
 
-	const unsubscribe = setupSettingsListeners(startAppListening)
-	await store.dispatch(settingsExtraActions.getSettings())
+	let unsubscribe: Unsubscribe | null = null
+	if (store.getState().settings.settings._settings_time === 0) {
+		unsubscribe = setupSettingsListeners(startAppListening)
+		await store.dispatch(settingsExtraActions.getSettings())
+	}
 
 	const data = Object.values(store.getState().settings.settings.watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
@@ -43,15 +47,16 @@ export const backgroundTask = async (taskId: string) => {
 					{
 						id: movie.id,
 						type: movie.type,
-						title: movie.title,
-						provider: movie.provider
+						title: movie.title
 					},
+					'provider' in movie && movie.provider ? { provider: movie.provider } : {},
 					'poster' in movie && movie.poster ? { poster: movie.poster } : {},
 					'year' in movie && movie.year ? { year: movie.year } : {}
 				) as {
 					id: number
 					title: string
 					poster?: string
+					provider?: WatchHistoryProvider
 					type: MovieType
 					year?: number
 				},
@@ -89,7 +94,7 @@ export const backgroundTask = async (taskId: string) => {
 	}
 
 	// Finish.
-	unsubscribe()
+	unsubscribe?.()
 	BackgroundFetch.finish(taskId)
 }
 

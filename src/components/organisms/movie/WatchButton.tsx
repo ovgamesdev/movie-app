@@ -44,7 +44,7 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 					// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 					year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
 					poster: data.poster?.avatarsUrl ?? null,
-					provider: 'provider',
+					provider: null,
 					timestamp: Date.now(),
 					status: 'pause'
 				}

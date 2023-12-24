@@ -99,7 +99,7 @@ export const Movie = ({ navigation, route }: Props) => {
 						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 						year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
 						timestamp: Date.now(),
-						provider: 'provider',
+						provider: null,
 						status: 'pause'
 					}
 

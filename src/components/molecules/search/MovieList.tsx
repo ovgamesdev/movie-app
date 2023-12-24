@@ -27,7 +27,9 @@ export const MovieList = ({ item, onPress }: Props) => {
 
 	return (
 		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			<ImageBackground source={{ uri: cover }} resizeMode='contain' style={{ width: 32, height: 48 }} />
+			<View style={{ width: 32, height: 48, alignItems: 'center' }}>
+				<ImageBackground source={{ uri: cover }} resizeMode='contain' style={{ width: 32, height: 32 }} />
+			</View>
 			<View style={{ paddingHorizontal: 10, flex: 1 }}>
 				<Text numberOfLines={2} style={{ color: colors.text100, fontSize: 15 }}>
 					{item.name}

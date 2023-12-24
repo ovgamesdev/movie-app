@@ -70,6 +70,7 @@ const History: React.FC = () => {
 
 			<FocusableFlatList
 				data={data}
+				keyExtractor={item => `${item.id}:${item.provider}`}
 				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
@@ -84,6 +85,7 @@ const History: React.FC = () => {
 									</Text>
 									{item.year !== null && (
 										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }} numberOfLines={1}>
+											{item.provider ? `[${item.provider}] • ` : ''}
 											{item.year}
 										</Text>
 									)}
