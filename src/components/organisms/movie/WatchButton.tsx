@@ -27,7 +27,9 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 	const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
 
 	useEffect(() => {
-		const init = async () => setStatus((await getProviders(data)) ? 'watch' : (watchHistory[`${data.id}:provider`] as WatchHistory | undefined)?.status === 'pause' ? 'on-notify' : 'off-notify')
+		// TODO add select provider in settings
+		// TODO may-be remove provider
+		const init = async () => setStatus((await getProviders(data)) ? 'watch' : (watchHistory[`${data.id}:provider`] as WatchHistory | undefined)?.notify ? 'on-notify' : 'off-notify')
 
 		init()
 	}, [])
@@ -57,7 +59,7 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 						break
 					case 'off-notify':
 						setStatus('on-notify')
-						mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: item } })
+						mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: { ...item, notify: true } } })
 						break
 					case 'on-notify':
 						setStatus('off-notify')

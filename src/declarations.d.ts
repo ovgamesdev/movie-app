@@ -9,6 +9,7 @@ declare module 'react-native-config' {
 	export interface NativeConfig {
 		UI_MODE?: string
 		KINOBOX_TOKEN: string
+		ALLOHA_TOKEN: string
 	}
 
 	export const Config: NativeConfig

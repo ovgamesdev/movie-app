@@ -1,13 +1,11 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { useActions, useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
-import { WatchHistory } from '@store/settings'
 import { isSeries, normalizeUrlWithNull } from '@utils'
-import { useEffect, useState } from 'react'
 import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -75,55 +73,6 @@ export const Movie = ({ navigation, route }: Props) => {
 		)
 	}
 
-	// TODO remove this
-	const TestContentReleaseNotifyButton = () => {
-		const [status, setStatus] = useState<'loading' | 'off-notify' | 'on-notify'>('loading')
-		const { mergeItem, removeItemByPath } = useActions()
-		const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-
-		useEffect(() => {
-			const init = async () => setStatus((watchHistory[`${data.id}:provider`] as WatchHistory | undefined)?.status === 'pause' ? 'on-notify' : 'off-notify')
-
-			init()
-		}, [])
-
-		return (
-			<Button
-				text={status === 'loading' ? undefined : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
-				onPress={async () => {
-					const item: WatchHistory = {
-						id: data.id,
-						type: data.__typename,
-						title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-						poster: data.poster?.avatarsUrl ?? null,
-						// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-						year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
-						timestamp: Date.now(),
-						provider: null,
-						status: 'pause'
-					}
-
-					switch (status) {
-						case 'loading':
-							break
-						case 'off-notify':
-							setStatus('on-notify')
-							mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: item } })
-							break
-						case 'on-notify':
-							setStatus('off-notify')
-							removeItemByPath(['watchHistory', `${item.id}:${item.provider}`])
-							break
-					}
-				}}
-
-				//
-			>
-				{status === 'loading' ? <ActivityIndicator /> : undefined}
-			</Button>
-		)
-	}
-
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
@@ -160,7 +109,6 @@ export const Movie = ({ navigation, route }: Props) => {
 						<View style={{}}>
 							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
 								<WatchButton data={data} />
-								<TestContentReleaseNotifyButton />
 							</TVFocusGuideView>
 
 							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>

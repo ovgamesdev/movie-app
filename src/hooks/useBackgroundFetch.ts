@@ -2,8 +2,8 @@ import notifee, { AndroidImportance } from '@notifee/react-native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
 import { MovieType } from '@store/kinopoisk'
-import { WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
-import { delay, normalizeUrlWithNull } from '@utils'
+import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
+import { delay, isSeries, normalizeUrlWithNull } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
 import Config from 'react-native-config'
@@ -14,6 +14,134 @@ const config: BackgroundFetchConfig = {
 	enableHeadless: true,
 	startOnBoot: true,
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
+}
+
+export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise<number | null> => {
+	// ALLOHA
+	// TODO add for other providers
+
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+	const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&kp=${id}`
+
+	try {
+		const response = await fetch(url)
+		const res = await response.json()
+
+		const seasons = res?.data?.seasons
+		let total = 0
+
+		if (typeof seasons === 'object') {
+			for (const s in seasons) {
+				const season = seasons[s]
+
+				for (const e in season.episodes) {
+					total++
+				}
+			}
+		}
+
+		console.log(`[fetchNewSeries] ${type} "${title}": ${total}`)
+
+		return total
+	} catch (e) {
+		console.error('error fetchNewSeries:', e)
+		return null
+	}
+}
+
+const displayNotificationNewFilm = (movie: WatchHistory) => {
+	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+
+	notifee.displayNotification({
+		title: 'Новый контент доступен!',
+		body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
+		data: Object.assign(
+			{
+				id: movie.id,
+				type: movie.type,
+				title: movie.title
+			},
+			'provider' in movie && movie.provider ? { provider: movie.provider } : {},
+			'poster' in movie && movie.poster ? { poster: movie.poster } : {},
+			'year' in movie && movie.year ? { year: movie.year } : {}
+		) as {
+			id: number
+			title: string
+			poster?: string
+			provider?: WatchHistoryProvider
+			type: MovieType
+			year?: number
+		},
+		android: {
+			channelId: 'content-release-channel',
+			largeIcon: poster,
+			pressAction: {
+				id: 'movie',
+				launchActivity: 'default'
+			},
+			actions: [
+				{
+					title: 'Смотреть',
+					pressAction: {
+						id: 'watch',
+						launchActivity: 'default'
+					}
+				}
+			],
+			timestamp: Date.now(),
+			showTimestamp: true
+		},
+		ios: {
+			attachments: [{ url: poster }]
+		}
+	})
+}
+const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: number }) => {
+	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+
+	notifee.displayNotification({
+		title: 'Новый контент доступен!',
+		body: `Новый эпизод «${movie.title}»`, // (эпизод 0, сезон 0).
+		data: Object.assign(
+			{
+				id: movie.id,
+				type: movie.type,
+				title: movie.title
+			},
+			'provider' in movie && movie.provider ? { provider: movie.provider } : {},
+			'poster' in movie && movie.poster ? { poster: movie.poster } : {},
+			'year' in movie && movie.year ? { year: movie.year } : {}
+		) as {
+			id: number
+			title: string
+			poster?: string
+			provider?: WatchHistoryProvider
+			type: MovieType
+			year?: number
+		},
+		android: {
+			channelId: 'content-release-channel',
+			largeIcon: poster,
+			pressAction: {
+				id: 'movie',
+				launchActivity: 'default'
+			},
+			actions: [
+				{
+					title: 'Смотреть',
+					pressAction: {
+						id: 'watch',
+						launchActivity: 'default'
+					}
+				}
+			],
+			timestamp: Date.now(),
+			showTimestamp: true
+		},
+		ios: {
+			attachments: [{ url: poster }]
+		}
+	})
 }
 
 // TODO add https://notifee.app/react-native/docs/android/background-restrictions
@@ -28,7 +156,7 @@ export const backgroundTask = async (taskId: string) => {
 
 	const data = Object.values(store.getState().settings.settings.watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
-		.filter(it => it.status === 'pause')
+		.filter(it => it.notify)
 
 	for (const movie of data) {
 		try {
@@ -37,54 +165,29 @@ export const backgroundTask = async (taskId: string) => {
 			const json = await response.json()
 			if (!Array.isArray(json) || json.length === 0) continue
 
-			const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+			const newWatchHistoryData: Partial<WatchHistory> = {
+				status: 'new'
+			}
 
-			// TODO add date-time
-			notifee.displayNotification({
-				title: 'Новый контент доступен!',
-				body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
-				data: Object.assign(
-					{
-						id: movie.id,
-						type: movie.type,
-						title: movie.title
-					},
-					'provider' in movie && movie.provider ? { provider: movie.provider } : {},
-					'poster' in movie && movie.poster ? { poster: movie.poster } : {},
-					'year' in movie && movie.year ? { year: movie.year } : {}
-				) as {
-					id: number
-					title: string
-					poster?: string
-					provider?: WatchHistoryProvider
-					type: MovieType
-					year?: number
-				},
-				android: {
-					channelId: 'content-release-channel',
-					largeIcon: poster,
-					pressAction: {
-						id: 'movie',
-						launchActivity: 'default'
-					},
-					actions: [
-						{
-							title: 'Смотреть',
-							pressAction: {
-								id: 'watch',
-								launchActivity: 'default'
-							}
-						}
-					],
-					timestamp: Date.now(),
-					showTimestamp: true
-				},
-				ios: {
-					attachments: [{ url: poster }]
+			if (movie.releasedEpisodes) {
+				const newSeries = await fetchNewSeries(movie)
+
+				if (newSeries && newSeries > movie.releasedEpisodes) {
+					displayNotificationNewEpisode(movie, { newSeries })
+					newWatchHistoryData.releasedEpisodes = newSeries
 				}
-			})
+			} else {
+				displayNotificationNewFilm(movie)
 
-			store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}:${movie.provider}`]: { status: 'new' as const } } }))
+				if (isSeries(movie.type)) {
+					const newSeries = await fetchNewSeries(movie)
+					if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
+				} else {
+					newWatchHistoryData.notify = false
+				}
+			}
+
+			store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}:${movie.provider}`]: newWatchHistoryData } }))
 			await delay(500)
 		} catch (e) {
 			console.error('BackgroundFetch error:', e)

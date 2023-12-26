@@ -54,7 +54,7 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 						)}
 						{'seasons' in data && (
 							<Button padding={0} transparent focusable={false}>
-								<Text style={{}}>{'(' + declineSeasons(data.seasons.total) + ')'}</Text>
+								<Text style={{ color: colors.text200, fontSize: 13 }}>{'(' + declineSeasons(data.seasons.total) + ')'}</Text>
 							</Button>
 						)}
 					</View>

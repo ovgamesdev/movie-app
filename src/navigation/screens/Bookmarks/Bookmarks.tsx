@@ -1,6 +1,7 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { fetchNewSeries, useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { NotificationsIcon } from '@icons'
 import { BookmarksTabParamList, TabBar, navigationRef } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
@@ -26,7 +27,7 @@ const Favorites: React.FC = () => {
 const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
 const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { removeItemByPath } = useActions()
+	const { removeItemByPath, mergeItem } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { colors } = useTheme()
@@ -45,15 +46,30 @@ const History: React.FC = () => {
 	const handleOnLongPress = (item: WatchHistory) => {
 		Alert.alert(
 			`«${item.title}»`,
-			'Удалить из истории?',
+			`${new Date(item.timestamp).toLocaleDateString()}`,
 			[
-				{
-					text: 'Cancel',
-					style: 'cancel'
-				},
+				// {
+				// 	text: 'Cancel',
+				// 	style: 'cancel'
+				// },
 				{
 					text: 'Детали',
 					onPress: () => navigation.push('Movie', { data: item })
+				},
+				{
+					text: 'Notifee',
+					onPress: async () => {
+						const newWatchHistoryData: Partial<WatchHistory> = {
+							notify: !item.notify
+						}
+
+						if (newWatchHistoryData.notify) {
+							const newSeries = await fetchNewSeries(item)
+							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
+						}
+
+						mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: newWatchHistoryData } })
+					}
 				},
 				{
 					text: 'Удалить',
@@ -97,6 +113,7 @@ const History: React.FC = () => {
 										</View>
 									)}
 								</View>
+								{item.notify && <NotificationsIcon width={20} height={20} fill={colors.text100} />}
 							</Button>
 						</>
 					)

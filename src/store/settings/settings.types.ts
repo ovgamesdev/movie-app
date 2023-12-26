@@ -22,6 +22,10 @@ export type WatchHistory = {
 	//
 	duration?: number
 	lastTime?: number
+	//
+	notify?: boolean
+	fileIndex?: number
+	releasedEpisodes?: number
 }
 
 export type SearchHistoryMovie = {

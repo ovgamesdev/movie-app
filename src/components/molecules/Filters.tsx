@@ -33,8 +33,8 @@ export const Filters = <T extends string>({ scrollY, activeFilter, setActiveFilt
 						const isActive = key === activeFilter
 
 						return (
-							<Button key={index} onPress={() => !isActive && setActiveFilter(key)} isActive={isActive} padding={4} paddingHorizontal={10} alignItems='center' justifyContent='center' activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48 }}>
-								<Text style={{ color: isActive ? colors.text100 : colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
+							<Button key={index} onPress={() => !isActive && setActiveFilter(key)} isActive={isActive} padding={4} paddingHorizontal={10} alignItems='center' justifyContent='center' buttonColor={colors.bg200} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48 }}>
+								<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
 							</Button>
 						)
 					})}

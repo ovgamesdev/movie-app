@@ -1,11 +1,12 @@
-import { ActivityIndicator, Button } from '@components/atoms'
-import { useActions, useTheme } from '@hooks'
+import { ActivityIndicator, Button, Input } from '@components/atoms'
+import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { CheckIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { WatchHistory, WatchHistoryProvider } from '@store/settings'
+import { WatchHistoryProvider } from '@store/settings'
+import { isSeries } from '@utils'
 import { useEffect, useRef, useState } from 'react'
-import { AppState, ScrollView, StatusBar, TVFocusGuideView, Text, ToastAndroid, View } from 'react-native'
+import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import Orientations, { lockToLandscape } from 'react-native-orientation-manager'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -54,7 +55,7 @@ export const Watch = ({ navigation, route }: Props) => {
 		if (provider === null) return
 
 		console.log('watchHistory init', { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } as WatchHistory } })
+		mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch' as const, timestamp: Date.now() } } })
 
 		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
@@ -150,6 +151,23 @@ export const Watch = ({ navigation, route }: Props) => {
 		setProvider(it.source)
 	}
 
+	const InputHistory = ({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}:${provider}`]?.[field])
+		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
+			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { [field]: Number(e.nativeEvent.text) } } })
+		}
+
+		if (!isSeries(data.type)) return null
+
+		return (
+			<View style={{ paddingVertical: 10, gap: 5 }}>
+				<Text style={{ color: colors.text100, fontSize: 14 }}>{title}</Text>
+				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
+			</View>
+		)
+	}
+
 	const run = `
 		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
 		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(e.type), false) );
@@ -220,6 +238,10 @@ export const Watch = ({ navigation, route }: Props) => {
 							</Button>
 						)
 					})}
+					<View>
+						<InputHistory field='fileIndex' title='fileIndex' />
+						<InputHistory field='releasedEpisodes' title='releasedEpisodes' />
+					</View>
 				</ScrollView>
 			</View>
 		</TVFocusGuideView>
