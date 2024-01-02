@@ -1,5 +1,6 @@
 import { Movie, MovieList, Person } from '@components/molecules/search'
-import { useActions, useNavigation, useTheme } from '@hooks'
+import { useActions, useTheme } from '@hooks'
+import { navigation } from '@navigation'
 import { ISuggestSearchResults } from '@store/kinopoisk'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson } from '@store/settings'
 import { movieListUrlToFilters } from '@utils'
@@ -12,7 +13,6 @@ type Props = {
 
 export const SearchResults = ({ data }: Props) => {
 	const { colors } = useTheme()
-	const navigation = useNavigation()
 
 	const { mergeItem } = useActions()
 

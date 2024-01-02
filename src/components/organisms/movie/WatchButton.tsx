@@ -1,5 +1,6 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { useActions, useNavigation, useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
+import { navigation } from '@navigation'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { useEffect, useState } from 'react'
@@ -20,7 +21,6 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 }
 
 export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
-	const navigation = useNavigation()
 	const { mergeItem, removeItemByPath } = useActions()
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 

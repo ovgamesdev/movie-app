@@ -1,7 +1,8 @@
 import { ActivityIndicator, Button, FocusableFlatList, FocusableListRenderItem } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
-import { useNavigation, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
+import { navigation } from '@navigation'
 import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
 import React from 'react'
 import { Platform, TVFocusGuideView, Text, View } from 'react-native'
@@ -15,7 +16,6 @@ type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
 export const SlugItemList = ({ slug, title }: Props) => {
-	const navigation = useNavigation()
 	const { colors } = useTheme()
 
 	const { isFetching, data } = useGetListBySlugQuery({ slug, page: 1, limit: 25 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.docs ?? [], ...otherParams }) })

@@ -1,5 +1,6 @@
 import { Button, ImageBackground } from '@components/atoms'
-import { useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { navigation } from '@navigation'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
 import { movieListUrlToFilters, normalizeUrlWithNull } from '@utils'
 import React from 'react'
@@ -39,7 +40,6 @@ const SearchHistoryItem: React.FC<Props> = ({ item, onPress }) => {
 }
 
 export const SearchHistory = () => {
-	const navigation = useNavigation()
 	const insets = useSafeAreaInsets()
 	const { colors } = useTheme()
 

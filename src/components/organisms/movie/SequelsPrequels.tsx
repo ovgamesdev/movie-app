@@ -1,11 +1,11 @@
 import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
-import { useNavigation, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
+import { navigation } from '@navigation'
 import { IMovieBaseInfo } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import { TVFocusGuideView, Text, View } from 'react-native'
 
 export const SequelsPrequels = ({ sequelsPrequels }: Pick<IMovieBaseInfo, 'sequelsPrequels'>) => {
-	const navigation = useNavigation()
 	const { colors } = useTheme()
 
 	if (sequelsPrequels.total === 0) return null

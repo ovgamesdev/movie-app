@@ -1,11 +1,10 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { fetchNewSeries, useActions, useNavigation, useTheme, useTypedSelector } from '@hooks'
+import { fetchNewSeries, useActions, useTheme, useTypedSelector } from '@hooks'
 import { NotificationsIcon } from '@icons'
-import { BookmarksTabParamList, TabBar, navigationRef } from '@navigation'
+import { BookmarksTabParamList, TabBar, navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
-import { StackActions } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { getNoun, normalizeUrlWithNull } from '@utils'
@@ -31,7 +30,6 @@ const History: React.FC = () => {
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { colors } = useTheme()
-	const navigation = useNavigation()
 	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
 
 	const data = Object.values(watchHistory)
@@ -93,7 +91,7 @@ const History: React.FC = () => {
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
-							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.push('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
+							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.navigate('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
 									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 4 }} numberOfLines={2}>
@@ -175,7 +173,7 @@ export const TvBookmarks = () => {
 
 	return (
 		<View style={{ flex: 1 }}>
-			<TvTabBar activeTab={activeTab} setActiveTab={tab => navigationRef.dispatch(StackActions.replace(tab))} />
+			<TvTabBar activeTab={activeTab} setActiveTab={tab => navigation.replace(tab)} />
 			<Stack.Navigator
 				screenListeners={{
 					state: e => {

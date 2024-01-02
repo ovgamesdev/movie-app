@@ -1,5 +1,6 @@
 import { Button, DropDown, FocusableFlatList } from '@components/atoms'
-import { useNavigation, useOrientation, useTheme } from '@hooks'
+import { useOrientation, useTheme } from '@hooks'
+import { navigation } from '@navigation'
 import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
 import React, { useRef, useState } from 'react'
 import { FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
@@ -22,7 +23,6 @@ const generateYearIntervals = ({ start, end }: { start: number; end: number }, i
 export const FilmographyItems = ({ id: personId }: Props) => {
 	const { colors, getColorForTheme } = useTheme()
 	const orientation = useOrientation()
-	const navigation = useNavigation()
 
 	const ref = useRef<FlatList>(null)
 

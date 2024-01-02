@@ -1,7 +1,7 @@
 import { ActivityIndicator, Button, FocusableFlatList, ImageBackground } from '@components/atoms'
 import { FilmographyItems } from '@components/organisms'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
-import { RootStackParamList } from '@navigation'
+import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
 import { declineAge, declineChildren, getRatingColor, getSpouseStatus, normalizeUrlWithNull } from '@utils'
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Person'>
 
-export const Person = ({ navigation, route }: Props) => {
+export const Person = ({ route }: Props) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { colors } = useTheme()

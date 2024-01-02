@@ -1,5 +1,6 @@
 import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
-import { useNavigation, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
+import { navigation } from '@navigation'
 import { ISimilarMovieResults, MovieType, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
@@ -12,7 +13,6 @@ type Props = {
 
 export const SimilarMovie = ({ id, type }: Props) => {
 	const { colors } = useTheme()
-	const navigation = useNavigation()
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' && type !== 'Video' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })

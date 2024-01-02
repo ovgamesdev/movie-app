@@ -2,7 +2,7 @@ import { Button, DropDown, FocusableFlatList, FocusableListRenderItem, ImageBack
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
-import { RootStackParamList } from '@navigation'
+import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
@@ -74,7 +74,7 @@ export const Filter = ({ id, onResetPage, filters, setFilters, availableFilters 
 	)
 }
 
-export const MovieListSlug = ({ navigation, route }: Props) => {
+export const MovieListSlug = ({ route }: Props) => {
 	const { slug, filters } = route.params.data
 
 	const insets = useSafeAreaInsets()
@@ -228,7 +228,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 	const ListHeaderComponent = useCallback(() => {
 		return (
 			<>
-				<Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus />
+				{/* <Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus /> */}
 				{orientation.landscape ? (
 					<View style={{ flexDirection: 'row', padding: 10 }}>
 						<View style={{ flex: 1, paddingRight: 20 }}>
@@ -270,7 +270,7 @@ export const MovieListSlug = ({ navigation, route }: Props) => {
 				</ScrollView>
 			</>
 		)
-	}, [navigation, orientation, order, data])
+	}, [orientation, order, data])
 
 	const ListFooterComponentStyle = useMemo(() => (data.page != null && data.pages != null && data.pages > 1 ? { flexGrow: 1 } : {}), [data.page, data.pages])
 	const ListHeaderComponentStyle = useMemo(() => ({ marginTop: insets.top, marginBottom: 5 }), [insets.top])

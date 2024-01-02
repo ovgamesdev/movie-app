@@ -9,7 +9,7 @@ import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieTrailer'>
 
-export const MovieTrailer = ({ navigation, route }: Props) => {
+export const MovieTrailer = ({ route }: Props) => {
 	const { streamUrl, sourceVideoUrl } = route.params.data
 	const { colors } = useTheme()
 

@@ -1,7 +1,8 @@
-import { RootStackParamList, navigationRef } from '@navigation'
+import { RootStackParamList, navigation } from '@navigation'
 import notifee, { EventType, Notification, NotificationPressAction } from '@notifee/react-native'
-import { StackActions } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { MovieType } from '@store/kinopoisk'
+import { WatchHistoryProvider } from '@store/settings'
 import { useEffect } from 'react'
 import { TabNavigator } from './TabNavigator'
 import { Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
@@ -27,10 +28,11 @@ export const StackNavigator = () => {
 				const data = notification.data
 				switch (pressAction.id) {
 					case 'movie':
-						navigationRef.dispatch(StackActions.push('Movie', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null } }))
+						navigation.push('Movie', { data: { id: data.id as number, type: data.type as MovieType } })
 						break
 					case 'watch':
-						navigationRef.dispatch(StackActions.push('Watch', { data: { ...data, poster: 'poster' in data ? data.poster : null, year: 'year' in data ? data.year : null, provider: data.provider } }))
+						// TODO check data is types
+						navigation.navigate('Watch', { data: { id: data.id as number, type: data.type as MovieType, title: data.title as string, poster: 'poster' in data ? (data.poster as string) : null, year: 'year' in data ? (data.year as number) : null, provider: data.provider as WatchHistoryProvider | null } })
 						break
 				}
 			}

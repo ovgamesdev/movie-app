@@ -1,12 +1,12 @@
 import { Button, ImageBackground } from '@components/atoms'
-import { useNavigation, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
 import { PlayIcon } from '@icons'
+import { navigation } from '@navigation'
 import { IMainTrailer } from '@store/kinopoisk'
 import { normalizeUrlWithNull } from '@utils'
 import { Text, View } from 'react-native'
 
 export const Trailer = ({ mainTrailer, showTime, aspectRatio, disabled, showPlay = true }: { mainTrailer: IMainTrailer; showTime?: boolean; aspectRatio?: number; disabled?: boolean; showPlay?: boolean }) => {
-	const navigation = useNavigation()
 	const { colors } = useTheme()
 
 	const poster = normalizeUrlWithNull(mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })

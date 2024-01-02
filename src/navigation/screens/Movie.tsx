@@ -1,5 +1,5 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
-import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
+import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie'; // /index
 import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
 import { useOrientation, useTheme, useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 
 // TODO releaseYears to string (releaseYears) => string
 
-export const Movie = ({ navigation, route }: Props) => {
+export const Movie = ({ route }: Props) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { colors } = useTheme()

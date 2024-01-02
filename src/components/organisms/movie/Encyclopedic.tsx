@@ -1,6 +1,7 @@
 import { Button, ImageBackground } from '@components/atoms'
-import { useNavigation, useTheme } from '@hooks'
+import { useTheme } from '@hooks'
 import { Kp3dIcon, KpImaxIcon } from '@icons'
+import { navigation } from '@navigation'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, Person } from '@store/kinopoisk'
 import { declineSeasons, formatDuration, isSeries, pickIsSeries, ratingMPAA } from '@utils'
 import React from 'react'
@@ -9,7 +10,6 @@ import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 // TODO EncyclopedicItem
 
 const PersonItem = ({ title, data }: { title: string; data: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]; total?: number } }) => {
-	const navigation = useNavigation()
 	const { colors } = useTheme()
 
 	if (data.items.length === 0) return null
@@ -27,7 +27,6 @@ const PersonItem = ({ title, data }: { title: string; data: { items: { person: P
 }
 
 export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
-	const navigation = useNavigation()
 	const { colors } = useTheme()
 
 	return (
