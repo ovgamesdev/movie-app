@@ -68,12 +68,12 @@ const History: React.FC = () => {
 							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
 						}
 
-						mergeItem({ watchHistory: { [`${item.id}:${item.provider}`]: newWatchHistoryData } })
+						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
 					}
 				},
 				{
 					text: 'Удалить',
-					onPress: () => removeItemByPath(['watchHistory', `${item.id}:${item.provider}`])
+					onPress: () => removeItemByPath(['watchHistory', `${item.id}`])
 				}
 			],
 			{ cancelable: true }
@@ -86,7 +86,7 @@ const History: React.FC = () => {
 
 			<FocusableFlatList
 				data={data}
-				keyExtractor={item => `${item.id}:${item.provider}`}
+				keyExtractor={item => `${item.id}`}
 				renderItem={({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 					const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 

@@ -56,7 +56,7 @@ export type SearchHistory = SearchHistoryMovie | SearchHistoryPerson | SearchHis
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number; value?: number; testArray?: { id: number; value?: string }[] }
 	watchHistory: {
-		[key: `${number}:${string}`]: WatchHistory
+		[key: `${number}`]: WatchHistory
 	}
 	searchHistory: {
 		[key: `${number}`]: SearchHistory

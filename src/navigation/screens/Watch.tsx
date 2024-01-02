@@ -2,6 +2,7 @@ import { ActivityIndicator, Button, Input } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { CheckIcon } from '@icons'
 import { RootStackParamList, navigationRef } from '@navigation'
+import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
 import { isSeries } from '@utils'
@@ -50,22 +51,24 @@ export const Watch = ({ navigation, route }: Props) => {
 	useEffect(() => {
 		if (provider === null) return
 
-		console.log('watchHistory init', { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { ...data, provider, status: 'watch' as const, timestamp: Date.now() } } })
+		notifee.cancelNotification(`${data.type}:${data.id}`)
+
+		console.log('watchHistory init', { [`${data.id}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
+		mergeItem({ watchHistory: { [`${data.id}`]: { ...data, provider, status: 'watch' as const, timestamp: Date.now() } } })
 
 		const lastTime = Math.floor(Math.random() * 200) + 1
 		const duration = Math.floor(Math.random() * 500) + lastTime
 
 		setTimeout(() => {
-			console.log('watchHistory loaded', { [`${data.id}:${provider}`]: { lastTime, duration } })
-			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { lastTime, duration } } })
+			console.log('watchHistory loaded', { [`${data.id}`]: { lastTime, duration } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime, duration } } })
 		}, 10 * 1000)
 
 		const saveWatchStatus = () => {
 			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
 
-			console.log('watchHistory end', { [`${data.id}:${provider}`]: { lastTime: newLastTime } })
-			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { lastTime: newLastTime } } })
+			console.log('watchHistory end', { [`${data.id}`]: { lastTime: newLastTime } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime: newLastTime } } })
 		}
 
 		const subscription = AppState.addEventListener('change', nextAppState => nextAppState === 'background' && saveWatchStatus())
@@ -149,9 +152,9 @@ export const Watch = ({ navigation, route }: Props) => {
 
 	const InputHistory = ({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}:${provider}`]?.[field])
+		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
 		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
-			mergeItem({ watchHistory: { [`${data.id}:${provider}`]: { [field]: Number(e.nativeEvent.text) } } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
 		}
 
 		if (!isSeries(data.type)) return null

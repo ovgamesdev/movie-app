@@ -53,6 +53,7 @@ const displayNotificationNewFilm = (movie: WatchHistory) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 	notifee.displayNotification({
+		id: `${movie.type}:${movie.id}`,
 		title: 'Новый контент доступен!',
 		body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
 		data: Object.assign(
@@ -100,6 +101,7 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 	notifee.displayNotification({
+		id: `${movie.type}:${movie.id}`,
 		title: 'Новый контент доступен!',
 		body: `Новый эпизод «${movie.title}»`, // (эпизод 0, сезон 0).
 		data: Object.assign(
@@ -175,6 +177,8 @@ export const backgroundTask = async (taskId: string) => {
 				if (newSeries && newSeries > movie.releasedEpisodes) {
 					displayNotificationNewEpisode(movie, { newSeries })
 					newWatchHistoryData.releasedEpisodes = newSeries
+
+					store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
 				}
 			} else {
 				displayNotificationNewFilm(movie)
@@ -185,10 +189,9 @@ export const backgroundTask = async (taskId: string) => {
 				} else {
 					newWatchHistoryData.notify = false
 				}
-			}
 
-			store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}:${movie.provider}`]: newWatchHistoryData } }))
-			await delay(500)
+				store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
+			}
 		} catch (e) {
 			console.error('BackgroundFetch error:', e)
 		}
