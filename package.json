@@ -41,7 +41,6 @@
 		"react-native-gesture-handler": "^2.14.0",
 		"react-native-modal": "^13.0.1",
 		"react-native-offline": "^6.0.2",
-		"react-native-orientation-manager": "^1.1.2",
 		"react-native-pager-view": "^6.2.3",
 		"react-native-reanimated": "^3.6.1",
 		"react-native-safe-area-context": "^4.8.0",

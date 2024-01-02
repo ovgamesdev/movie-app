@@ -1,14 +1,13 @@
 import { ActivityIndicator, Button, Input } from '@components/atoms'
 import { useActions, useTheme, useTypedSelector } from '@hooks'
 import { CheckIcon } from '@icons'
-import { RootStackParamList } from '@navigation'
+import { RootStackParamList, navigationRef } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
 import { isSeries } from '@utils'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
-import Orientations, { lockToLandscape } from 'react-native-orientation-manager'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SystemNavigationBar from 'react-native-system-navigation-bar'
 import WebView from 'react-native-webview'
@@ -49,7 +48,7 @@ export const Watch = ({ navigation, route }: Props) => {
 	const [error, setError] = useState<{ error: string; message: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
-	const isLandscape = useRef(Orientations.interfaceOrientation.isLandscape())
+	const isLandscape = useRef((navigationRef.getCurrentOptions() as { orientation?: 'landscape' | 'portrait_up' } | undefined)?.orientation === 'landscape')
 
 	useEffect(() => {
 		if (provider === null) return
@@ -198,11 +197,12 @@ export const Watch = ({ navigation, route }: Props) => {
 								if (!isLandscape.current) {
 									isLandscape.current = true
 									setTimeout(() => {
-										lockToLandscape()
+										navigation.setOptions({ orientation: 'landscape' })
 										SystemNavigationBar.navigationHide()
 										StatusBar.setHidden(true)
 									}, 200)
 								} else {
+									navigation.setOptions({ orientation: 'portrait_up' })
 									isLandscape.current = false
 									SystemNavigationBar.navigationShow()
 									StatusBar.setHidden(false)

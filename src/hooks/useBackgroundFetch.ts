@@ -3,7 +3,7 @@ import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
 import { MovieType } from '@store/kinopoisk'
 import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
-import { delay, isSeries, normalizeUrlWithNull } from '@utils'
+import { delay, isSeries, normalizeUrlWithNull, rusToLatin } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
 import Config from 'react-native-config'
@@ -40,11 +40,11 @@ export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise
 			}
 		}
 
-		console.log(`[fetchNewSeries] ${type} "${title}": ${total}`)
+		console.log(`[fetchNewSeries] ${type} "${rusToLatin(title)}": ${total}`)
 
 		return total
 	} catch (e) {
-		console.error('error fetchNewSeries:', e)
+		console.log(`[fetchNewSeries] error ${type} "${rusToLatin(title)}":`, e)
 		return null
 	}
 }

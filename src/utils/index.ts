@@ -121,18 +121,12 @@ export const normalizeUrlWithNull = (url: string | null | undefined, other: { is
 	if (!url) {
 		return other.isNull + (other.append ? other.append : '')
 	} else if (url.startsWith('//')) {
-		return `http:${url}` + (other.append ? other.append : '')
+		return `https:${url}` + (other.append ? other.append : '')
+	} else if (url.startsWith('http://')) {
+		return url.replace('http://', 'https://') + (other.append ? other.append : '')
 	}
 
 	return url + (other.append ? other.append : '')
-}
-
-export const normalizeUrl = (url: string): string => {
-	if (url.startsWith('//')) {
-		return `http:${url}`
-	}
-
-	return url
 }
 
 export const delay = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -152,6 +146,17 @@ export const getNoun = (number: number, one: string, two: string, five: string) 
 	}
 	return five
 }
+
+const ruKeys: Record<string, string> = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'j', з: 'z', и: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'shch', ы: 'y', э: 'e', ю: 'u', я: 'ya', й: 'i', ъ: '', ь: '', і: 'i', ї: 'yi', є: 'ye' }
+export const rusToLatin = (str: string): string =>
+	str
+		.split('')
+		.map(letter => {
+			const lowLetter = letter.toLowerCase()
+			const en = ruKeys[lowLetter] || letter
+			return lowLetter === letter ? en : en.slice(0, 1).toUpperCase() + en.slice(1)
+		})
+		.join('')
 
 // Search
 
