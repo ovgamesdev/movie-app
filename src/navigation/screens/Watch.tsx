@@ -197,13 +197,11 @@ export const Watch = ({ navigation, route }: Props) => {
 
 							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(data.nativeEvent.data)) {
 								if (!isLandscape) {
-									// setTimeout(() => {
-									navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true })
-									StatusBar.setHidden(true)
-									// }, 200)
+									navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
+									StatusBar.setHidden(true) // need
 								} else {
-									navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false })
-									StatusBar.setHidden(false)
+									navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
+									StatusBar.setHidden(false) // need
 								}
 							}
 
