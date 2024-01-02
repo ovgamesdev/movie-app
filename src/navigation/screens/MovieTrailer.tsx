@@ -5,7 +5,6 @@ import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useCallback } from 'react'
 import { AppState, Dimensions, StatusBar, View } from 'react-native'
-import SystemNavigationBar from 'react-native-system-navigation-bar'
 import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieTrailer'>
@@ -16,19 +15,16 @@ export const MovieTrailer = ({ navigation, route }: Props) => {
 
 	useFocusEffect(
 		useCallback(() => {
-			SystemNavigationBar.navigationHide()
 			StatusBar.setHidden(true)
 
 			const subscription = AppState.addEventListener('change', nextAppState => {
 				if (nextAppState === 'active') {
-					SystemNavigationBar.navigationHide()
 					StatusBar.setHidden(true)
 				}
 			})
 
 			return () => {
 				subscription.remove()
-				SystemNavigationBar.navigationShow()
 				StatusBar.setHidden(false)
 			}
 		}, [])

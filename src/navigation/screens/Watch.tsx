@@ -5,11 +5,10 @@ import { RootStackParamList, navigationRef } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
 import { isSeries } from '@utils'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import SystemNavigationBar from 'react-native-system-navigation-bar'
 import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Watch'>
@@ -47,8 +46,6 @@ export const Watch = ({ navigation, route }: Props) => {
 	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
 	const [error, setError] = useState<{ error: string; message: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
-
-	const isLandscape = useRef((navigationRef.getCurrentOptions() as { orientation?: 'landscape' | 'portrait_up' } | undefined)?.orientation === 'landscape')
 
 	useEffect(() => {
 		if (provider === null) return
@@ -193,18 +190,16 @@ export const Watch = ({ navigation, route }: Props) => {
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
 						onMessage={data => {
+							const isLandscape = (navigationRef.getCurrentOptions() as { orientation?: 'landscape' | 'portrait_up' } | undefined)?.orientation?.includes('landscape') ?? false
+
 							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(data.nativeEvent.data)) {
-								if (!isLandscape.current) {
-									isLandscape.current = true
-									setTimeout(() => {
-										navigation.setOptions({ orientation: 'landscape' })
-										SystemNavigationBar.navigationHide()
-										StatusBar.setHidden(true)
-									}, 200)
+								if (!isLandscape) {
+									// setTimeout(() => {
+									navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true })
+									StatusBar.setHidden(true)
+									// }, 200)
 								} else {
-									navigation.setOptions({ orientation: 'portrait_up' })
-									isLandscape.current = false
-									SystemNavigationBar.navigationShow()
+									navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false })
 									StatusBar.setHidden(false)
 								}
 							}
