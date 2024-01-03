@@ -44,16 +44,27 @@ export const SearchHistory = () => {
 	const { colors } = useTheme()
 
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
-	const { mergeItem } = useActions()
+	const { setItem } = useActions()
 
 	// TODO add limit and remove
 
-	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
-		mergeItem({ searchHistory: { [`${props.type}:${props.id}`]: { ...props, timestamp: Date.now() } } })
-	}
-
 	const data = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
 	// .filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
+
+	// mergeItem({ searchHistory: { [`${props.type}:${props.id}`]: { ...props, timestamp: Date.now() } } })
+	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
+		const COUNT_SAVE_TO_HISTORY = 15
+
+		const filteredData = data.filter(it => !(it.id === props.id && it.type === props.type))
+		const updatedData = [{ ...props, timestamp: Date.now() }, ...filteredData].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_HISTORY)
+
+		const newSearchHistory = updatedData.reduce<{ [key: string]: SearchHistoryType }>((acc, item) => {
+			acc[`${item.type}:${item.id}`] = item
+			return acc
+		}, {})
+
+		setItem({ searchHistory: newSearchHistory })
+	}
 
 	if (data.length === 0) {
 		return (
