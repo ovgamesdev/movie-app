@@ -59,7 +59,7 @@ export interface ISettings {
 		[key: `${number}`]: WatchHistory
 	}
 	searchHistory: {
-		[key: `${number}`]: SearchHistory
+		[key: `${SearchHistory['type']}${number}`]: SearchHistory
 	}
 	_settings_time: number
 	_settings_version: number
