@@ -46,14 +46,12 @@ export const SearchHistory = () => {
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
 	const { setItem } = useActions()
 
-	// TODO add limit and remove
-
 	const data = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
 	// .filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
 
 	// mergeItem({ searchHistory: { [`${props.type}:${props.id}`]: { ...props, timestamp: Date.now() } } })
 	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
-		const COUNT_SAVE_TO_HISTORY = 15
+		const COUNT_SAVE_TO_HISTORY = 15 // TODO to settings?
 
 		const filteredData = data.filter(it => !(it.id === props.id && it.type === props.type))
 		const updatedData = [{ ...props, timestamp: Date.now() }, ...filteredData].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_HISTORY)
