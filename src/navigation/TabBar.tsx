@@ -6,9 +6,9 @@ import React, { useEffect, useRef } from 'react'
 import { Animated, Dimensions, ScrollView, TVFocusGuideView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const tabWidth = Dimensions.get('window').width / 2 // 120
-
 export const TabBar = ({ state, descriptors, navigation, position }: MaterialTopTabBarProps) => {
+	const tabWidth = Dimensions.get('window').width / 2 // 120
+
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { colors } = useTheme()

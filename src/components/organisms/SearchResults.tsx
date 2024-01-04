@@ -19,6 +19,7 @@ export const SearchResults = ({ data }: Props) => {
 
 	const searchHistoryData = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
 
+	// TODO maybe move to action
 	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
 		const COUNT_SAVE_TO_HISTORY = 15 // TODO to settings?
 

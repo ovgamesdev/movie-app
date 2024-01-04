@@ -4,12 +4,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { MovieType } from '@store/kinopoisk'
 import { WatchHistoryProvider } from '@store/settings'
 import { useEffect } from 'react'
+import { ColorTypes } from 'src/theme/colors'
 import { TabNavigator } from './TabNavigator'
 import { Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
-export const StackNavigator = () => {
+interface Props {
+	colors: ColorTypes
+}
+
+export const StackNavigator = ({ colors }: Props) => {
 	useEffect(() => {
 		notifee.getInitialNotification().then(initialNotification => {
 			if (initialNotification) {
@@ -43,13 +48,12 @@ export const StackNavigator = () => {
 
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
-			{/* navigationBarColor: 'rgba(0,0,0,0.6)' */}
-			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
-			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
+			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
+			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
 			<Stack.Screen name='MovieTrailer' component={MovieTrailer} options={{ orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true }} />
-			<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
-			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
-			<Stack.Screen name='MovieListSlug' component={MovieListSlug} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true }} />
+			<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
+			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
+			<Stack.Screen name='MovieListSlug' component={MovieListSlug} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
 		</Stack.Navigator>
 	)
 }

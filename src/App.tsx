@@ -124,7 +124,7 @@ const AppContent: FC = () => {
 					</View> */}
 
 					<NavigationContainer ref={navigationRef} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
-						<StackNavigator />
+						<StackNavigator colors={colors} />
 					</NavigationContainer>
 					<NetInfo />
 				</SafeAreaProvider>
