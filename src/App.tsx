@@ -11,6 +11,7 @@ import { setupSettingsListeners } from '@store/settings'
 import { setupUpdateListeners } from '@store/update'
 import { FC, ReactNode, useEffect } from 'react'
 import { Text, View } from 'react-native'
+import BootSplash from 'react-native-bootsplash'
 import ErrorBoundary from 'react-native-error-boundary'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReduxNetworkProvider } from 'react-native-offline'
@@ -94,7 +95,7 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 
 	return (
 		<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-			<View style={{ backgroundColor: colors.bg200, borderRadius: 50, paddingHorizontal: 5 }}>
+			<View style={{ backgroundColor: colors.bg100, borderRadius: 50, paddingHorizontal: 5 }}>
 				<Text style={{ color: colors.text100, textAlign: 'center' }}>Loading...</Text>
 			</View>
 		</View>
@@ -124,8 +125,7 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
-					{/* TODO: onReady hiding your native splash screen */}
-					<NavigationContainer ref={navigationRef} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
+					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
 						<StackNavigator colors={colors} />
 					</NavigationContainer>
 					<NetInfo />

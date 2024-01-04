@@ -9,6 +9,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 
+import com.zoontek.rnbootsplash.RNBootSplash
+
 
 class MainActivity : ReactActivity() {
 
@@ -33,6 +35,8 @@ class MainActivity : ReactActivity() {
         // window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
     }
+
+    RNBootSplash.init(this, R.style.BootTheme)
 
     // fix https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704067  
     super.onCreate(null)
