@@ -11,6 +11,7 @@ import { setupSettingsListeners } from '@store/settings'
 import { setupUpdateListeners } from '@store/update'
 import { FC, ReactNode, useEffect } from 'react'
 import { Text, View } from 'react-native'
+import ErrorBoundary from 'react-native-error-boundary'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -114,7 +115,7 @@ const AppContent: FC = () => {
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg100 }}>
 			<LoadingAppSettings>
-				<SafeAreaProvider>
+				<View style={{ flex: 1 }}>
 					{/* <View style={{ flex: 1, padding: 16 }}>
 						<LoaderSettings />
 						<User />
@@ -123,16 +124,33 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
+					{/* TODO: onReady hiding your native splash screen */}
 					<NavigationContainer ref={navigationRef} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
 						<StackNavigator colors={colors} />
 					</NavigationContainer>
 					<NetInfo />
-				</SafeAreaProvider>
+				</View>
 				<View>
 					<UpdateApkModal />
 				</View>
 			</LoadingAppSettings>
 		</GestureHandlerRootView>
+	)
+}
+
+const ErrorFallback = (props: { error: Error; resetError: () => void }) => {
+	const insets = useSafeAreaInsets()
+	const { colors } = useTheme()
+
+	return (
+		<View style={{ backgroundColor: colors.bg100, flex: 1, justifyContent: 'center' }}>
+			<View style={{ marginHorizontal: 16, paddingTop: insets.top, paddingBottom: insets.bottom, paddingLeft: insets.left, paddingRight: insets.right }}>
+				<Text style={{ fontSize: 48, fontWeight: '300', paddingBottom: 16, color: colors.text100 }}>Упс!</Text>
+				<Text style={{ fontSize: 32, fontWeight: '800', color: colors.text100 }}>Произошла ошибка</Text>
+				<Text style={{ paddingVertical: 16, color: colors.text200 }}>{props.error.toString()}</Text>
+				<Button onPress={props.resetError} alignItems='center' padding={16} buttonColor={colors.primary100} pressedButtonColor={colors.primary200} textColor={colors.primary300} text='Повторите попытку' hasTVPreferredFocus />
+			</View>
+		</View>
 	)
 }
 
@@ -144,11 +162,15 @@ const App: FC = () => {
 	}, [])
 
 	return (
-		<Provider store={store}>
-			<ReduxNetworkProvider pingTimeout={10000} pingServerUrl='https://www.google.com/' shouldPing={true} pingInterval={30000} pingOnlyIfOffline={false} pingInBackground={false} httpMethod={'HEAD'}>
-				<AppContent />
-			</ReduxNetworkProvider>
-		</Provider>
+		<SafeAreaProvider>
+			<Provider store={store}>
+				<ReduxNetworkProvider pingTimeout={10000} pingServerUrl='https://www.google.com/' shouldPing={true} pingInterval={30000} pingOnlyIfOffline={false} pingInBackground={false} httpMethod={'HEAD'}>
+					<ErrorBoundary FallbackComponent={ErrorFallback}>
+						<AppContent />
+					</ErrorBoundary>
+				</ReduxNetworkProvider>
+			</Provider>
+		</SafeAreaProvider>
 	)
 }
 
@@ -159,6 +181,5 @@ export default App
 // image-view https://github.com/zachgibson/react-native-parallax-swiper/tree/master | https://github.com/merryjs/photo-viewer | https://github.com/leecade/react-native-swiper
 // network-logger https://github.com/alexbrazier/react-native-network-logger
 // console.time https://github.com/MaxGraey/react-native-console-time-polyfill
-// splash-screens https://blog.logrocket.com/building-splash-screens-react-native/
 
 // https://reactnavigation.org/docs/deep-linking
