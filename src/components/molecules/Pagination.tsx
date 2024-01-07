@@ -1,8 +1,8 @@
 import { Button } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import React from 'react'
 import { ScrollView, StyleSheet, TVFocusGuideView, Text } from 'react-native'
+import { useStyles } from 'react-native-unistyles'
 
 const LEFT_PAGE = 'LEFT'
 const RIGHT_PAGE = 'RIGHT'
@@ -27,7 +27,7 @@ type Props = {
 }
 
 export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageChange }: Props) => {
-	const { colors, getColorForTheme } = useTheme()
+	const { theme } = useStyles()
 
 	const goToPage = (page: number) => {
 		const currentPage = Math.max(0, Math.min(page, pageCount))
@@ -116,7 +116,7 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 		},
 		label: {
 			fontSize: 13,
-			color: colors.text100
+			color: theme.colors.text100
 		}
 	})
 
@@ -125,7 +125,7 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 			<TVFocusGuideView style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'center' }} autoFocus trapFocusLeft trapFocusRight>
 				{!isPreviousDisabled && (
 					<Button style={styles.button} padding={0} transparent onPress={handleMovePrev}>
-						<NavigateNextIcon width={20} height={20} fill={colors.text100} style={{ transform: [{ rotateY: '180deg' }] }} />
+						<NavigateNextIcon width={20} height={20} fill={theme.colors.text100} style={{ transform: [{ rotateY: '180deg' }] }} />
 					</Button>
 				)}
 
@@ -144,8 +144,8 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 						)
 					} else {
 						return (
-							<Button key={index} style={styles.button} padding={0} transparent={currentPage !== page} onPress={() => onPageChange(Number(page))} isActive={currentPage === page} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}>
-								<Text style={[styles.label, currentPage === page && { color: colors.primary300 }]}>{page}</Text>
+							<Button key={index} style={styles.button} padding={0} transparent={currentPage !== page} onPress={() => onPageChange(Number(page))} isActive={currentPage === page} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })}>
+								<Text style={[styles.label, currentPage === page && { color: theme.colors.primary300 }]}>{page}</Text>
 							</Button>
 						)
 					}
@@ -153,7 +153,7 @@ export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageC
 
 				{!isNextDisabled && (
 					<Button style={styles.button} padding={0} transparent onPress={handleMoveNext}>
-						<NavigateNextIcon width={20} height={20} fill={colors.text100} />
+						<NavigateNextIcon width={20} height={20} fill={theme.colors.text100} />
 					</Button>
 				)}
 			</TVFocusGuideView>

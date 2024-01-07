@@ -15,7 +15,7 @@ export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__t
 				{top250 !== null && <Text250 top250={top250} />}
 			</View>
 
-			{rating.kinopoisk?.value === null && rating.kinopoisk.isActive && (
+			{rating.kinopoisk?.value === null && rating.kinopoisk.isActive ? (
 				<View>
 					<Text style={styles.minusText}>–</Text>
 					{rating.imdb?.value != null && rating.imdb.isActive && (
@@ -25,9 +25,7 @@ export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__t
 					)}
 					<Text style={styles.detailText}>Недостаточно оценок, рейтинг формируется</Text>
 				</View>
-			)}
-
-			{rating.kinopoisk?.value != null && rating.kinopoisk.isActive && rating.kinopoisk.value > 0 && (
+			) : rating.kinopoisk?.value != null && rating.kinopoisk.isActive && rating.kinopoisk.value > 0 ? (
 				<View style={styles.row}>
 					<Text style={styles.title}>{rating.kinopoisk.count.toLocaleString()} оценок</Text>
 					{rating.imdb?.value != null && rating.imdb.isActive && (
@@ -36,14 +34,12 @@ export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__t
 						</Text>
 					)}
 				</View>
-			)}
-
-			{rating.expectation?.value != null && rating.expectation.isActive && rating.expectation.value > 0 && (
+			) : rating.expectation?.isActive && rating.expectation.count > 0 ? (
 				<View>
 					<Text style={styles.title}>Рейтинг ожидания</Text>
 					<Text style={styles.detailText}>{rating.expectation.count.toLocaleString()} ждут премьеры</Text>
 				</View>
-			)}
+			) : null}
 		</View>
 	)
 }

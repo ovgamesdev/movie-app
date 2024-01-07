@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { NetInfo } from '@components/molecules'
 import { UpdateApkModal } from '@components/organisms'
-import { useActions, useBackgroundFetch, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useBackgroundFetch, useTypedSelector } from '@hooks'
 import { navigationRef } from '@navigation'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { NavigationContainer } from '@react-navigation/native'
@@ -16,6 +16,7 @@ import ErrorBoundary from 'react-native-error-boundary'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useStyles } from 'react-native-unistyles'
 import { Provider } from 'react-redux'
 import { StackNavigator } from './navigation/StackNavigator'
 import './theme/unistyles'
@@ -88,7 +89,7 @@ interface LoadingAppSettingsProps {
 }
 const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 	const isLoaded = useTypedSelector(state => state.settings.isLoaded)
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	if (isLoaded) {
 		return children
@@ -96,15 +97,15 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 
 	return (
 		<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-			<View style={{ backgroundColor: colors.bg100, borderRadius: 50, paddingHorizontal: 5 }}>
-				<Text style={{ color: colors.text100, textAlign: 'center' }}>Loading...</Text>
+			<View style={{ backgroundColor: theme.colors.bg100, borderRadius: 50, paddingHorizontal: 5 }}>
+				<Text style={{ color: theme.colors.text100, textAlign: 'center' }}>Loading...</Text>
 			</View>
 		</View>
 	)
 }
 
 const AppContent: FC = () => {
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 	const { getCurrentGoogleUser, getApkVersion } = useActions()
 
 	useEffect(() => {
@@ -115,7 +116,7 @@ const AppContent: FC = () => {
 	useBackgroundFetch()
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg100 }}>
+		<GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg100 }}>
 			<LoadingAppSettings>
 				<View style={{ flex: 1 }}>
 					{/* <View style={{ flex: 1, padding: 16 }}>
@@ -126,8 +127,8 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
-					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: colors.colorScheme === 'dark', colors: { primary: colors.text100, background: colors.bg100, card: colors.bg100, text: colors.text200, border: colors.bg300, notification: colors.primary100 } }}>
-						<StackNavigator colors={colors} />
+					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: theme.colors.colorScheme === 'dark', colors: { primary: theme.colors.text100, background: theme.colors.bg100, card: theme.colors.bg100, text: theme.colors.text200, border: theme.colors.bg300, notification: theme.colors.primary100 } }}>
+						<StackNavigator colors={theme.colors} />
 					</NavigationContainer>
 					<NetInfo />
 				</View>
@@ -141,15 +142,15 @@ const AppContent: FC = () => {
 
 const ErrorFallback = (props: { error: Error; resetError: () => void }) => {
 	const insets = useSafeAreaInsets()
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	return (
-		<View style={{ backgroundColor: colors.bg100, flex: 1, justifyContent: 'center' }}>
+		<View style={{ backgroundColor: theme.colors.bg100, flex: 1, justifyContent: 'center' }}>
 			<View style={{ marginHorizontal: 16, paddingTop: insets.top, paddingBottom: insets.bottom, paddingLeft: insets.left, paddingRight: insets.right }}>
-				<Text style={{ fontSize: 48, fontWeight: '300', paddingBottom: 16, color: colors.text100 }}>Упс!</Text>
-				<Text style={{ fontSize: 32, fontWeight: '800', color: colors.text100 }}>Произошла ошибка</Text>
-				<Text style={{ paddingVertical: 16, color: colors.text200 }}>{props.error.toString()}</Text>
-				<Button onPress={props.resetError} alignItems='center' padding={16} buttonColor={colors.primary100} pressedButtonColor={colors.primary200} textColor={colors.primary300} text='Повторите попытку' hasTVPreferredFocus />
+				<Text style={{ fontSize: 48, fontWeight: '300', paddingBottom: 16, color: theme.colors.text100 }}>Упс!</Text>
+				<Text style={{ fontSize: 32, fontWeight: '800', color: theme.colors.text100 }}>Произошла ошибка</Text>
+				<Text style={{ paddingVertical: 16, color: theme.colors.text200 }}>{props.error.toString()}</Text>
+				<Button onPress={props.resetError} alignItems='center' padding={16} buttonColor={theme.colors.primary100} pressedButtonColor={theme.colors.primary200} textColor={theme.colors.primary300} text='Повторите попытку' hasTVPreferredFocus />
 			</View>
 		</View>
 	)

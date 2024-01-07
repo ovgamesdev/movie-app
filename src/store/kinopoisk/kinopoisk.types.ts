@@ -122,7 +122,7 @@ export interface Person {
 	// __typename: string
 }
 
-interface Country {
+export interface Country {
 	id: number
 	name: string
 	// __typename: string
@@ -175,11 +175,8 @@ export interface IMovieBaseInfo {
 		items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]
 		total: number
 	}
-	audience: {
-		// TODO ?
-		items: { count: number; country: { id: number; name: string } }[]
-		total: number
-	}
+	// TODO ?
+	audience: Audience
 	awards: {
 		total: number
 	}
@@ -312,7 +309,7 @@ export interface IMovieBaseInfo {
 		is3d: boolean
 		isImax: boolean
 	}
-	releases: { date: string; releasers: { id: number; name: string }[]; type: string }[] // TYPE: BLURAY | DVD | DIGITAL
+	releases: Releases[]
 	restriction: {
 		age: string | null
 		mpaa: string | null
@@ -571,6 +568,17 @@ export interface ITvSeriesBaseInfo
 
 export type ProductionStatus = 'ANNOUNCED' | 'COMPLETED' | 'FILMING' | 'POST_PRODUCTION' | 'PRE_PRODUCTION' | 'UNKNOWN' | null
 
+export interface Releases {
+	date: string
+	releasers: { id: number; name: string }[]
+	type: string // TYPE: BLURAY | DVD | DIGITAL
+}
+
+export interface Audience {
+	items: { count: number; country: { id: number; name: string } }[]
+	total: number
+}
+
 export interface IMainTrailer {
 	createdAt: string
 	duration: number
@@ -600,23 +608,18 @@ export interface ISimilarMovie extends Pick<IMovieBaseInfo, '__typename' | 'coun
 	}
 }
 
-interface MoneyAmount {
+export interface MoneyAmount {
 	amount: number
 	currency: { symbol: string }
 }
 
-interface Country {
-	id: number
-	name: string
-}
-
-interface Genre {
+export interface Genre {
 	id: number
 	name: string
 	slug: string
 }
 
-interface Release {
+export interface Release {
 	companies: ({ displayName: string; id: number; slug: string; slugId: number } | { displayName: string; id: number; originalsMovieList: { url: string; id: number } })[]
 	date: { accuracy: string; date: string } | null
 }

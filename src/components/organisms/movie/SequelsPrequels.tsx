@@ -1,18 +1,18 @@
 import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { navigation } from '@navigation'
 import { IMovieBaseInfo } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import { TVFocusGuideView, Text, View } from 'react-native'
+import { useStyles } from 'react-native-unistyles'
 
 export const SequelsPrequels = ({ sequelsPrequels }: Pick<IMovieBaseInfo, 'sequelsPrequels'>) => {
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	if (sequelsPrequels.total === 0) return null
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Сиквелы и приквелы</Text>
+			<Text style={{ color: theme.colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Сиквелы и приквелы</Text>
 			<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 				<FocusableFlatList
 					keyExtractor={data => `sequels_prequels_item_${data.movie.id}`}
@@ -34,10 +34,10 @@ export const SequelsPrequels = ({ sequelsPrequels }: Pick<IMovieBaseInfo, 'seque
 								</ImageBackground>
 
 								<View style={{ paddingTop: 5 }}>
-									<Text style={{ color: colors.text100, fontSize: 14 }} numberOfLines={2}>
+									<Text style={{ color: theme.colors.text100, fontSize: 14 }} numberOfLines={2}>
 										{movie.title.russian ?? movie.title.original ?? movie.title.english}
 									</Text>
-									<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
+									<Text style={{ color: theme.colors.text200, fontSize: 14 }} numberOfLines={1}>
 										{[isSeries(movie.__typename) ? movie.releaseYears[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 									</Text>
 								</View>

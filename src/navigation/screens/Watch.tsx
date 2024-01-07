@@ -1,5 +1,5 @@
 import { ActivityIndicator, Button, Input } from '@components/atoms'
-import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { CheckIcon } from '@icons'
 import { RootStackParamList, navigationRef } from '@navigation'
 import notifee from '@notifee/react-native'
@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Watch'>
@@ -41,7 +42,7 @@ export const Watch = ({ navigation, route }: Props) => {
 	const { data } = route.params
 
 	const insets = useSafeAreaInsets()
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 	const { mergeItem } = useActions()
 	const [providers, setProviders] = useState<kinoboxPlayersData[] | null>(null)
 	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
@@ -161,7 +162,7 @@ export const Watch = ({ navigation, route }: Props) => {
 
 		return (
 			<View style={{ paddingVertical: 10, gap: 5 }}>
-				<Text style={{ color: colors.text100, fontSize: 14 }}>{title}</Text>
+				<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{title}</Text>
 				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
 			</View>
 		)
@@ -214,21 +215,21 @@ export const Watch = ({ navigation, route }: Props) => {
 					/>
 				) : (
 					<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-						<Text style={{ fontSize: 14, color: colors.text100, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
+						<Text style={{ fontSize: 14, color: theme.colors.text100, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
 					</View>
 				)}
 				{isLoading && <Loading />}
 			</View>
 			<View style={{ flex: 1 }}>
 				<ScrollView contentContainerStyle={{ gap: 6, padding: 10 }}>
-					<Text style={{ fontSize: 14, color: colors.text100 }}>Выбор провайдера:</Text>
+					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 					{providers.map(it => {
 						const isActive = currentProvider.source === it.source
 
 						return (
 							<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
-								{isActive && <CheckIcon width={20} height={20} fill={colors.text100} style={{ marginRight: 10 }} />}
-								<Text style={{ fontSize: 14, color: colors.text100 }}>
+								{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
+								<Text style={{ fontSize: 14, color: theme.colors.text100 }}>
 									{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
 								</Text>
 							</Button>

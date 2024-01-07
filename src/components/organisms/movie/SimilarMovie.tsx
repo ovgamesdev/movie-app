@@ -1,10 +1,10 @@
 import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { navigation } from '@navigation'
 import { ISimilarMovieResults, MovieType, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
 import React from 'react'
 import { FlatList, TVFocusGuideView, Text, View } from 'react-native'
+import { useStyles } from 'react-native-unistyles'
 
 type Props = {
 	id: number
@@ -12,7 +12,7 @@ type Props = {
 }
 
 export const SimilarMovie = ({ id, type }: Props) => {
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' && type !== 'Video' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })
@@ -23,16 +23,16 @@ export const SimilarMovie = ({ id, type }: Props) => {
 	if (isFetching) {
 		return (
 			<View style={{ marginTop: 40, marginBottom: 0 }}>
-				<View style={{ width: '80%', height: 22, marginTop: 5, marginBottom: 14, backgroundColor: colors.bg200 }} />
+				<View style={{ width: '80%', height: 22, marginTop: 5, marginBottom: 14, backgroundColor: theme.colors.bg200 }} />
 				<FlatList
 					data={new Array(10)}
 					horizontal
 					renderItem={() => {
 						return (
 							<View style={{ width: 110, height: 215.5 - 2.666, padding: 5 }}>
-								<View style={{ backgroundColor: colors.bg200, height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000, borderRadius: 6 }} />
-								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: colors.bg200 }} />
-								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: colors.bg200 }} />
+								<View style={{ backgroundColor: theme.colors.bg200, height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000, borderRadius: 6 }} />
+								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ width: '80%', height: 12, marginTop: 8, backgroundColor: theme.colors.bg200 }} />
 							</View>
 						)
 					}}
@@ -45,7 +45,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Если вам понравился этот {isSeries(type) ? 'сериал' : 'фильм'}</Text>
+			<Text style={{ color: theme.colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 9 }}>Если вам понравился этот {isSeries(type) ? 'сериал' : 'фильм'}</Text>
 			<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 				<FocusableFlatList
 					keyExtractor={data => `similar_item_${data.movie.id}`}
@@ -67,10 +67,10 @@ export const SimilarMovie = ({ id, type }: Props) => {
 								</ImageBackground>
 
 								<View style={{ paddingTop: 5 }}>
-									<Text style={{ color: colors.text100, fontSize: 14 }} numberOfLines={2}>
+									<Text style={{ color: theme.colors.text100, fontSize: 14 }} numberOfLines={2}>
 										{movie.title.russian ?? movie.title.original ?? movie.title.english}
 									</Text>
-									<Text style={{ color: colors.text200, fontSize: 14 }} numberOfLines={1}>
+									<Text style={{ color: theme.colors.text200, fontSize: 14 }} numberOfLines={1}>
 										{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' ? movie.releaseYears[0].start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 									</Text>
 								</View>

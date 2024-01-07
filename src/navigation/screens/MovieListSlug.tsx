@@ -1,6 +1,6 @@
 import { Button, DropDown, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
 import { Pagination } from '@components/molecules'
-import { useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { useOrientation, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -10,6 +10,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
+import { useStyles } from 'react-native-unistyles'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieListSlug'>
 type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
@@ -80,7 +81,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const orientation = useOrientation()
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 	const ref = useRef<FlatList>(null)
 
 	const [page, setPage] = useState(1)
@@ -100,11 +101,11 @@ export const MovieListSlug = ({ route }: Props) => {
 			if (item.__typename === 'Skeleton') {
 				return (
 					<Button style={{}} focusable={false} transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10}>
-						<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: colors.bg200 }} />
+						<View style={{ height: 108, width: 72, aspectRatio: 667 / 1000, backgroundColor: theme.colors.bg200 }} />
 						<View style={{ height: 92, marginLeft: 20, flex: 1 }}>
-							<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: colors.bg200 }} />
-							<View style={{ width: '45%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
-							<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: colors.bg200 }} />
+							<View style={{ width: '90%', height: 12, marginTop: 2, backgroundColor: theme.colors.bg200 }} />
+							<View style={{ width: '45%', height: 12, marginTop: 15, backgroundColor: theme.colors.bg200 }} />
+							<View style={{ width: '30%', height: 12, marginTop: 15, backgroundColor: theme.colors.bg200 }} />
 						</View>
 					</Button>
 				)
@@ -120,16 +121,16 @@ export const MovieListSlug = ({ route }: Props) => {
 
 			return (
 				<>
-					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
+					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
 					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: item.movie.id, type: item.movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
 						{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') &&
 							orientation.landscape &&
 							(item.__typename === 'BoxOfficeMovieListItem' ? (
-								<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: colors.text100, width: 64 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>
+								<Text style={{ fontSize: 16, marginBottom: 12, fontWeight: '600', lineHeight: 20, color: theme.colors.text100, width: 64 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>
 							) : (
 								<View style={{ alignItems: 'center' }}>
-									<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: colors.text100 }}>{itemPosition}</Text>
-									{item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? colors.warning : colors.success }}>{item.positionDiff}</Text>}
+									<Text style={{ textAlign: 'center', fontSize: 18, marginBottom: 12, fontWeight: '600', lineHeight: 22, color: theme.colors.text100 }}>{itemPosition}</Text>
+									{item.positionDiff !== 0 && <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '500', lineHeight: 15, color: item.positionDiff < 0 ? theme.colors.warning : theme.colors.success }}>{item.positionDiff}</Text>}
 								</View>
 							))}
 						<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
@@ -144,32 +145,32 @@ export const MovieListSlug = ({ route }: Props) => {
 
 						<View style={{ marginLeft: 20, flex: 1 }}>
 							<View style={{ minHeight: 92 }}>
-								<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: colors.text100, marginBottom: 5 }} numberOfLines={2}>
+								<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: theme.colors.text100, marginBottom: 5 }} numberOfLines={2}>
 									{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
 									{item.movie.title.russian ?? item.movie.title.original}
 								</Text>
 								<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
 									<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
 										{item.movie.title.russian && item.movie.title.original && (
-											<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }} numberOfLines={1}>
+											<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
 												{item.movie.title.original}
 											</Text>
 										)}
-										<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text100 }}>
+										<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>
 											{item.movie.title.russian && item.movie.title.original && ', '}
 											{[isSeries(item.movie.__typename) ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
 										</Text>
 									</View>
 								</View>
 
-								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: theme.colors.text200 }} numberOfLines={1}>
 									{/* {[item.movie.countries[0]?.name, item.movie.genres[0]?.name].filter(it => !!it).join(' • ')} */}
 									{[item.movie.countries.map(it => it.name).join(', '), item.movie.genres.map(it => it.name).join(', ')].join(' • ')}
 									{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name ?? item.movie.directors.items[0].person.originalName}`}
 								</Text>
 
 								{orientation.landscape && (
-									<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: colors.text200 }} numberOfLines={1}>
+									<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: theme.colors.text200 }} numberOfLines={1}>
 										{item.movie.cast.items.length > 0 &&
 											`В ролях: ${item.movie.cast.items
 												.slice(0, 2)
@@ -180,14 +181,14 @@ export const MovieListSlug = ({ route }: Props) => {
 								)}
 							</View>
 
-							{orientation.portrait && item.__typename === 'BoxOfficeMovieListItem' && <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 16, color: colors.text100 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>}
+							{orientation.portrait && item.__typename === 'BoxOfficeMovieListItem' && <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 16, color: theme.colors.text100 }}>${(item.boxOffice.amount / 1000000).toFixed(1)} млн</Text>}
 						</View>
 
 						{orientation.landscape && ratingKinopoisk && (
 							<View style={{ marginRight: 15 }}>
 								<View style={{ flexDirection: 'row' }}>
 									{item.movie.top250 ? <Text250 top={item.movie.top250} rating={ratingKinopoisk.value} /> : <Text style={{ fontWeight: '600', fontSize: 18, lineHeight: 22, color: ratingKinopoisk.color }}>{ratingKinopoisk.value}</Text>}
-									<Text style={{ marginTop: 4, marginLeft: 5, fontSize: 13, fontWeight: '400', lineHeight: 16, color: colors.text200 }}>{ratingKinopoisk.count.toLocaleString()}</Text>
+									<Text style={{ marginTop: 4, marginLeft: 5, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }}>{ratingKinopoisk.count.toLocaleString()}</Text>
 								</View>
 							</View>
 						)}
@@ -195,7 +196,7 @@ export const MovieListSlug = ({ route }: Props) => {
 				</>
 			)
 		},
-		[orientation, colors, data.page]
+		[orientation, theme.colors, data.page]
 	)
 
 	const keyExtractor = useCallback((item: Skeleton | IListBySlugResultsDocs) => `list_${slug}_item_${item.movie.id}`, [slug])
@@ -206,10 +207,10 @@ export const MovieListSlug = ({ route }: Props) => {
 		if (isFetching) return null
 
 		return (
-			<View style={{ width: '100%', flexGrow: 1, flexShrink: 1, backgroundColor: colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
+			<View style={{ width: '100%', flexGrow: 1, flexShrink: 1, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
 				<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
-					<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
-					<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
+					<Text style={{ color: theme.colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
+					<Text style={{ color: theme.colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
 				</View>
 			</View>
 		)
@@ -217,8 +218,8 @@ export const MovieListSlug = ({ route }: Props) => {
 
 	const ListFooterComponent = useCallback(() => {
 		// !isFetching ? null : (
-		// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-		// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={colors.text200} style={{ padding: 10 }} />
+		// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? theme.colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
+		// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={theme.colors.text200} style={{ padding: 10 }} />
 		// 	</View>
 		// )
 
@@ -286,7 +287,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	const NameText = ({ style, ...props }: TextProps) => {
 		if (data.name) {
 			return (
-				<Text {...props} style={[{ color: colors.text100, fontSize: 20, fontWeight: '700' }, style]}>
+				<Text {...props} style={[{ color: theme.colors.text100, fontSize: 20, fontWeight: '700' }, style]}>
 					{data.name}
 				</Text>
 			)
@@ -297,7 +298,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	const DescriptionText = ({ style, ...props }: TextProps) => {
 		if (data.description) {
 			return (
-				<Text {...props} style={[{ color: colors.text100, fontSize: 13 }, style]}>
+				<Text {...props} style={[{ color: theme.colors.text100, fontSize: 13 }, style]}>
 					{data.description}
 				</Text>
 			)
@@ -307,7 +308,7 @@ export const MovieListSlug = ({ route }: Props) => {
 
 	const Skeleton = ({ style, ...props }: ViewProps) => {
 		if (isFetching) {
-			return <View {...props} style={[{ backgroundColor: colors.bg200, borderRadius: 6 }, style]} />
+			return <View {...props} style={[{ backgroundColor: theme.colors.bg200, borderRadius: 6 }, style]} />
 		}
 		return null
 	}

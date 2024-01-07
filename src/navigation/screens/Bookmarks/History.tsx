@@ -25,7 +25,7 @@ export const History: React.FC = () => {
 		.filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
 	const barHeight = bottomTabBarHeight - insets.bottom + 2
 
-	const scrollY = new Animated.Value(0)
+	const [scrollY] = useState(new Animated.Value(0))
 
 	console.log('History data:', data)
 

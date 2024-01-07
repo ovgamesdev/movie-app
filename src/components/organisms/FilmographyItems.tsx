@@ -1,9 +1,10 @@
 import { Button, DropDown, FocusableFlatList } from '@components/atoms'
-import { useOrientation, useTheme } from '@hooks'
+import { useOrientation } from '@hooks'
 import { navigation } from '@navigation'
 import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
 import React, { useRef, useState } from 'react'
 import { FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { useStyles } from 'react-native-unistyles'
 import { Pagination } from '../molecules/Pagination'
 
 type Props = {
@@ -21,7 +22,7 @@ const generateYearIntervals = ({ start, end }: { start: number; end: number }, i
 }
 
 export const FilmographyItems = ({ id: personId }: Props) => {
-	const { colors, getColorForTheme } = useTheme()
+	const { theme } = useStyles()
 	const orientation = useOrientation()
 
 	const ref = useRef<FlatList>(null)
@@ -46,26 +47,26 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 		return (
 			<View style={{ marginTop: 40 }}>
 				<View style={{ marginBottom: 9, gap: 5, flexDirection: 'row' }}>
-					<View style={{ height: 63.3, width: 69.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
-					<View style={{ height: 63.3, width: 149.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
-					<View style={{ height: 63.3, width: 242.6, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 63.3, width: 69.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+					<View style={{ height: 63.3, width: 149.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+					<View style={{ height: 63.3, width: 242.6, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
 				</View>
 
 				<View style={{ paddingVertical: 10, gap: 5, flexDirection: 'row' }}>
-					<View style={{ height: 40, width: 160.6, borderRadius: 6, backgroundColor: colors.bg200 }} />
-					<View style={{ height: 40, width: 121.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
-					<View style={{ height: 40, width: 179.3, borderRadius: 6, backgroundColor: colors.bg200 }} />
+					<View style={{ height: 40, width: 160.6, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+					<View style={{ height: 40, width: 121.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+					<View style={{ height: 40, width: 179.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
 				</View>
 
 				<FlatList
 					data={Array(10).map(({ index }) => ({ id: index }))}
 					renderItem={({ index }) => (
 						<>
-							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
+							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
 							<View style={{ paddingVertical: 24, margin: 3 }}>
-								<View style={{ width: '60%', height: 18, marginTop: 5, backgroundColor: colors.bg200 }} />
-								<View style={{ width: '15%', height: 12 + 4, marginTop: 5, backgroundColor: colors.bg200 }} />
-								<View style={{ width: '30%', height: 12, marginTop: 12, marginBottom: 2.5, backgroundColor: colors.bg200 }} />
+								<View style={{ width: '60%', height: 18, marginTop: 5, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ width: '15%', height: 12 + 4, marginTop: 5, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ width: '30%', height: 12, marginTop: 12, marginBottom: 2.5, backgroundColor: theme.colors.bg200 }} />
 							</View>
 						</>
 					)}
@@ -90,9 +91,9 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 						const isActive = roleSlugs.length === 0 ? index === 0 : roleSlugs.includes(role.slug)
 
 						return (
-							<Button onPress={() => (setRoleSlugs([role.slug]), setPage(1))} isActive={isActive} buttonColor={colors.bg200} activeButtonColor={colors.primary100} activePressedButtonColor={getColorForTheme({ dark: 'primary200', light: 'text200' })}>
-								<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 18, fontWeight: '600' }}>{role.title.russian || role.title.english}</Text>
-								<Text style={{ color: isActive ? colors.primary300 : colors.text200, fontSize: 13 }}>{movies.total}</Text>
+							<Button onPress={() => (setRoleSlugs([role.slug]), setPage(1))} isActive={isActive} buttonColor={theme.colors.bg200} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })}>
+								<Text style={{ color: isActive ? theme.colors.primary300 : theme.colors.text200, fontSize: 18, fontWeight: '600' }}>{role.title.russian || role.title.english}</Text>
+								<Text style={{ color: isActive ? theme.colors.primary300 : theme.colors.text200, fontSize: 13 }}>{movies.total}</Text>
 							</Button>
 						)
 					}}
@@ -163,18 +164,18 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 
 					return (
 						<>
-							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: colors.bg300 }} />}
+							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
 							<Button transparent animation='scale' padding={0} paddingVertical={24} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
-								<Text style={{ color: colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={1}>
+								<Text style={{ color: theme.colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={1}>
 									{title}
 								</Text>
 								{secondaryInfo && (
-									<Text style={{ color: colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
+									<Text style={{ color: theme.colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
 										{secondaryInfo}
 									</Text>
 								)}
 								{tertiaryInfo && (
-									<Text style={{ color: colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
+									<Text style={{ color: theme.colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
 										{tertiaryInfo}
 									</Text>
 								)}
@@ -185,10 +186,10 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 				}}
 				ListEmptyComponent={() => {
 					return (
-						<View style={{ width: '100%', flexGrow: 1, backgroundColor: colors.bg200, padding: 30, borderRadius: 6, paddingHorizontal: 30 }}>
+						<View style={{ width: '100%', flexGrow: 1, backgroundColor: theme.colors.bg200, padding: 30, borderRadius: 6, paddingHorizontal: 30 }}>
 							<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-								<Text style={{ color: colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
-								<Text style={{ color: colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
+								<Text style={{ color: theme.colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
+								<Text style={{ color: theme.colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
 							</View>
 						</View>
 					)

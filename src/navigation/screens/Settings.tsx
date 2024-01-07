@@ -1,10 +1,10 @@
 import { UpdateApk, User } from '@components/molecules'
-import { Select, Switch } from '@components/molecules/settings'
+import { Switch } from '@components/molecules/settings'
 import { useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { UnistylesRuntime, createStyleSheet, useStyles } from 'react-native-unistyles'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 const LoaderSettings: FC = () => {
 	const isLoading = useTypedSelector(state => state.settings.isLoading)
@@ -37,7 +37,7 @@ export const Settings = () => {
 
 			<User />
 
-			<Select
+			{/* <Select
 				item='theme'
 				options={[
 					{ value: 'light', title: 'light' },
@@ -52,7 +52,7 @@ export const Settings = () => {
 						UnistylesRuntime.setTheme(value)
 					}
 				}}
-			/>
+			/> */}
 			<Switch item='showDevOptions' />
 		</TVFocusGuideView>
 	)
