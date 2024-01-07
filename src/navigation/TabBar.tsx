@@ -1,18 +1,18 @@
 import { Button } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import React, { useEffect, useRef } from 'react'
 import { Animated, Dimensions, ScrollView, TVFocusGuideView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 export const TabBar = ({ state, descriptors, navigation, position }: MaterialTopTabBarProps) => {
 	const tabWidth = Dimensions.get('window').width / 2 // 120
 
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
-	const { colors } = useTheme()
 	const scrollView = useRef<ScrollView | null>(null)
+	const { styles, theme } = useStyles(stylesheet)
 
 	const inputRange = state.routes.map((_, i) => i)
 	const indicatorTranslateX = position.interpolate({ inputRange, outputRange: inputRange.map(it => it * tabWidth + 10) })
@@ -30,8 +30,8 @@ export const TabBar = ({ state, descriptors, navigation, position }: MaterialTop
 	}, [state.index])
 
 	return (
-		<ScrollView ref={scrollView} horizontal contentContainerStyle={{ flexGrow: 1, marginTop: insets.top }} style={{ flexGrow: 0 }}>
-			<TVFocusGuideView style={{ flexDirection: 'row', borderBottomColor: colors.bg300, borderBottomWidth: 1 }} autoFocus>
+		<ScrollView ref={scrollView} horizontal contentContainerStyle={[styles.scrollContainer, { marginTop: insets.top }]} style={styles.scrollContainerWrapper}>
+			<TVFocusGuideView style={styles.container} autoFocus>
 				{state.routes.map((route, index) => {
 					const { options } = descriptors[route.key]
 					const label = options.tabBarLabel ?? options.title ?? route.name
@@ -54,12 +54,37 @@ export const TabBar = ({ state, descriptors, navigation, position }: MaterialTop
 
 					return (
 						<Button key={index} onPress={onPress} onLongPress={onLongPress} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight - insets.bottom - 2 }} transparent>
-							<Animated.Text style={{ opacity, fontSize: 14, color: colors.text100, textAlign: 'center' }}>{typeof label === 'function' ? label({ focused: isFocused, children: '', color: colors.text100 }) : label}</Animated.Text>
+							<Animated.Text style={[styles.text, { opacity }]}>{typeof label === 'function' ? label({ focused: isFocused, children: '', color: theme.colors.text100 }) : label}</Animated.Text>
 						</Button>
 					)
 				})}
-				<Animated.View style={{ height: 1, position: 'absolute', bottom: -1, backgroundColor: colors.accent100, transform: [{ translateX: indicatorTranslateX }], width: tabWidth - 20 }} />
+				<Animated.View style={[styles.line, { transform: [{ translateX: indicatorTranslateX }], width: tabWidth - 20 }]} />
 			</TVFocusGuideView>
 		</ScrollView>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	scrollContainer: {
+		flexGrow: 1
+	},
+	scrollContainerWrapper: {
+		flexGrow: 0
+	},
+	container: {
+		flexDirection: 'row',
+		borderBottomColor: theme.colors.bg300,
+		borderBottomWidth: 1
+	},
+	text: {
+		fontSize: 14,
+		color: theme.colors.text100,
+		textAlign: 'center'
+	},
+	line: {
+		height: 1,
+		position: 'absolute',
+		bottom: -1,
+		backgroundColor: theme.colors.accent100
+	}
+}))

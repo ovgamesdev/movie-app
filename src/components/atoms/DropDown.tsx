@@ -1,10 +1,10 @@
 import { Button, ButtonType } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
 import React, { useRef, useState } from 'react'
 import { Dimensions, FlatList, PressableProps, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useStyles } from 'react-native-unistyles'
 
 interface IItem<T> {
 	value: T
@@ -23,7 +23,7 @@ interface Props<T> {
 export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange, ...props }: Props<T> & PressableProps) => {
 	const [isVisible, setIsVisible] = useState(false)
 	const insets = useSafeAreaInsets()
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	const buttonRef = useRef<ButtonType>(null)
 	const modalRef = useRef<View>(null)
@@ -106,15 +106,15 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 	return (
 		<TVFocusGuideView trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
 			<Button ref={buttonRef} {...props} onLayout={onLayout} onPress={onOpen} flex={0} flexDirection='row'>
-				<Text style={{ color: colors.text100 }} numberOfLines={1}>
+				<Text style={{ color: theme.colors.text100 }} numberOfLines={1}>
 					{checkedItem.label}
 				</Text>
-				<ExpandMoreIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 10, transform: isVisible ? [{ rotateX: '180deg' }] : [] }} />
+				<ExpandMoreIcon width={20} height={20} fill={theme.colors.text100} style={{ marginLeft: 10, transform: isVisible ? [{ rotateX: '180deg' }] : [] }} />
 			</Button>
 
-			{/* FIXME: shadow not animated { shadowColor: colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 } */}
+			{/* FIXME: shadow not animated { shadowColor: theme.colors.text100, elevation: 7, shadowRadius: 4.65, shadowOffset: { height: 3, width: 0 }, shadowOpacity: 0.29 } */}
 			<Modal isVisible={isVisible} onShow={_onShow} onBackdropPress={onClose} onBackButtonPress={onClose} backdropOpacity={0.25} animationIn='fadeIn' animationOut='fadeOut' hideModalContentWhileAnimating useNativeDriver style={{ margin: 0 }}>
-				<View ref={modalRef} style={{ position: 'absolute', backgroundColor: colors.bg200, borderRadius: 6, overflow: 'hidden', minWidth: type === 'fullWidthToBottom' ? screen.width - 10 : 200, maxWidth: '100%', maxHeight: ITEM_HEIGHT * 6, ...position }}>
+				<View ref={modalRef} style={{ position: 'absolute', backgroundColor: theme.colors.bg200, borderRadius: 6, overflow: 'hidden', minWidth: type === 'fullWidthToBottom' ? screen.width - 10 : 200, maxWidth: '100%', maxHeight: ITEM_HEIGHT * 6, ...position }}>
 					<FlatList
 						data={items}
 						renderItem={({ item, index }) => {
@@ -122,10 +122,10 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 
 							return (
 								<Button key={index} ref={ref => (optionsRef.current[index] = ref)} onPress={() => onSelect(item.value)} flexDirection='row' justifyContent='space-between'>
-									<Text style={{ color: isChecked ? colors.text100 : colors.text200 }} numberOfLines={1}>
+									<Text style={{ color: isChecked ? theme.colors.text100 : theme.colors.text200 }} numberOfLines={1}>
 										{item.label}
 									</Text>
-									{isChecked && <CheckIcon width={20} height={20} fill={colors.text100} style={{ marginLeft: 5 }} />}
+									{isChecked && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginLeft: 5 }} />}
 								</Button>
 							)
 						}}

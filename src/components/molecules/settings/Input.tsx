@@ -1,8 +1,9 @@
 import { Input as MyInput } from '@components/atoms'
-import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { InputSettingsKey } from '@store/settings'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, TextInputProps, View } from 'react-native'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 interface Props extends TextInputProps {
 	item: InputSettingsKey
@@ -11,15 +12,34 @@ interface Props extends TextInputProps {
 export const Input: FC<Props> = ({ item, ...props }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item])
-	const { colors } = useTheme()
+	const { styles } = useStyles(stylesheet)
 
 	return (
 		<>
-			<TVFocusGuideView style={{ marginVertical: 5, height: 40, paddingVertical: 5, flexDirection: 'row', alignItems: 'center' }} autoFocus trapFocusLeft trapFocusRight>
-				<Text style={{ color: colors.text100, flex: 1 }}>{item}</Text>
+			<TVFocusGuideView style={styles.container} autoFocus trapFocusLeft trapFocusRight>
+				<Text style={styles.title}>{item}</Text>
 				<MyInput onChange={e => setItem({ [item]: e.nativeEvent.text })} value={value} placeholder='Settings value' flex={1} {...props} />
 			</TVFocusGuideView>
-			<View style={{ borderBlockColor: colors.bg300, borderBottomWidth: 1 }} />
+			<View style={styles.line} />
 		</>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: {
+		marginVertical: 5,
+		height: 40,
+		paddingVertical: 5,
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	title: {
+		color: theme.colors.text100,
+		fontSize: 14,
+		flex: 1
+	},
+	line: {
+		borderBlockColor: theme.colors.bg300,
+		borderBottomWidth: 1
+	}
+}))

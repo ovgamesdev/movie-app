@@ -1,8 +1,8 @@
-import { useTheme } from '@hooks'
 import React, { useCallback } from 'react'
 import { Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { clamp, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import { useStyles } from 'react-native-unistyles'
 
 type Props = {
 	onValueChange: (value: boolean) => void
@@ -23,7 +23,7 @@ const animConfig = {
 // TODO remove pan
 export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) => {
 	const switchTranslate = useSharedValue(value ? 21 : 0)
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 
 	const memoizedOnSwitchPressCallback = useCallback(() => {
 		onValueChange(!value)
@@ -44,19 +44,19 @@ export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) 
 
 	const trackStyle = useAnimatedStyle(
 		() => ({
-			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [trackColor?.false ?? colors.bg200, trackColor?.true ?? colors.bg300])
+			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [trackColor?.false ?? theme.colors.bg200, trackColor?.true ?? theme.colors.bg300])
 		}),
-		[switchTranslate, colors]
+		[switchTranslate, theme.colors]
 	)
 	const thumbStyle = useAnimatedStyle(
 		() => ({
-			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [thumbColor?.false ?? colors.text200, thumbColor?.true ?? colors.primary100])
+			backgroundColor: interpolateColor(switchTranslate.value, [0, 21], [thumbColor?.false ?? theme.colors.text200, thumbColor?.true ?? theme.colors.primary100])
 		}),
-		[switchTranslate, colors]
+		[switchTranslate, theme.colors]
 	)
 
 	return (
-		<Pressable onPress={memoizedOnSwitchPressCallback} style={({ focused }) => ({ borderRadius: 36.5, borderWidth: 3, borderColor: focused ? colors.primary100 : 'transparent' })}>
+		<Pressable onPress={memoizedOnSwitchPressCallback} style={({ focused }) => ({ borderRadius: 36.5, borderWidth: 3, borderColor: focused ? theme.colors.primary100 : 'transparent' })}>
 			<Animated.View style={[{ width: 50, padding: 2, borderRadius: 36.5 }, trackStyle]}>
 				<GestureDetector gesture={pan}>
 					<Animated.View style={[{ width: 24, height: 24, borderRadius: 24, elevation: 4, transform: [{ translateX: switchTranslate }] }, thumbStyle]} />

@@ -1,13 +1,14 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
-import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie'; // /index
+import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { useOrientation, useTheme, useTypedSelector } from '@hooks'
+import { useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
 import { isSeries, normalizeUrlWithNull } from '@utils'
 import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 
@@ -16,11 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 export const Movie = ({ route }: Props) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
-	const { colors } = useTheme()
-	const orientation = useOrientation()
-
-	// const orientation = { portrait: true, landscape: false }
-	// const orientation = { portrait: false, landscape: true }
+	const { styles } = useStyles(stylesheet)
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' })
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' })
@@ -74,46 +71,47 @@ export const Movie = ({ route }: Props) => {
 	}
 
 	return (
-		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
+		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				{orientation.portrait && (data.cover ? <Cover /> : data.mainTrailer ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />)}
-				<View style={[{}, orientation.landscape && { flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10 + insets.top, gap: 20 }]}>
-					{orientation.landscape && (
-						<View style={{ width: 300, gap: 20 }}>
-							<PosterImage />
-							{data.mainTrailer && (
-								<View style={{ gap: 5 }}>
-									<Trailer mainTrailer={data.mainTrailer} showTime />
-									<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
-									<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
-								</View>
-							)}
-						</View>
-					)}
-					<View style={[{ flex: 1 }, orientation.portrait && { backgroundColor: colors.bg100, marginTop: -10, paddingHorizontal: 10, paddingTop: 10, borderTopLeftRadius: 16, borderTopRightRadius: 16 }]}>
-						<View style={{ flexDirection: 'row', gap: 10 }}>
-							{orientation.portrait && (!!data.mainTrailer || !!data.cover ? <PosterImage width={120} height={120 + 6 + 6} borderRadius={6} top={-60} style={{ position: 'absolute', borderWidth: 6, borderColor: colors.bg100, backgroundColor: colors.bg100 }} wrapperStyle={{ marginLeft: 0, marginRight: 20 }} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={{ marginLeft: 0, marginRight: 10 }} />)}
-							<View style={{ flex: 1 }}>
-								<Text style={{ color: colors.text100, fontSize: 28, fontWeight: '700' }} selectable={!Platform.isTV}>
+				<View style={styles.portraitCover}>{data.cover ? <Cover /> : data.mainTrailer?.preview ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />}</View>
+
+				<View style={styles.details}>
+					<View style={styles.landscapeCover}>
+						<PosterImage />
+						{data.mainTrailer?.preview && (
+							<View style={styles.landscapeMainTrailer}>
+								<Trailer mainTrailer={data.mainTrailer} showTime />
+								<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
+								<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+							</View>
+						)}
+					</View>
+
+					<View style={styles.detailsInfoWrapper}>
+						<View style={styles.detailsInfoContainer}>
+							<View style={styles.portraitCover}>{!!data.mainTrailer?.preview || !!data.cover ? <PosterImage width={120} height={132} borderRadius={6} top={-60} style={styles.portraitCoverPosterImage} wrapperStyle={styles.portraitCoverPosterImageWrapperStyle} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={styles.portraitCoverPosterImageStyle} />}</View>
+							<View style={styles.detailsInfo}>
+								<Text style={styles.detailsInfoTitle} selectable={!Platform.isTV}>
 									{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 									{/* TODO releaseYears to utils */}
 									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'}${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null || data.releaseYears[0]?.start === 0 ? '' : ' ' + data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? ' ' + (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear !== null ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
-								<Text style={{ color: colors.text200, fontSize: 18 }} selectable={!Platform.isTV}>
+								<Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>
 									{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
 									{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
 								</Text>
 							</View>
 						</View>
-						<View style={{}}>
-							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
+
+						<View>
+							<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
 								<WatchButton data={data} />
 							</TVFocusGuideView>
 
-							<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
+							<Text style={styles.sectionTitleAbout}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
 
-							<View style={{ gap: 5, marginTop: 5, marginBottom: 40 }}>
+							<View style={styles.encyclopedicWrapper}>
 								<Encyclopedic data={data} />
 
 								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} />}
@@ -121,22 +119,22 @@ export const Movie = ({ route }: Props) => {
 								<SequelsPrequels sequelsPrequels={data.sequelsPrequels} />
 							</View>
 
-							<View style={{ borderColor: colors.bg300, borderBottomWidth: 1, marginBottom: 40, flexDirection: 'row' }}>
+							<View style={styles.tabsSection}>
 								<Button transparent text='Обзор' />
 							</View>
-							{data.synopsis && <Text style={{ color: colors.text100, fontSize: 16, marginBottom: 40 }}>{data.synopsis}</Text>}
+							{data.synopsis && <Text style={styles.synopsis}>{data.synopsis}</Text>}
 
 							<Rating __typename={data.__typename} rating={data.rating} top250={data.top250} />
 
-							{orientation.portrait && data.mainTrailer && (
-								<>
-									<Text style={{ color: colors.text100, fontSize: 22, fontWeight: '600', marginBottom: 16, marginTop: 40 }}>Трейлер</Text>
-									<View style={{ gap: 5 }}>
+							{data.mainTrailer?.preview && (
+								<View style={styles.portraitCover}>
+									<Text style={styles.sectionTitleTrailer}>Трейлер</Text>
+									<View style={styles.mainTrailerContainer}>
 										<Trailer mainTrailer={data.mainTrailer} showTime />
-										<Text style={{ color: colors.text100, fontSize: 15 }}>{data.mainTrailer.title}</Text>
-										<Text style={{ color: colors.text200, fontSize: 13 }}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+										<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
+										<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 									</View>
-								</>
+								</View>
 							)}
 
 							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
@@ -149,3 +147,151 @@ export const Movie = ({ route }: Props) => {
 		</TVFocusGuideView>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: {
+		flex: 1,
+		marginTop: 0,
+		marginBottom: 0
+	},
+	portraitCover: {
+		display: {
+			xs: 'flex',
+			sm: 'none'
+		}
+	},
+	landscapeCover: {
+		display: {
+			sm: 'flex',
+			xs: 'none'
+		},
+		width: 300,
+		gap: 2
+	},
+	details: {
+		flexDirection: {
+			xs: 'column',
+			sm: 'row'
+		},
+		padding: {
+			xs: 0,
+			sm: 10
+		},
+		paddingBottom: {
+			xs: 0,
+			sm: 5
+		},
+		gap: {
+			xs: 0,
+			sm: 20
+		}
+	},
+	detailsInfoWrapper: {
+		flex: 1,
+		backgroundColor: {
+			xs: theme.colors.bg100,
+			sm: undefined
+		},
+		marginTop: {
+			xs: -10,
+			sm: 0
+		},
+		paddingHorizontal: {
+			xs: 10,
+			sm: 0
+		},
+		paddingTop: {
+			xs: 10,
+			sm: 0
+		},
+		borderTopLeftRadius: {
+			xs: 16,
+			sm: 0
+		},
+		borderTopRightRadius: {
+			xs: 16,
+			sm: 0
+		}
+	},
+	detailsInfoContainer: {
+		flexDirection: 'row',
+		gap: 10
+	},
+	detailsInfo: {
+		flex: 1
+	},
+	detailsInfoTitle: {
+		color: theme.colors.text100,
+		fontSize: 28,
+		fontWeight: '700'
+	},
+	detailsInfoDescription: {
+		color: theme.colors.text200,
+		fontSize: 18
+	},
+	landscapeMainTrailer: {
+		gap: 5,
+		paddingTop: 10
+	},
+	mainTrailerContainer: {
+		gap: 5
+	},
+	mainTrailerTitle: {
+		color: theme.colors.text100,
+		fontSize: 15
+	},
+	mainTrailerCreatedAt: {
+		color: theme.colors.text200,
+		fontSize: 13
+	},
+	portraitCoverPosterImage: {
+		position: 'absolute',
+		borderWidth: 6,
+		borderColor: theme.colors.bg100,
+		backgroundColor: theme.colors.bg100
+	},
+	portraitCoverPosterImageWrapperStyle: {
+		marginLeft: 0,
+		marginRight: 20
+	},
+	portraitCoverPosterImageStyle: {
+		marginLeft: 0,
+		marginRight: 10
+	},
+	buttonsContainer: {
+		marginBottom: 5,
+		marginTop: 10,
+		flexDirection: 'row',
+		gap: 10
+	},
+	sectionTitleAbout: {
+		color: theme.colors.text100,
+		fontSize: 22,
+		fontWeight: '600',
+		marginTop: 48,
+		marginBottom: 9
+	},
+	sectionTitleTrailer: {
+		color: theme.colors.text100,
+		fontSize: 22,
+		fontWeight: '600',
+		marginBottom: 16,
+		marginTop: 40
+	},
+	encyclopedicWrapper: {
+		gap: 5,
+		marginTop: 5,
+		marginBottom: 40
+	},
+	tabsSection: {
+		borderColor: theme.colors.bg300,
+		borderBottomWidth: 1,
+		marginBottom: 40,
+		flexDirection: 'row'
+	},
+	synopsis: {
+		color: theme.colors.text100,
+		fontSize: 16,
+		marginBottom: 40
+	}
+}))

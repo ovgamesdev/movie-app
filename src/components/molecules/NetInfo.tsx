@@ -1,13 +1,14 @@
 import { Button } from '@components/atoms'
-import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { FC, useEffect, useRef, useState } from 'react'
 import { Animated, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 export const NetInfo: FC = () => {
 	const isConnected = useTypedSelector(state => state.network.isConnected)
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
-	const { colors } = useTheme()
+	const { styles } = useStyles(stylesheet)
 	const insets = useSafeAreaInsets()
 	const { setIsShowNetInfo } = useActions()
 
@@ -61,10 +62,28 @@ export const NetInfo: FC = () => {
 	if (!isShowNetInfo || isConnected === null) return null
 
 	return (
-		<Animated.View style={{ height: netInfoHeight, backgroundColor: isConnected ? colors.success : colors.warning }}>
-			<Button onPress={hideAnimation} transparent padding={0} justifyContent='center' style={{ height: 24, borderRadius: 0 }}>
-				<Text style={{ textAlign: 'center', textAlignVertical: 'center', fontSize: 14, color: colors.primary300, height: 24 }}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
+		<Animated.View style={styles.container(netInfoHeight, isConnected)}>
+			<Button onPress={hideAnimation} transparent padding={0} justifyContent='center' style={styles.button}>
+				<Text style={styles.text}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
 			</Button>
 		</Animated.View>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: (netInfoHeight: Animated.Value, isConnected: boolean) => ({
+		height: netInfoHeight,
+		backgroundColor: isConnected ? theme.colors.success : theme.colors.warning
+	}),
+	button: {
+		height: 24,
+		borderRadius: 0
+	},
+	text: {
+		textAlign: 'center',
+		textAlignVertical: 'center',
+		fontSize: 14,
+		color: theme.colors.primary300,
+		height: 24
+	}
+}))

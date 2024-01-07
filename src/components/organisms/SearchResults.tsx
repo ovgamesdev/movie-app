@@ -1,18 +1,19 @@
 import { Movie, MovieList, Person } from '@components/molecules/search'
-import { useActions, useTheme, useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { ISuggestSearchResults } from '@store/kinopoisk'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
 import { movieListUrlToFilters } from '@utils'
 import React from 'react'
 import { Text, View } from 'react-native'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = {
 	data: ISuggestSearchResults
 }
 
 export const SearchResults = ({ data }: Props) => {
-	const { colors } = useTheme()
+	const { styles } = useStyles(stylesheet)
 
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
 	const { setItem } = useActions()
@@ -53,32 +54,32 @@ export const SearchResults = ({ data }: Props) => {
 	return (
 		<View>
 			{data.topResult?.global ? (
-				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
-					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Возможно, вы искали</Text>
+				<View style={[styles.container, styles.line]}>
+					<Text style={styles.title}>Возможно, вы искали</Text>
 
 					{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
 				</View>
 			) : null}
 
 			{data.movies.length > 0 ? (
-				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
-					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Фильмы и сериалы</Text>
+				<View style={[styles.container, styles.line]}>
+					<Text style={styles.title}>Фильмы и сериалы</Text>
 
 					{data.movies.map(({ movie }) => (movie === null ? null : <Movie key={movie.id} onPress={onMovie} item={movie} />))}
 				</View>
 			) : null}
 
 			{data.movieLists.length > 0 ? (
-				<View style={{ paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.bg300 }}>
-					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Списки и подборки</Text>
+				<View style={[styles.container, styles.line]}>
+					<Text style={styles.title}>Списки и подборки</Text>
 
 					{data.movieLists.map(({ movieList }) => (movieList === null ? null : <MovieList key={movieList.id} onPress={onMovieList} item={movieList} />))}
 				</View>
 			) : null}
 
 			{data.persons.length > 0 ? (
-				<View style={{ paddingBottom: 10 }}>
-					<Text style={{ color: colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>Персоны</Text>
+				<View style={styles.container}>
+					<Text style={styles.title}>Персоны</Text>
 
 					{data.persons.map(({ person }) => (person === null ? null : <Person key={person.id} onPress={onPerson} item={person} />))}
 				</View>
@@ -86,3 +87,20 @@ export const SearchResults = ({ data }: Props) => {
 		</View>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: {
+		paddingBottom: 10
+	},
+	title: {
+		color: theme.colors.text200,
+		fontSize: 13,
+		paddingHorizontal: 16,
+		paddingTop: 16,
+		paddingBottom: 6
+	},
+	line: {
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.bg300
+	}
+}))

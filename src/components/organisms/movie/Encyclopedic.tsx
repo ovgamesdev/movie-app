@@ -63,17 +63,25 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 			{data.distribution.originals.items.length > 0 && (
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ width: 160, color: colors.text200, fontSize: 13 }}>Платформа</Text>
-					<Button
-						padding={0}
-						flex={1}
-						transparent
-						focusable={false}
-						textColor={colors.text200}
-						text={data.distribution.originals.items
-							.map(it => it.companies.map(it => it.displayName))
+					<ScrollView horizontal style={{ flex: 1 }}>
+						{data.distribution.originals.items
+							.map(it => it.companies)
 							.flat()
-							.join(', ')}
-					/>
+							.map((it, i, { length }) =>
+								'originalsMovieList' in it ? (
+									<Button
+										onPress={() => {
+											const data = it.originalsMovieList.url.split('/').filter(it => it)
+											navigation.push('MovieListSlug', { data: { slug: data[data.length - 1] } })
+										}}
+										padding={0}
+										key={it.id}
+										text={it.displayName + (i !== length - 1 ? ', ' : '')}
+										transparent
+									/>
+								) : null
+							)}
+					</ScrollView>
 				</View>
 			)}
 

@@ -7,9 +7,10 @@ import { TVFocusGuideView, Text, View } from 'react-native'
 interface SelectProps<K extends SelectSettingsKey> {
 	item: K
 	options: { value: ISettings[K]; title: string }[]
+	onChange?: (value: ISettings[K]) => void
 }
 
-export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) => {
+export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options, onChange }) => {
 	const { setItem } = useActions()
 	const value = useTypedSelector(state => state.settings.settings[item])
 	const { colors, getColorForTheme } = useTheme()
@@ -28,7 +29,12 @@ export const Select: FC<SelectProps<SelectSettingsKey>> = ({ item, options }) =>
 							<Button
 								key={i}
 								text={option.title}
-								onPress={() => value !== option.value && setItem({ [item]: option.value })}
+								onPress={() => {
+									if (value !== option.value) {
+										setItem({ [item]: option.value })
+										onChange?.(option.value)
+									}
+								}}
 								justifyContent='center'
 								padding={0}
 								paddingHorizontal={10}

@@ -18,6 +18,7 @@ import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { StackNavigator } from './navigation/StackNavigator'
+import './theme/unistyles'
 
 GoogleSignin.configure({
 	scopes: ['https://www.googleapis.com/auth/drive.appdata']

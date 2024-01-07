@@ -7,12 +7,14 @@
     </style>
 
     <!-- yarn react-native generate-bootsplash src/assets/images/logo.png \ -!remove!-platforms=android -->
+    <!-- NOTE brand size: hdpi 300x120 | mdpi 200x80 | xhdpi 400x160 | xxhdpi 600x240 | xxxhdpi 800x320 -->
     <!-- BootTheme should inherit from Theme.BootSplash or Theme.BootSplash.EdgeToEdge -->
     <style name="BootTheme" parent="Theme.BootSplash">
         <item name="android:navigationBarColor">@color/bootsplash_background</item>
 		
         <item name="bootSplashBackground">@color/bootsplash_background</item>
         <item name="bootSplashLogo">@drawable/bootsplash_logo</item>
+        <!-- <item name="bootSplashBrand">@drawable/bootsplash_brand</item> Only if you have a brand image -->
         <item name="postBootSplashTheme">@style/AppTheme</item>
     </style>
 </resources>

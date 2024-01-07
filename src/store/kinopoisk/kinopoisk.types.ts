@@ -289,7 +289,7 @@ export interface IMovieBaseInfo {
 	production: {
 		total: number
 	}
-	productionStatus: string | null // 'ANNOUNCED' | 'COMPLETED' | 'FILMING' | 'POST_PRODUCTION' | 'PRE_PRODUCTION' | 'UNKNOWN'
+	productionStatus: ProductionStatus
 	productionStatusUpdateDate: string | null
 	productionYear: number | null
 	promos: {
@@ -569,12 +569,14 @@ export interface ITvSeriesBaseInfo
 	__typename: MovieSeriesType
 }
 
+export type ProductionStatus = 'ANNOUNCED' | 'COMPLETED' | 'FILMING' | 'POST_PRODUCTION' | 'PRE_PRODUCTION' | 'UNKNOWN' | null
+
 export interface IMainTrailer {
 	createdAt: string
 	duration: number
 	id: number
 	isEmbedded: boolean
-	preview: { avatarsUrl: string; fallbackUrl: string | null }
+	preview: { avatarsUrl: string; fallbackUrl: string | null } | null
 	sourceVideoUrl: string | null
 	streamUrl: string
 	title: string
@@ -615,7 +617,7 @@ interface Genre {
 }
 
 interface Release {
-	companies: { displayName: string; id: number; slug: string; slugId: number }[]
+	companies: ({ displayName: string; id: number; slug: string; slugId: number } | { displayName: string; id: number; originalsMovieList: { url: string; id: number } })[]
 	date: { accuracy: string; date: string } | null
 }
 

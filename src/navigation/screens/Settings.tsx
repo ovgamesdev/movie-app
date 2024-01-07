@@ -1,22 +1,23 @@
 import { UpdateApk, User } from '@components/molecules'
 import { Select, Switch } from '@components/molecules/settings'
-import { useTheme, useTypedSelector } from '@hooks'
+import { useTypedSelector } from '@hooks'
 import { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { UnistylesRuntime, createStyleSheet, useStyles } from 'react-native-unistyles'
 
 const LoaderSettings: FC = () => {
 	const isLoading = useTypedSelector(state => state.settings.isLoading)
-	const { colors } = useTheme()
+	const { styles } = useStyles(stylesheet)
 
 	if (!isLoading) {
 		return null
 	}
 
 	return (
-		<View style={{ position: 'absolute', top: 20, left: 0, right: 0, zIndex: 10, alignItems: 'center' }}>
-			<View style={{ backgroundColor: colors.bg200, borderRadius: 50, paddingHorizontal: 5 }}>
-				<Text style={{ color: colors.text100, textAlign: 'center' }}>Loading...</Text>
+		<View style={styles.loadingContainer}>
+			<View style={styles.loading}>
+				<Text style={styles.loadingText}>Loading...</Text>
 			</View>
 		</View>
 	)
@@ -24,12 +25,13 @@ const LoaderSettings: FC = () => {
 
 export const Settings = () => {
 	const insets = useSafeAreaInsets()
+	const { styles } = useStyles(stylesheet)
 
 	return (
-		<TVFocusGuideView style={{ flex: 1, padding: 10, marginTop: insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
+		<TVFocusGuideView style={[styles.container, { marginTop: insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
 			<LoaderSettings />
 
-			<View style={{ paddingBottom: 10 }}>
+			<View style={styles.updateContainer}>
 				<UpdateApk />
 			</View>
 
@@ -42,8 +44,43 @@ export const Settings = () => {
 					{ value: 'dark', title: 'dark' },
 					{ value: null, title: 'default' }
 				]}
+				onChange={value => {
+					if (value === null) {
+						UnistylesRuntime.setAdaptiveThemes(true)
+					} else {
+						UnistylesRuntime.setAdaptiveThemes(false)
+						UnistylesRuntime.setTheme(value)
+					}
+				}}
 			/>
 			<Switch item='showDevOptions' />
 		</TVFocusGuideView>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	loadingContainer: {
+		position: 'absolute',
+		top: 20,
+		left: 0,
+		right: 0,
+		zIndex: 10,
+		alignItems: 'center'
+	},
+	loading: {
+		backgroundColor: theme.colors.bg200,
+		borderRadius: 50,
+		paddingHorizontal: 5
+	},
+	loadingText: {
+		color: theme.colors.text100,
+		textAlign: 'center'
+	},
+	container: {
+		flex: 1,
+		padding: 10
+	},
+	updateContainer: {
+		paddingBottom: 10
+	}
+}))

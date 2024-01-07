@@ -1,6 +1,6 @@
-import { useTheme } from '@hooks'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Animated, FlexAlignType, GestureResponderEvent, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
+import { useStyles } from 'react-native-unistyles'
 
 interface BorderProps {
 	borderColor?: string
@@ -48,7 +48,7 @@ export type ButtonType = {
 }
 
 export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, focusable, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
-	const { colors } = useTheme()
+	const { theme } = useStyles()
 	const [scale] = useState(new Animated.Value(1))
 
 	const _style = (state: PressableStateCallbackType) => (typeof style === 'function' ? style(state) : typeof style === 'object' ? style : {})
@@ -89,7 +89,7 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 				accessible={focusable}
 				style={state => [
 					{
-						backgroundColor: transparent ? 'transparent' : isActive ? (state.pressed ? activePressedButtonColor ?? colors.bg300 : activeButtonColor ?? colors.bg200) : state.pressed ? pressedButtonColor ?? colors.bg300 : buttonColor ?? colors.bg200,
+						backgroundColor: transparent ? 'transparent' : isActive ? (state.pressed ? activePressedButtonColor ?? theme.colors.bg300 : activeButtonColor ?? theme.colors.bg200) : state.pressed ? pressedButtonColor ?? theme.colors.bg300 : buttonColor ?? theme.colors.bg200,
 						borderRadius: 6,
 						padding,
 						paddingHorizontal,
@@ -100,7 +100,7 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 					},
 					{
 						borderWidth: 3,
-						borderColor: state.focused ? colors.accent100 : 'transparent',
+						borderColor: state.focused ? theme.colors.accent100 : 'transparent',
 						borderTopLeftRadius: borderStyle?.borderTopLeftRadius,
 						borderBottomLeftRadius: borderStyle?.borderBottomLeftRadius,
 						borderTopRightRadius: borderStyle?.borderTopRightRadius,
@@ -109,7 +109,7 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 					_style(state)
 				]}
 				{...props}>
-				{typeof children === 'object' ? children : text ? <Text style={{ color: isActive ? activeTextColor ?? colors.text100 : textColor ?? colors.text100 }}>{text}</Text> : null}
+				{typeof children === 'object' ? children : text ? <Text style={{ color: isActive ? activeTextColor ?? theme.colors.text100 : textColor ?? theme.colors.text100 }}>{text}</Text> : null}
 			</Pressable>
 		</Animated.View>
 	)

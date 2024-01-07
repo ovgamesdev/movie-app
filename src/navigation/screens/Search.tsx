@@ -1,12 +1,13 @@
 import { ActivityIndicator, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults } from '@components/organisms'
-import { useNavigation, useTheme } from '@hooks'
+import { useNavigation } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 
@@ -14,7 +15,7 @@ export const Search = ({ route }: Props) => {
 	const defaultFilters = route.params?.data ?? {}
 	const insets = useSafeAreaInsets()
 	const navigation = useNavigation()
-	const { colors } = useTheme()
+	const { styles } = useStyles(stylesheet)
 
 	const [keyword, setKeyword] = useState('')
 	const deferredKeyword = useDeferredValue(keyword)
@@ -27,26 +28,49 @@ export const Search = ({ route }: Props) => {
 	useEffect(() => navigation.addListener('focus', () => setTimeout(() => keyword.length === 0 && ref.current?.focus(), 0)), [navigation, ref, keyword])
 
 	return (
-		<TVFocusGuideView style={{ flex: 1, paddingTop: 10 + insets.top }} trapFocusLeft trapFocusRight trapFocusUp>
-			<View style={{ paddingHorizontal: 10 }}>
+		<TVFocusGuideView style={[styles.container, { paddingTop: 10 + insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
+			<View style={styles.inputContainer}>
 				<Input ref={ref} value={keyword} onChangeText={setKeyword} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
 			{keyword.length === 0 ? (
 				<SearchHistory />
 			) : isLoading ? (
-				<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
+				<View style={styles.emptyContainer}>
 					<ActivityIndicator size='small' />
 				</View>
 			) : isEmpty ? (
-				<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
-					<Text style={{ color: colors.text200, fontSize: 15, paddingHorizontal: 30, textAlign: 'center' }}>По вашему запросу ничего не найдено</Text>
+				<View style={styles.emptyContainer}>
+					<Text style={styles.emptyText}>По вашему запросу ничего не найдено</Text>
 				</View>
 			) : (
-				<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 15 + insets.bottom }}>
+				<ScrollView contentContainerStyle={[styles.resultsContainer, { paddingBottom: 15 + insets.bottom }]}>
 					<SearchResults data={data} />
 				</ScrollView>
 			)}
 		</TVFocusGuideView>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: {
+		flex: 1
+	},
+	resultsContainer: {
+		paddingTop: 10
+	},
+	inputContainer: {
+		paddingHorizontal: 10
+	},
+	emptyContainer: {
+		height: 160,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	emptyText: {
+		color: theme.colors.text200,
+		fontSize: 15,
+		paddingHorizontal: 30,
+		textAlign: 'center'
+	}
+}))

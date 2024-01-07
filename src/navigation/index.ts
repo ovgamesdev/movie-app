@@ -4,6 +4,7 @@ import { WatchHistoryProvider } from '@store/settings'
 
 export * from './StackNavigator'
 export * from './TabBar'
+export * from './TabBarTv'
 export * from './TabNavigator'
 
 type ParamList = RootStackParamList & HomeTabParamList & BookmarksTabParamList

@@ -1,10 +1,10 @@
 import { Button } from '@components/atoms'
-import { useTheme } from '@hooks'
 import { VoiceIcon } from '@icons'
 import Voice, { SpeechErrorEvent } from '@react-native-voice/voice'
 import { mapValue } from '@utils'
 import React, { useEffect, useState } from 'react'
 import { View } from 'react-native'
+import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 interface VoiceComponentProps {
 	onSpeechResult?: (value: string | null) => void
@@ -17,7 +17,7 @@ export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, 
 	const [recognizing, setRecognizing] = useState(false)
 	const [isSupported, setIsSupported] = useState(true)
 	const [volumeScale, setVolumeScale] = useState(1)
-	const { colors } = useTheme()
+	const { styles, theme } = useStyles(stylesheet)
 
 	useEffect(() => {
 		Voice.onSpeechStart = () => setRecognizing(true)
@@ -63,21 +63,55 @@ export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, 
 	}
 
 	return (
-		<View style={{ height: 46, width: 45, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg200, borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
-			{recognizing && <View style={{ backgroundColor: colors.primary300, width: 40, height: 40, borderRadius: 99, position: 'absolute', transform: [{ scale: volumeScale }] }} />}
-			{!isSupported && <View style={{ backgroundColor: colors.bg300, width: 40, height: 40, borderRadius: 99, position: 'absolute' }} />}
+		<View style={styles.container}>
+			{recognizing && <View style={[styles.recognizing, { transform: [{ scale: volumeScale }] }]} />}
+			{!isSupported && <View style={styles.notSupported} />}
 
 			<Button
-				style={{ height: 46, width: 45 }}
+				style={styles.buttonContainer}
 				justifyContent='center'
 				alignItems='center'
-				borderStyle={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+				borderStyle={styles.buttonBorder}
 				transparent
 				// style={{ backgroundColor: !isSupported ? colors.primary300 + 'A6' : recognizing ? colors.warning : colors.primary300, width: 40, height: 40, borderRadius: 99, position: 'absolute', alignItems: 'center', justifyContent: 'center' }}
 
 				onPress={_onPress}>
-				<VoiceIcon width={24} height={24} fill={recognizing ? colors.warning : isSupported ? colors.text100 : colors.text200} />
+				<VoiceIcon width={24} height={24} fill={recognizing ? theme.colors.warning : isSupported ? theme.colors.text100 : theme.colors.text200} />
 			</Button>
 		</View>
 	)
 }
+
+const stylesheet = createStyleSheet(theme => ({
+	container: {
+		height: 46,
+		width: 45,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: theme.colors.bg200,
+		borderTopRightRadius: 6,
+		borderBottomRightRadius: 6
+	},
+	recognizing: {
+		backgroundColor: theme.colors.primary300,
+		width: 40,
+		height: 40,
+		borderRadius: 99,
+		position: 'absolute'
+	},
+	notSupported: {
+		backgroundColor: theme.colors.bg300,
+		width: 40,
+		height: 40,
+		borderRadius: 99,
+		position: 'absolute'
+	},
+	buttonContainer: {
+		height: 46,
+		width: 45
+	},
+	buttonBorder: {
+		borderTopLeftRadius: 0,
+		borderBottomLeftRadius: 0
+	}
+}))

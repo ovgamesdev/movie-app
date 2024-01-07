@@ -49,7 +49,7 @@ export const StackNavigator = ({ colors }: Props) => {
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
 			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
-			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
+			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'all', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
 			<Stack.Screen name='MovieTrailer' component={MovieTrailer} options={{ orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true }} />
 			<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
 			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 }} />
