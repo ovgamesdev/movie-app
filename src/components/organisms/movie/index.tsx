@@ -1,5 +1,6 @@
 export * from './Encyclopedic'
 export * from './Episodes'
+export * from './OriginalMovies'
 export * from './SequelsPrequels'
 export * from './SimilarMovie'
 export * from './WatchButton'

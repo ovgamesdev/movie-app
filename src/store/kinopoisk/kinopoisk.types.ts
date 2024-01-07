@@ -818,3 +818,41 @@ export interface IFilmographyFiltersResults {
 		__typename: 'Person'
 	}
 }
+
+// OriginalMovies
+
+export interface IOriginalMoviesResults {
+	items: { companies: ReleaseCompany[] }[]
+}
+
+interface IOriginalMovieListItem extends Pick<IMovieBaseInfo, '__typename' | 'genres' | 'id' | 'releaseYears' | 'productionYear' | 'userData' | 'viewOption'> {
+	title: {
+		original: string | null
+		russian: string | null
+	}
+	rating: {
+		expectation: RatingValue | null
+		kinopoisk: RatingValue | null
+	}
+	poster: null | {
+		avatarsUrl: string | null
+	}
+}
+
+export interface IOriginalMovieItem {
+	movie: IOriginalMovieListItem
+	__typename: 'MovieListItem'
+}
+
+interface ReleaseCompany {
+	displayName: string
+	id: number
+	originalsMovieList: {
+		id: number
+		movies: {
+			items: IOriginalMovieItem[]
+			total: number
+		}
+		url: string
+	}
+}

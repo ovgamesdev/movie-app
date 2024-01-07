@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
+import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IOriginalMoviesResults, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
 import { ToastAndroid } from 'react-native'
 
 export const kinopoiskApi = createApi({
@@ -364,8 +364,37 @@ export const kinopoiskApi = createApi({
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
+		}),
+		getOriginalMovies: build.query<IOriginalMoviesResults, { movieId: number }>({
+			query: ({ movieId }) => ({
+				url: '?operationName=OriginalMovies',
+				method: 'post',
+				body: {
+					operationName: 'OriginalMovies',
+					variables: {
+						isAuthorized: false,
+						movieId,
+						moviesLimit: 11
+					},
+					query:
+						'query OriginalMovies($movieId: Long!, $moviesLimit: Int!, $isAuthorized: Boolean!) { movie(id: $movieId) { distribution { releases(original: true, types: [DIGITAL], limit: 1) { items { companies { id displayName originalsMovieList { id url movies(supportedItemTypes: [MOVIE_LIST_ITEM], limit: $moviesLimit) { items { movie { ...MovieForPoster __typename } __typename } total __typename } __typename } __typename } __typename } __typename } __typename } __typename } } fragment MovieForPoster on Movie { id title { russian original __typename } poster { avatarsUrl __typename } genres { id name __typename } rating { expectation { value count isActive __typename } kinopoisk { value count isActive __typename } __typename } userData @include(if: $isAuthorized) { voting { value __typename } __typename } viewOption { buttonText isAvailableOnline: isWatchable(filter: {anyDevice: false, anyRegion: false}) purchasabilityStatus contentPackageToBuy { billingFeatureName __typename } type posterWithRightholderLogo __typename } ... on Film { productionYear __typename } ... on Video { productionYear __typename } ... on TvSeries { releaseYears { start end __typename } __typename } ... on TvShow { releaseYears { start end __typename } __typename } ... on MiniSeries { releaseYears { start end __typename } __typename } __typename } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				const data = (response as any)?.data?.movie?.distribution?.releases
+
+				return data
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
 		})
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery, useGetFilmographyItemsQuery, useGetFilmographyFiltersQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery, useGetFilmographyItemsQuery, useGetFilmographyFiltersQuery, useGetOriginalMoviesQuery } = kinopoiskApi

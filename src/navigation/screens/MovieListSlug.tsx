@@ -87,8 +87,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	const [page, setPage] = useState(1)
 	const [order, setOrder] = useState('POSITION_ASC')
 	const [newFilters, setNewFilters] = useState<IListSlugFilter>(filters ?? { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues: [] })
-	const { isFetching, data } = useGetListBySlugQuery({ slug, filters: newFilters, order, page, limit: 50 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: { ...data, docs: data?.docs ?? [] }, ...otherParams }) })
-	const isEmpty = data.docs.length === 0
+	const { isError, isSuccess, data, refetch } = useGetListBySlugQuery({ slug, filters: newFilters, order, page, limit: 50 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: { ...data, docs: data?.docs ?? [] }, ...otherParams }) })
 
 	const onPageChange = (page: number) => {
 		setPage(page)
@@ -204,7 +203,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }), [isShowNetInfo, insets.bottom])
 
 	const ListEmptyComponent = useCallback(() => {
-		if (isFetching) return null
+		if (isSuccess) return null
 
 		return (
 			<View style={{ width: '100%', flexGrow: 1, flexShrink: 1, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
@@ -214,17 +213,20 @@ export const MovieListSlug = ({ route }: Props) => {
 				</View>
 			</View>
 		)
-	}, [isFetching])
+	}, [isSuccess])
 
 	const ListFooterComponent = useCallback(() => {
-		// !isFetching ? null : (
-		// 	<View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', flexGrow: isEmpty ? 1 : undefined, backgroundColor: isEmpty ? theme.colors.bg200 : undefined, borderRadius: 6, padding: 5 }}>
-		// 		<ActivityIndicator size={!isEmpty ? 'large' : 'small'} color={theme.colors.text200} style={{ padding: 10 }} />
-		// 	</View>
-		// )
+		if (isError) {
+			return (
+				<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={{ backgroundColor: theme.colors.bg200, height: 215.5 }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10 }}>Произошла ошибка</Text>
+					<Text style={{ color: theme.colors.text200, fontSize: 12, paddingHorizontal: 10, paddingTop: 5 }}>Повторите попытку</Text>
+				</Button>
+			)
+		}
 
 		return data.page != null && data.pages != null && data.pages > 1 ? <Pagination currentPage={data.page} pageCount={data.pages} pageNeighbours={orientation.landscape ? 3 : 1} onPageChange={onPageChange} /> : null
-	}, [data.page, data.pages, orientation])
+	}, [isError, data.page, data.pages, orientation])
 
 	const ListHeaderComponent = useCallback(() => {
 		return (
@@ -307,7 +309,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	}
 
 	const Skeleton = ({ style, ...props }: ViewProps) => {
-		if (isFetching) {
+		if (!isError && !isSuccess) {
 			return <View {...props} style={[{ backgroundColor: theme.colors.bg200, borderRadius: 6 }, style]} />
 		}
 		return null
@@ -319,7 +321,7 @@ export const MovieListSlug = ({ route }: Props) => {
 				//
 				keyExtractor={keyExtractor}
 				getItemLayout={getItemLayout}
-				data={isFetching ? skeletonData : data.docs}
+				data={isError ? [] : !isSuccess ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={contentContainerStyle}
 				renderItem={renderItem}

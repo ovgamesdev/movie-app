@@ -1,6 +1,6 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
-import { Encyclopedic, Episodes, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
+import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
 import { useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -138,6 +138,8 @@ export const Movie = ({ route }: Props) => {
 							)}
 
 							{/* <Button text='back' onPress={() => navigation.pop()} /> */}
+
+							{data.distribution.originals.items.length > 0 && <OriginalMovies id={data.id} />}
 
 							{data.similarMoviesCount.total > 0 && <SimilarMovie id={data.id} type={data.__typename} />}
 						</View>

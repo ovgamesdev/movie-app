@@ -48,7 +48,7 @@ export const SlugItemList = ({ slug, title }: Props) => {
 
 	return (
 		<>
-			<Button focusable={false} transparent flexDirection='row' onPress={() => navigation.push('MovieListSlug', { data: { slug } })}>
+			<Button focusable={false} animation='scale' transparent style={{ borderWidth: 0 }} flexDirection='row' onPress={() => navigation.push('MovieListSlug', { data: { slug } })}>
 				<Text style={styles.button}>{title}</Text>
 				{!Platform.isTV && <NavigateNextIcon width={20} height={20} fill={theme.colors.text100} style={styles.buttonIcon} />}
 			</Button>
