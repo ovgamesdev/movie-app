@@ -1,3 +1,4 @@
+export * from './BackgroundRestrictionModal'
 export * from './FilmographyItems'
 export * from './SearchHistory'
 export * from './SearchResults'

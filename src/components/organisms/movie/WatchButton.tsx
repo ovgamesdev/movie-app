@@ -21,7 +21,7 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 }
 
 export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
-	const { mergeItem, removeItemByPath } = useActions()
+	const { mergeItem, removeItemByPath, isBatteryOptimizationEnabled } = useActions()
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 
 	const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
@@ -60,6 +60,7 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 					case 'off-notify':
 						setStatus('on-notify')
 						mergeItem({ watchHistory: { [`${item.id}`]: { ...item, notify: true } } })
+						isBatteryOptimizationEnabled()
 						break
 					case 'on-notify':
 						setStatus('off-notify')

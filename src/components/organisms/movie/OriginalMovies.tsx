@@ -28,7 +28,7 @@ export const OriginalMovies = ({ id }: Props) => {
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<Button focusable={false} animation='scale' transparent style={{ borderWidth: 0 }} flexDirection='row' onPress={() => navigation.push('MovieListSlug', { data: { slug } })}>
+			<Button focusable={false} animation='scale' transparent style={{ borderWidth: 0 }} padding={0} flexDirection='row' onPress={() => navigation.push('MovieListSlug', { data: { slug } })}>
 				<Text style={{ color: theme.colors.text100, fontSize: 22, lineHeight: 30, fontWeight: '600' }}>{company.displayName}: фильмы и сериалы</Text>
 				{!Platform.isTV && <NavigateNextIcon width={35} height={35} fill={theme.colors.text100} />}
 			</Button>

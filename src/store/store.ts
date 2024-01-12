@@ -5,6 +5,7 @@ import { safeAreaReducer } from '@store/safeArea'
 import { settingsReducer } from '@store/settings'
 import { updateReducer } from '@store/update'
 import { reducer as network } from 'react-native-offline'
+import { backgroundRestrictionReducer } from './backgroundRestriction'
 import { listenerMiddleware } from './listenerMiddleware'
 
 const reducers = combineReducers({
@@ -13,7 +14,8 @@ const reducers = combineReducers({
 	network,
 	update: updateReducer,
 	[kinopoiskApi.reducerPath]: kinopoiskApi.reducer,
-	safeArea: safeAreaReducer
+	safeArea: safeAreaReducer,
+	backgroundRestriction: backgroundRestrictionReducer
 })
 
 export const store = configureStore({

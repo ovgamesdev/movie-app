@@ -14,7 +14,7 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 export const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
 export const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { removeItemByPath, mergeItem } = useActions()
+	const { removeItemByPath, mergeItem, isBatteryOptimizationEnabled } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { styles, theme } = useStyles(stylesheet)
@@ -55,6 +55,7 @@ export const History: React.FC = () => {
 						}
 
 						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
+						isBatteryOptimizationEnabled()
 					}
 				},
 				{
@@ -83,7 +84,7 @@ export const History: React.FC = () => {
 							<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.navigate('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 								<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
-									<Text style={{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: theme.colors.text100, marginBottom: 4 }} numberOfLines={2}>
+									<Text style={[{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: theme.colors.text100, marginBottom: 4 }, item.notify && { marginRight: 25 }]} numberOfLines={2}>
 										{item.title}
 									</Text>
 									{item.year !== null && (
@@ -100,7 +101,11 @@ export const History: React.FC = () => {
 										</View>
 									)}
 								</View>
-								{item.notify && <NotificationsIcon width={20} height={20} fill={theme.colors.text100} />}
+								{item.notify && (
+									<View style={{ position: 'absolute', right: 0, top: 10 }}>
+										<NotificationsIcon width={20} height={20} fill={theme.colors.text100} />
+									</View>
+								)}
 							</Button>
 						</>
 					)

@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { authActions, authExtraActions } from '@store/auth'
+import { backgroundRestrictionActions, backgroundRestrictionExtraActions } from '@store/backgroundRestriction'
 import { safeAreaActions } from '@store/safeArea'
 import { settingsActions, settingsExtraActions } from '@store/settings'
 import { updateActions, updateExtraActions } from '@store/update'
@@ -14,7 +15,9 @@ const rootActions = {
 	...settingsExtraActions,
 	...updateActions,
 	...updateExtraActions,
-	...safeAreaActions
+	...safeAreaActions,
+	...backgroundRestrictionActions,
+	...backgroundRestrictionExtraActions
 }
 
 export const useActions = () => {

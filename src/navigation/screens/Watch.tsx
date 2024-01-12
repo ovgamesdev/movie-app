@@ -189,7 +189,7 @@ export const Watch = ({ navigation, route }: Props) => {
 			<View style={{ width: '100%', aspectRatio: 16 / 9 }}>
 				{currentProvider.iframeUrl && !error ? (
 					<WebView
-						source={currentProvider.source !== 'ALLOHA' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
+						source={currentProvider.source !== 'ALLOHA' && currentProvider.source !== 'KODIK' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
 						style={{ flex: 1 }}
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}

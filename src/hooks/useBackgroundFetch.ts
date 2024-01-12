@@ -30,6 +30,8 @@ export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise
 		const seasons = res?.data?.seasons
 		let total = 0
 
+		if (res?.status === 'error') return null
+
 		if (typeof seasons === 'object') {
 			for (const s in seasons) {
 				const season = seasons[s]
@@ -146,7 +148,6 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 	})
 }
 
-// TODO add https://notifee.app/react-native/docs/android/background-restrictions
 export const backgroundTask = async (taskId: string) => {
 	console.log('[BackgroundFetch] taskId', taskId)
 
@@ -160,9 +161,14 @@ export const backgroundTask = async (taskId: string) => {
 		.sort((a, b) => b.timestamp - a.timestamp)
 		.filter(it => it.notify)
 
+	let i = 0
 	for (const movie of data) {
 		try {
 			const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
+
+			i = i + 1
+			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${rusToLatin(movie.type)} "${rusToLatin(movie.title)}"`)
+
 			if (!response.ok) continue
 			const json = await response.json()
 			if (!Array.isArray(json) || json.length === 0) continue
@@ -185,7 +191,7 @@ export const backgroundTask = async (taskId: string) => {
 
 				if (isSeries(movie.type)) {
 					const newSeries = await fetchNewSeries(movie)
-					if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
+					newWatchHistoryData.releasedEpisodes = newSeries ?? 1
 				} else {
 					newWatchHistoryData.notify = false
 				}
@@ -196,7 +202,7 @@ export const backgroundTask = async (taskId: string) => {
 			console.error('BackgroundFetch error:', e)
 		}
 
-		await delay(500)
+		await delay(250)
 	}
 
 	// Finish.

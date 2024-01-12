@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { NetInfo } from '@components/molecules'
-import { UpdateApkModal } from '@components/organisms'
+import { BackgroundRestrictionModal, UpdateApkModal } from '@components/organisms'
 import { useActions, useBackgroundFetch, useTypedSelector } from '@hooks'
 import { navigationRef } from '@navigation'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
@@ -134,6 +134,7 @@ const AppContent: FC = () => {
 				</View>
 				<View>
 					<UpdateApkModal />
+					<BackgroundRestrictionModal />
 				</View>
 			</LoadingAppSettings>
 		</GestureHandlerRootView>
