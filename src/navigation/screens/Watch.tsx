@@ -48,6 +48,7 @@ export const Watch = ({ navigation, route }: Props) => {
 	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
 	const [error, setError] = useState<{ error: string; message: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
 
 	useEffect(() => {
 		if (provider === null) return
@@ -223,22 +224,26 @@ export const Watch = ({ navigation, route }: Props) => {
 			<View style={{ flex: 1 }}>
 				<ScrollView contentContainerStyle={{ gap: 6, padding: 10 }}>
 					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
-					{providers.map(it => {
-						const isActive = currentProvider.source === it.source
+					<View style={{ gap: 6 }}>
+						{providers.map(it => {
+							const isActive = currentProvider.source === it.source
 
-						return (
-							<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
-								{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
-								<Text style={{ fontSize: 14, color: theme.colors.text100 }}>
-									{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
-								</Text>
-							</Button>
-						)
-					})}
-					<View>
-						<InputHistory field='fileIndex' title='fileIndex' />
-						<InputHistory field='releasedEpisodes' title='releasedEpisodes' />
+							return (
+								<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
+									{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
+									<Text style={{ fontSize: 14, color: theme.colors.text100 }}>
+										{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
+									</Text>
+								</Button>
+							)
+						})}
 					</View>
+					{showDevOptions && (
+						<View>
+							<InputHistory field='fileIndex' title='fileIndex' />
+							<InputHistory field='releasedEpisodes' title='releasedEpisodes' />
+						</View>
+					)}
 				</ScrollView>
 			</View>
 		</TVFocusGuideView>

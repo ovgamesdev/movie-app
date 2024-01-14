@@ -24,19 +24,19 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 	const { mergeItem, removeItemByPath, isBatteryOptimizationEnabled } = useActions()
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 
-	const [status, setStatus] = useState<'loading' | 'watch' | 'off-notify' | 'on-notify'>('loading')
+	const [status, setStatus] = useState<'loading' | 'watch' | 'continue' | 'off-notify' | 'on-notify'>('loading')
 
 	useEffect(() => {
-		// TODO add select provider in settings
-		// TODO may-be remove provider
-		const init = async () => setStatus((await getProviders(data)) ? 'watch' : (watchHistory[`${data.id}`] as WatchHistory | undefined)?.notify ? 'on-notify' : 'off-notify')
+		const item = watchHistory[`${data.id}`] as WatchHistory | undefined
+
+		const init = async () => setStatus((await getProviders(data)) ? (item ? 'continue' : 'watch') : item?.notify ? 'on-notify' : 'off-notify')
 
 		init()
 	}, [])
 
 	return (
 		<Button
-			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
+			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'continue' ? 'Продолжить просмотр' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
 			style={{ minWidth: 54 }}
 			onPress={async () => {
 				const item: WatchHistory = {
@@ -55,6 +55,7 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 					case 'loading':
 						break
 					case 'watch':
+					case 'continue':
 						navigation.navigate('Watch', { data: item })
 						break
 					case 'off-notify':

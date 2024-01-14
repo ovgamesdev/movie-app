@@ -9,19 +9,23 @@ import { useStyles } from 'react-native-unistyles'
 
 // TODO EncyclopedicItem
 
-const PersonItem = ({ title, data }: { title: string; data: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]; total?: number } }) => {
+const PersonItem = ({ title, data, isReq = false }: { title: string; data: { items: { person: Pick<Person, 'id' | 'name' | 'originalName'> }[]; total?: number }; isReq?: boolean }) => {
 	const { theme } = useStyles()
 
-	if (data.items.length === 0) return null
+	if (data.items.length === 0 && !isReq) return null
 
 	return (
 		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<ScrollView horizontal style={{ flex: 1 }}>
-				{data.items.map(({ person }, i, { length }) => (
-					<Button padding={0} key={person.id} text={(person.name ?? person.originalName) + (i !== length - 1 ? ', ' : '')} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
-				))}
-			</ScrollView>
+			{data.items.length === 0 ? (
+				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
+			) : (
+				<ScrollView horizontal style={{ flex: 1 }}>
+					{data.items.map(({ person }, i, { length }) => (
+						<Button padding={0} key={person.id} text={(person.name ?? person.originalName) + (i !== length - 1 ? ', ' : '')} transparent onPress={() => person.id && navigation.push('Person', { data: { id: person.id } })} />
+					))}
+				</ScrollView>
+			)}
 		</TVFocusGuideView>
 	)
 }
@@ -95,30 +99,32 @@ const OriginalsItem = ({ title, items }: { title: string; items: Release[] }) =>
 const CountriesItem = ({ title, items, type }: { title: string; items: Country[]; type: MovieType }) => {
 	const { theme } = useStyles()
 
-	if (items.length === 0) return null
-
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<ScrollView horizontal style={{ flex: 1 }}>
-				{items.map((it, i, { length }) => (
-					<Button
-						onPress={() => {
-							const booleanFilterValues = [
-								{ filterId: isSeries(type) ? 'series' : 'films', value: true },
-								{ filterId: 'top', value: true }
-							]
-							const singleSelectFilterValues = [{ filterId: 'country', value: it.id + '' }]
+			{items.length === 0 ? (
+				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
+			) : (
+				<ScrollView horizontal style={{ flex: 1 }}>
+					{items.map((it, i, { length }) => (
+						<Button
+							onPress={() => {
+								const booleanFilterValues = [
+									{ filterId: isSeries(type) ? 'series' : 'films', value: true },
+									{ filterId: 'top', value: true }
+								]
+								const singleSelectFilterValues = [{ filterId: 'country', value: it.id + '' }]
 
-							navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
-						}}
-						padding={0}
-						key={it.id}
-						text={it.name + (i !== length - 1 ? ', ' : '')}
-						transparent
-					/>
-				))}
-			</ScrollView>
+								navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
+							}}
+							padding={0}
+							key={it.id}
+							text={it.name + (i !== length - 1 ? ', ' : '')}
+							transparent
+						/>
+					))}
+				</ScrollView>
+			)}
 		</View>
 	)
 }
@@ -126,30 +132,33 @@ const CountriesItem = ({ title, items, type }: { title: string; items: Country[]
 const GenresItem = ({ title, items, type }: { title: string; items: Genre[]; type: MovieType }) => {
 	const { theme } = useStyles()
 
-	if (items.length === 0) return null
-
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<ScrollView horizontal style={{ flex: 1 }}>
-				{items.map((it, i, { length }) => (
-					<Button
-						padding={0}
-						key={it.id}
-						text={it.name + (i !== length - 1 ? ', ' : '')}
-						transparent
-						onPress={() => {
-							const booleanFilterValues = [
-								{ filterId: isSeries(type) ? 'series' : 'films', value: true },
-								{ filterId: 'top', value: true }
-							]
-							const singleSelectFilterValues = [{ filterId: 'genre', value: it.slug }]
 
-							navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
-						}}
-					/>
-				))}
-			</ScrollView>
+			{items.length === 0 ? (
+				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
+			) : (
+				<ScrollView horizontal style={{ flex: 1 }}>
+					{items.map((it, i, { length }) => (
+						<Button
+							padding={0}
+							key={it.id}
+							text={it.name + (i !== length - 1 ? ', ' : '')}
+							transparent
+							onPress={() => {
+								const booleanFilterValues = [
+									{ filterId: isSeries(type) ? 'series' : 'films', value: true },
+									{ filterId: 'top', value: true }
+								]
+								const singleSelectFilterValues = [{ filterId: 'genre', value: it.slug }]
+
+								navigation.push('MovieListSlug', { data: { slug: '', filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues } } })
+							}}
+						/>
+					))}
+				</ScrollView>
+			)}
 		</View>
 	)
 }
@@ -316,11 +325,11 @@ export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo
 
 			<PersonItem data={data.actors} title='В главных ролях' />
 			<PersonItem data={data.voiceOverActors} title='Роли дублировали' />
-			<PersonItem data={data.directors} title='Режиссер' />
-			<PersonItem data={data.writers} title='Сценарий' />
-			<PersonItem data={data.producers} title='Продюсер' />
+			<PersonItem data={data.directors} title='Режиссер' isReq />
+			<PersonItem data={data.writers} title='Сценарий' isReq />
+			<PersonItem data={data.producers} title='Продюсер' isReq />
 			<PersonItem data={data.operators} title='Оператор' />
-			<PersonItem data={data.composers} title='Композитор' />
+			<PersonItem data={data.composers} title='Композитор' isReq />
 			<PersonItem data={data.designers} title='Художник' />
 			<PersonItem data={data.filmEditors} title='Монтаж' />
 
