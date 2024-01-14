@@ -15,7 +15,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 	const { theme } = useStyles()
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' && type !== 'Video' })
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' })
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesSimilarMoviesQuery({ tvSeriesId: id }, { skip: type !== 'TvSeries' && type !== 'MiniSeries' && type !== 'TvShow' })
 
 	const data: ISimilarMovieResults | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
@@ -71,7 +71,7 @@ export const SimilarMovie = ({ id, type }: Props) => {
 										{movie.title.russian ?? movie.title.original ?? movie.title.english}
 									</Text>
 									<Text style={{ color: theme.colors.text200, fontSize: 14 }} numberOfLines={1}>
-										{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' ? movie.releaseYears[0].start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
+										{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' || movie.__typename === 'TvShow' ? movie.releaseYears[0].start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 									</Text>
 								</View>
 							</Button>

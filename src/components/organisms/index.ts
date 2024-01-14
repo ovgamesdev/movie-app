@@ -1,5 +1,6 @@
 export * from './BackgroundRestrictionModal'
 export * from './FilmographyItems'
+export * from './ItemMenuModal'
 export * from './SearchHistory'
 export * from './SearchResults'
 export * from './SlugItemList'

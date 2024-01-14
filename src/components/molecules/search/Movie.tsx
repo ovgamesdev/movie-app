@@ -14,7 +14,7 @@ type Props = {
 export const Movie = ({ item, onPress }: Props) => {
 	const { styles } = useStyles(stylesheet)
 
-	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/80x120' })
 
 	const handleOnPress = () => {
 		onPress({
@@ -26,7 +26,7 @@ export const Movie = ({ item, onPress }: Props) => {
 	}
 
 	return (
-		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='stretch' flexDirection='row'>
 			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={styles.image} />
 			<View style={styles.container}>
 				<Text numberOfLines={2} style={styles.title}>
@@ -44,11 +44,13 @@ export const Movie = ({ item, onPress }: Props) => {
 const stylesheet = createStyleSheet(theme => ({
 	image: {
 		width: 32,
-		height: 48
+		height: 48,
+		marginRight: 16
 	},
 	container: {
-		paddingHorizontal: 10,
-		flex: 1
+		paddingVertical: 4,
+		flex: 1,
+		justifyContent: 'center'
 	},
 	title: {
 		color: theme.colors.text100,

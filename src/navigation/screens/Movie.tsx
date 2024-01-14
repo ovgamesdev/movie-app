@@ -20,7 +20,7 @@ export const Movie = ({ route }: Props) => {
 	const { styles } = useStyles(stylesheet)
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' })
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' })
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow' })
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
@@ -91,8 +91,8 @@ export const Movie = ({ route }: Props) => {
 						<View style={styles.detailsInfoContainer}>
 							<View style={styles.portraitCover}>{!!data.mainTrailer?.preview || !!data.cover ? <PosterImage width={120} height={132} borderRadius={6} top={-60} style={styles.portraitCoverPosterImage} wrapperStyle={styles.portraitCoverPosterImageWrapperStyle} /> : <PosterImage width={120} borderRadius={6} wrapperStyle={styles.portraitCoverPosterImageStyle} />}</View>
 							<View style={styles.detailsInfo}>
+								{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 								<Text style={styles.detailsInfoTitle} selectable={!Platform.isTV}>
-									{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 									{/* TODO releaseYears to utils */}
 									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'}${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null || data.releaseYears[0]?.start === 0 ? '' : ' ' + data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? ' ' + (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear ? `(${data.productionYear})` : ''}</Text>
 								</Text>

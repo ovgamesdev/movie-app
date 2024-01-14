@@ -51,7 +51,7 @@ const YearItem = ({ title, productionYear, seasons, type }: { title: string; pro
 						transparent
 					/>
 				)}
-				{seasons && (
+				{seasons && seasons.total > 0 && (
 					<Button padding={0} transparent focusable={false}>
 						<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{'(' + declineSeasons(seasons.total) + ')'}</Text>
 					</Button>

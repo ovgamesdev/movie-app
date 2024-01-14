@@ -98,7 +98,7 @@ export const declineChildren = (count: number): string => {
 
 // TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
 export const isSeries = (type: MovieType): boolean => {
-	return type === 'TvSeries' || type === 'MiniSeries'
+	return type === 'TvSeries' || type === 'MiniSeries' || type === 'TvShow'
 }
 
 export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {

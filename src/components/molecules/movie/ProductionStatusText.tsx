@@ -2,8 +2,12 @@ import { ProductionStatus } from '@store/kinopoisk'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-// TODO test
-export const ProductionStatusText = ({ productionStatus, productionStatusUpdateDate }: { productionStatus: ProductionStatus; productionStatusUpdateDate: string }) => {
+interface Props {
+	productionStatus: ProductionStatus
+	productionStatusUpdateDate: string
+}
+
+export const ProductionStatusText = ({ productionStatus, productionStatusUpdateDate }: Props) => {
 	const { styles } = useStyles(stylesheet, { color: productionStatus ?? undefined })
 
 	let statusMessage = ''
@@ -33,23 +37,26 @@ export const ProductionStatusText = ({ productionStatus, productionStatusUpdateD
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.message}>{statusMessage}</Text>
-			<Text style={styles.status}> – обновлено {new Date(productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+			<Text style={styles.status}>
+				<View style={{}}>
+					<Text style={styles.message}>{` ${statusMessage} `}</Text>
+				</View>
+				{` – обновлено ${new Date(productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}`}
+			</Text>
 		</View>
 	)
 }
 
 const stylesheet = createStyleSheet(theme => ({
 	container: {
-		flexDirection: 'row',
 		paddingBottom: 8
 	},
 	message: {
+		borderRadius: 3,
+		lineHeight: 18,
 		fontSize: 13,
 		fontWeight: '500',
-		paddingHorizontal: 6,
-		paddingVertical: 2,
-		borderRadius: 3,
+		transform: [{ translateY: 3.25 }],
 		variants: {
 			color: {
 				FILMING: {
@@ -73,7 +80,7 @@ const stylesheet = createStyleSheet(theme => ({
 					backgroundColor: 'rgba(255,101,0,.1)'
 				},
 				UNKNOWN: {
-					color: 'rgba(255,255,255,.8)',
+					color: theme.colors.text100, // 'rgba(255,255,255,.8)'
 					backgroundColor: 'rgba(31,31,31,.24)'
 				}
 			}
@@ -81,8 +88,8 @@ const stylesheet = createStyleSheet(theme => ({
 	},
 	status: {
 		color: theme.colors.text200,
+		lineHeight: 20,
 		fontSize: 13,
-		fontWeight: '500',
-		paddingVertical: 2
+		fontWeight: '500'
 	}
 }))

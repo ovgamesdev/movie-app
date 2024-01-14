@@ -154,7 +154,7 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 				data={data.docs}
 				renderItem={({ item: { movie, participations }, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 					const title = movie.title.russian ?? movie.title.original ?? movie.title.english
-					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? movie.title.original : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : movie.__typename === 'Video' ? 'видео' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null].filter(it => !!it).join(', ')
+					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? movie.title.original : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : movie.__typename === 'Video' ? 'видео' : movie.__typename === 'TvShow' ? 'ТВ' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null].filter(it => !!it).join(', ')
 					const tertiaryInfo = [
 						participations.items
 							.map(it => [it.name, it.notice].filter(it => !!it).join(', '))
@@ -169,6 +169,7 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 								<Text style={{ color: theme.colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={1}>
 									{title}
 								</Text>
+								{/* TODO fix textTransform */}
 								{secondaryInfo && (
 									<Text style={{ color: theme.colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
 										{secondaryInfo}

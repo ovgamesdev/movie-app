@@ -9,9 +9,9 @@ export interface IListSlugFilter {
 type SingleSelectFilterValues = { filterId: string; value: string }
 type BooleanFilterValues = { filterId: string; value: boolean }
 
-export type MovieType = 'TvSeries' | 'Film' | 'MiniSeries' | 'Video'
+export type MovieType = 'TvSeries' | 'Film' | 'MiniSeries' | 'Video' | 'TvShow'
 export type MovieFilmType = 'Film' | 'Video'
-export type MovieSeriesType = 'TvSeries' | 'MiniSeries'
+export type MovieSeriesType = 'TvSeries' | 'MiniSeries' | 'TvShow'
 
 export interface IGraphqlMovie {
 	id: number

@@ -1,20 +1,22 @@
 import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { fetchNewSeries, useActions, useTypedSelector } from '@hooks'
+import { ItemMenuModal } from '@components/organisms'
+import { useActions, useTypedSelector } from '@hooks'
 import { NotificationsIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { getNoun, normalizeUrlWithNull } from '@utils'
 import React, { useState } from 'react'
-import { Alert, Animated, TVFocusGuideView, Text, View } from 'react-native'
+import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 export const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
+
 export const History: React.FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { removeItemByPath, mergeItem, isBatteryOptimizationEnabled } = useActions()
+	const { setItemVisibleModal } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { styles, theme } = useStyles(stylesheet)
@@ -29,48 +31,11 @@ export const History: React.FC = () => {
 
 	console.log('History data:', data)
 
-	const handleOnLongPress = (item: WatchHistory) => {
-		Alert.alert(
-			`«${item.title}»`,
-			`${new Date(item.timestamp).toLocaleDateString()}`,
-			[
-				// {
-				// 	text: 'Cancel',
-				// 	style: 'cancel'
-				// },
-				{
-					text: 'Детали',
-					onPress: () => navigation.push('Movie', { data: item })
-				},
-				{
-					text: 'Notifee',
-					onPress: async () => {
-						const newWatchHistoryData: Partial<WatchHistory> = {
-							notify: !item.notify
-						}
-
-						if (newWatchHistoryData.notify) {
-							const newSeries = await fetchNewSeries(item)
-							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
-						}
-
-						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
-						isBatteryOptimizationEnabled()
-					}
-				},
-				{
-					text: 'Удалить',
-					onPress: () => removeItemByPath(['watchHistory', `${item.id}`])
-				}
-			],
-			{ cancelable: true }
-		)
-	}
+	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item }) // TODO tnfm
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
 			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={setActiveFilter} scrollY={scrollY} />
-
 			<FocusableFlatList
 				data={data}
 				keyExtractor={item => `${item.id}`}
@@ -122,6 +87,8 @@ export const History: React.FC = () => {
 				animated
 				onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
 			/>
+
+			<ItemMenuModal />
 		</TVFocusGuideView>
 	)
 }

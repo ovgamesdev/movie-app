@@ -14,7 +14,7 @@ type Props = {
 export const MovieList = ({ item, onPress }: Props) => {
 	const { styles } = useStyles(stylesheet)
 
-	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/32x32' })
+	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/64x64' })
 
 	const handleOnPress = () => {
 		onPress({
@@ -27,7 +27,7 @@ export const MovieList = ({ item, onPress }: Props) => {
 	}
 
 	return (
-		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
+		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='stretch' flexDirection='row'>
 			<View style={styles.imageContainer}>
 				<ImageBackground source={{ uri: cover }} resizeMode='contain' style={styles.image} />
 			</View>
@@ -45,15 +45,17 @@ const stylesheet = createStyleSheet(theme => ({
 	imageContainer: {
 		width: 32,
 		height: 48,
-		alignItems: 'center'
+		justifyContent: 'center',
+		marginRight: 16
 	},
 	image: {
 		width: 32,
 		height: 32
 	},
 	container: {
-		paddingHorizontal: 10,
-		flex: 1
+		paddingVertical: 4,
+		flex: 1,
+		justifyContent: 'center'
 	},
 	title: {
 		color: theme.colors.text100,

@@ -206,7 +206,7 @@ export const Person = ({ route }: Props) => {
 																	{movie.title.russian ?? movie.title.original}
 																</Text>
 																<Text style={{ color: theme.colors.text200, fontSize: 14 }} numberOfLines={1}>
-																	{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
+																	{[movie.__typename === 'TvSeries' || movie.__typename === 'MiniSeries' || movie.__typename === 'TvShow' ? movie.releaseYears?.[0]?.start : movie.productionYear, movie.genres[0]?.name].filter(it => !!it).join(', ')}
 																</Text>
 															</View>
 														</Button>

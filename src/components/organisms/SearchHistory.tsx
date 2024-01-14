@@ -15,26 +15,22 @@ type Props = {
 
 const SearchHistoryItem: React.FC<Props> = ({ item, onPress }) => {
 	const { theme } = useStyles()
-	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: item.type === 'MovieListMeta' ? '/64x64' : '/80x120' })
 
 	const handleOnPress = () => {
 		onPress(item)
 	}
 
 	return (
-		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='center' flexDirection='row'>
-			{item.type === 'MovieListMeta' ? (
-				<View style={{ width: 32, height: 48, alignItems: 'center' }}>
-					<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 32 }} />
-				</View>
-			) : (
-				<ImageBackground source={{ uri: poster }} resizeMode='contain' style={{ width: 32, height: 48 }} />
-			)}
-			<View style={{ paddingHorizontal: 10, flex: 1 }}>
+		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='stretch' flexDirection='row'>
+			<View style={{ width: 32, height: 48, justifyContent: 'center', marginRight: 16 }}>
+				<ImageBackground source={{ uri: poster }} resizeMode='contain' style={item.type === 'MovieListMeta' ? { width: 32, height: 32 } : { width: 32, height: 48 }} />
+			</View>
+			<View style={{ paddingVertical: 4, flex: 1, justifyContent: 'center' }}>
 				<Text numberOfLines={2} style={{ color: theme.colors.text100, fontSize: 15 }}>
 					{item.title}
 				</Text>
-				<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{item.type === 'TvSeries' || item.type === 'MiniSeries' ? 'сериал' : null}</Text>
+				<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{item.type === 'TvSeries' || item.type === 'MiniSeries' || item.type === 'TvShow' ? 'сериал' : null}</Text>
 			</View>
 		</Button>
 	)
@@ -78,6 +74,7 @@ export const SearchHistory = () => {
 			case 'TvSeries':
 			case 'Film':
 			case 'MiniSeries':
+			case 'TvShow':
 			case 'Video': {
 				addToHistory(data)
 				navigation.push('Movie', { data: { id: data.id, type: data.type } })

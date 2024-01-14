@@ -36,6 +36,7 @@ export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__t
 				</View>
 			) : rating.expectation?.isActive && rating.expectation.count > 0 ? (
 				<View>
+					<Text style={styles.minusText}>–</Text>
 					<Text style={styles.title}>Рейтинг ожидания</Text>
 					<Text style={styles.detailText}>{rating.expectation.count.toLocaleString()} ждут премьеры</Text>
 				</View>
