@@ -141,15 +141,8 @@ interface Poster {
 }
 
 interface Rating {
-	kinopoisk: Expectation
-	expectation: Expectation
-	// __typename: string
-}
-
-interface Expectation {
-	isActive: boolean
-	count: number
-	value: number | null
+	kinopoisk: RatingValue | null
+	expectation: RatingValue | null
 	// __typename: string
 }
 

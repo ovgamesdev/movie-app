@@ -1,7 +1,9 @@
-import { Button, DropDown, FocusableFlatList } from '@components/atoms'
+import { Button, DropDown, FocusableFlatList, ImageBackground } from '@components/atoms'
 import { useOrientation } from '@hooks'
+import { TimelapseIcon, VoiceIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useGetFilmographyFiltersQuery, useGetFilmographyItemsQuery } from '@store/kinopoisk'
+import { getRatingColor, normalizeUrlWithNull } from '@utils'
 import React, { useRef, useState } from 'react'
 import { FlatList, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
@@ -153,6 +155,9 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 			<FocusableFlatList
 				data={data.docs}
 				renderItem={({ item: { movie, participations }, index, hasTVPreferredFocus, onBlur, onFocus }) => {
+					const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
+					const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+
 					const title = movie.title.russian ?? movie.title.original ?? movie.title.english
 					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? movie.title.original : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : movie.__typename === 'Video' ? 'видео' : movie.__typename === 'TvShow' ? 'ТВ' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null].filter(it => !!it).join(', ')
 					const tertiaryInfo = [
@@ -165,22 +170,35 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 					return (
 						<>
 							{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
-							<Button transparent animation='scale' padding={0} paddingVertical={24} onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
-								<Text style={{ color: theme.colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={1}>
-									{title}
-								</Text>
-								{/* TODO fix textTransform */}
-								{secondaryInfo && (
-									<Text style={{ color: theme.colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
-										{secondaryInfo}
+							<Button transparent animation='scale' padding={0} paddingVertical={24} flexDirection='row' onFocus={onFocus} onBlur={onBlur} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
+								<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6}>
+									{rating && (
+										<View style={{ position: 'absolute', top: 6, left: 6 }}>
+											<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
+										</View>
+									)}
+								</ImageBackground>
+
+								<View style={{ flex: 1, paddingLeft: 16 }}>
+									<Text style={{ color: theme.colors.text100, fontSize: 18, marginBottom: 4 }} numberOfLines={2}>
+										{title}
 									</Text>
-								)}
-								{tertiaryInfo && (
-									<Text style={{ color: theme.colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
-										{tertiaryInfo}
-									</Text>
-								)}
-								{/* TODO rating */}
+									{/* TODO fix textTransform */}
+									{secondaryInfo && (
+										<Text style={{ color: theme.colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
+											{secondaryInfo}
+										</Text>
+									)}
+									{tertiaryInfo && (
+										<Text style={{ color: theme.colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
+											{tertiaryInfo}
+										</Text>
+									)}
+								</View>
+								<View style={{ flexDirection: 'row', gap: 2, paddingLeft: 5 }}>
+									{movie.isShortFilm && <TimelapseIcon width={20} height={20} fill={theme.colors.text200} />}
+									{participations.items.find(it => it.notice === 'озвучка') ? <VoiceIcon width={20} height={20} fill={theme.colors.text200} /> : null}
+								</View>
 							</Button>
 						</>
 					)

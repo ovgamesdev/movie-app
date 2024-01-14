@@ -1,4 +1,4 @@
-import { Button, FocusableFlatList, ImageBackground, Progress } from '@components/atoms'
+import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
 import { Filters } from '@components/molecules'
 import { ItemMenuModal } from '@components/organisms'
 import { useActions, useTypedSelector } from '@hooks'
@@ -6,7 +6,7 @@ import { NotificationsIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
-import { getNoun, normalizeUrlWithNull } from '@utils'
+import { isSeries, normalizeUrlWithNull } from '@utils'
 import React, { useState } from 'react'
 import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -59,12 +59,17 @@ export const History: React.FC = () => {
 										</Text>
 									)}
 
-									{item.duration && item.lastTime && (
+									{/* {item.duration && item.lastTime && (
 										<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
 											<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : `Осталось ${item.duration - item.lastTime} ${getNoun(item.duration - item.lastTime, 'минута', 'минуты', 'минут')}`}</Text>
 											<Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} />
 										</View>
-									)}
+										)} */}
+
+									<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
+										<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? 'Смотрю' : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
+										{/* <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> */}
+									</View>
 								</View>
 								{item.notify && (
 									<View style={{ position: 'absolute', right: 0, top: 10 }}>
