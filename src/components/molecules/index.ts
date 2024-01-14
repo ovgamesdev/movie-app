@@ -1,3 +1,4 @@
+export * from './ContinueWatchItem'
 export * from './Filters'
 export * from './NetInfo'
 export * from './Pagination'

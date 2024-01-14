@@ -7,8 +7,10 @@ export * from './TabBar'
 export * from './TabBarTv'
 export * from './TabNavigator'
 
-type ParamList = RootStackParamList & HomeTabParamList & BookmarksTabParamList
+type ParamList = RootStackParamList & HomeTabParamList
+type TabParamList = BookmarksTabParamList
 type NavigateType<RouteName extends keyof ParamList> = RouteName extends unknown ? (undefined extends ParamList[RouteName] ? [screen: RouteName] | [screen: RouteName, params: ParamList[RouteName]] : [screen: RouteName, params: ParamList[RouteName]]) : never
+type TabNavigateType<RouteName extends keyof TabParamList> = RouteName extends unknown ? (undefined extends TabParamList[RouteName] ? [screen: RouteName] | [screen: RouteName, params: TabParamList[RouteName]] : [screen: RouteName, params: TabParamList[RouteName]]) : never
 
 export const navigationRef = createNavigationContainerRef<ParamList>()
 export const navigation = {
@@ -36,6 +38,11 @@ export const navigation = {
 	navigate: <RouteName extends keyof ParamList>(...args: NavigateType<RouteName>) => {
 		if (navigationRef.isReady()) {
 			navigationRef.navigate(...args)
+		}
+	},
+	jumpTo: <RouteName extends keyof TabParamList>(...args: TabNavigateType<RouteName>) => {
+		if (navigationRef.isReady()) {
+			navigationRef.dispatch({ type: 'JUMP_TO', payload: { name: args[0], params: args[1] } })
 		}
 	}
 }

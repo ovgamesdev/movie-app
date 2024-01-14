@@ -1,4 +1,5 @@
 export * from './BackgroundRestrictionModal'
+export * from './ContinueWatchItemList'
 export * from './FilmographyItems'
 export * from './ItemMenuModal'
 export * from './SearchHistory'

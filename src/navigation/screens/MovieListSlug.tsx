@@ -111,8 +111,8 @@ export const MovieListSlug = ({ route }: Props) => {
 			}
 
 			const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
-			const rating: null | { value: string; color: string } = item.movie.rating.expectation.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
-			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
+			const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
+			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
 
 			// Популярные фильмы
 			// 250 лучших фильмов
