@@ -1,6 +1,7 @@
 export * from './ActivityIndicator'
 export * from './Button'
 export * from './DropDown'
+export * from './FocusableFlashList'
 export * from './FocusableFlatList'
 export * from './ImageBackground'
 export * from './Input'

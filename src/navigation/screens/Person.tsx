@@ -154,14 +154,13 @@ export const Person = ({ route }: Props) => {
 									</View>
 								)}
 
+								{/* TODO (item ?? '') to item.title ? <Text>item.title</Text> : null */}
 								{data.bestFilms.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
 										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Лучшие фильмы</Text>
 										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.bestFilms.items.map(({ movie }, i, { length }) => (
-												<Button padding={0} key={movie.id} transparent text={(movie.title.russian ?? '') + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} />
-											))}
+											{data.bestFilms.items.map(({ movie }, i, { length }) => (movie.title.russian ? <Button padding={0} key={movie.id} transparent text={movie.title.russian + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} /> : null))}
 										</ScrollView>
 									</TVFocusGuideView>
 								)}
@@ -171,9 +170,7 @@ export const Person = ({ route }: Props) => {
 										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Лучшие сериалы</Text>
 										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
-											{data.bestSeries.items.map(({ movie }, i, { length }) => (
-												<Button padding={0} key={movie.id} transparent text={(movie.title.russian ?? '') + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} />
-											))}
+											{data.bestSeries.items.map(({ movie }, i, { length }) => (movie.title.russian ? <Button padding={0} key={movie.id} transparent text={movie.title.russian + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} /> : null))}
 										</ScrollView>
 									</TVFocusGuideView>
 								)}

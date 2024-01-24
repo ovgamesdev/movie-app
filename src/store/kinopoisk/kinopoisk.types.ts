@@ -849,3 +849,33 @@ interface ReleaseCompany {
 		url: string
 	}
 }
+
+// HdShowcase
+
+export interface IHdShowcaseResults {
+	items: { content: { items: MovieSelectionItem[] }; id: string; title: string }[]
+}
+
+export interface IHdShowcaseListItem extends Pick<IMovieBaseInfo, '__typename' | 'contentId' | 'genres' | 'id' | 'top10' | 'top250' | 'viewOption'> {
+	title: {
+		russian: string | null
+	}
+	rating: {
+		kinopoisk: RatingValue | null
+	}
+	gallery: {
+		posters: {
+			vertical: {
+				avatarsUrl: string | null
+			} | null
+			verticalWithRightholderLogo: {
+				avatarsUrl: string | null
+			} | null
+		}
+	}
+}
+
+export interface MovieSelectionItem {
+	movie: IHdShowcaseListItem
+	__typename: 'MovieSelectionItem'
+}

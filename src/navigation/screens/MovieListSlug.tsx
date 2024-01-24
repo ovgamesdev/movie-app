@@ -148,23 +148,29 @@ export const MovieListSlug = ({ route }: Props) => {
 									{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
 									{item.movie.title.russian ?? item.movie.title.original}
 								</Text>
-								<View style={{ paddingBottom: 4, flexDirection: 'column', flexWrap: 'nowrap' }}>
-									<View style={{ flexDirection: 'row', flexWrap: 'nowrap', flex: 1 }}>
-										{item.movie.title.russian && item.movie.title.original && (
-											<Text style={{ overflow: 'hidden', flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
-												{item.movie.title.original}
-											</Text>
-										)}
-										<Text style={{ flexWrap: 'nowrap', fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>
-											{item.movie.title.russian && item.movie.title.original && ', '}
-											{[isSeries(item.movie.__typename) ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+								<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
+									{item.movie.title.russian && item.movie.title.original && (
+										<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
+											{item.movie.title.original}
 										</Text>
-									</View>
+									)}
+									<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>
+										{item.movie.title.russian && item.movie.title.original && ', '}
+										{[isSeries(item.movie.__typename) ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+									</Text>
 								</View>
 
 								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: theme.colors.text200 }} numberOfLines={1}>
-									{/* {[item.movie.countries[0]?.name, item.movie.genres[0]?.name].filter(it => !!it).join(' • ')} */}
-									{[item.movie.countries.map(it => it.name).join(', '), item.movie.genres.map(it => it.name).join(', ')].join(' • ')}
+									{[
+										item.movie.countries
+											.slice(0, 2)
+											.map(it => it.name)
+											.join(', '),
+										item.movie.genres
+											.slice(0, 2)
+											.map(it => it.name)
+											.join(', ')
+									].join(' • ')}
 									{orientation.landscape && item.movie.directors.items.length > 0 && `  Режиссёр: ${item.movie.directors.items[0].person.name ?? item.movie.directors.items[0].person.originalName}`}
 								</Text>
 

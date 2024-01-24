@@ -30,7 +30,7 @@ export const ContinueWatchItemList = ({ status, title }: Props) => {
 
 	return (
 		<>
-			<Button focusable={false} animation='scale' transparent style={{ borderWidth: 0 }} flexDirection='row' onPress={() => (navigation.navigate('Bookmarks'), navigation.jumpTo('History'))}>
+			<Button focusable={false} animation='scale' transparent style={{ borderWidth: 0 }} flexDirection='row' onPress={() => navigation.navigate('Bookmarks', { screen: 'History' })}>
 				<Text style={styles.button}>{title}</Text>
 				{!Platform.isTV && <NavigateNextIcon width={20} height={20} fill={theme.colors.text100} style={styles.buttonIcon} />}
 			</Button>
@@ -51,7 +51,7 @@ export const ContinueWatchItemList = ({ status, title }: Props) => {
 								</View>
 							) : null}
 							{!Platform.isTV || isEmpty ? null : (
-								<Button onPress={() => (navigation.navigate('Bookmarks'), navigation.jumpTo('History'))} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
+								<Button onPress={() => navigation.navigate('Bookmarks', { screen: 'History' })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
 									<Text style={styles.footerItemText}>More..</Text>
 								</Button>
 							)}

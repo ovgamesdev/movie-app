@@ -1,6 +1,7 @@
-/**
- * @format
- */
+/* eslint-disable no-undef */
+if (__DEV__) {
+	import('./ReactotronConfig').then(() => console.log('Reactotron Configured'))
+}
 
 import { backgroundTask } from '@hooks'
 import { AppRegistry, LogBox, Platform } from 'react-native'

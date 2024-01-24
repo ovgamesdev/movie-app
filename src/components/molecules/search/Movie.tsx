@@ -32,10 +32,19 @@ export const Movie = ({ item, onPress }: Props) => {
 				<Text numberOfLines={2} style={styles.title}>
 					{item.title.russian ?? item.title.original}
 				</Text>
-				<Text style={styles.details}>
-					{item.rating.kinopoisk.value && item.rating.kinopoisk.value > 0 ? <Text style={styles.rating(item.rating.kinopoisk.value)}>{item.rating.kinopoisk.value.toFixed(1)} </Text> : <Text>— </Text>}
-					{[item.title.russian !== null && item.title.original !== null ? item.title.original : null, isSeries(item.__typename) ? 'сериал' : null, item.releaseYears && item.releaseYears.length !== 0 ? (item.releaseYears[0]?.start === item.releaseYears[0]?.end ? (item.releaseYears[0].start === null ? '' : item.releaseYears[0]?.start) : item.releaseYears[0].start != null || item.releaseYears[0].end != null ? (item.releaseYears[0]?.start ?? '...') + ' - ' + (item.releaseYears[0]?.end ?? '...') : '') : item.productionYear].filter(it => it).join(', ')}
-				</Text>
+				<View style={styles.details}>
+					<Text style={styles.originalTitle} numberOfLines={1}>
+						{item.rating.kinopoisk?.value && item.rating.kinopoisk.value > 0 ? <Text style={styles.rating(item.rating.kinopoisk.value)}>{item.rating.kinopoisk.value.toFixed(1)} </Text> : <Text>— </Text>}
+						{item.title.russian !== null && item.title.original !== null ? item.title.original : null}
+					</Text>
+					<Text style={styles.commonText} numberOfLines={1}>
+						{/* TODO fix '' !! */}
+						{[item.title.russian !== null && item.title.original !== null ? ' ' : null, isSeries(item.__typename) ? 'сериал' : null, item.releaseYears && item.releaseYears.length !== 0 ? (item.releaseYears[0]?.start === item.releaseYears[0]?.end ? (item.releaseYears[0].start === null ? '' : item.releaseYears[0]?.start) : item.releaseYears[0].start != null || item.releaseYears[0].end != null ? (item.releaseYears[0]?.start ?? '...') + ' - ' + (item.releaseYears[0]?.end ?? '...') : '') : item.productionYear]
+							.filter(it => it)
+							.map(it => (it === ' ' ? '' : it))
+							.join(', ')}
+					</Text>
+				</View>
 			</View>
 		</Button>
 	)
@@ -60,7 +69,19 @@ const stylesheet = createStyleSheet(theme => ({
 		color: getRatingColor(value)
 	}),
 	details: {
-		color: theme.colors.text200,
-		fontSize: 13
+		flexDirection: 'row'
+	},
+	originalTitle: {
+		flexShrink: 1,
+		fontSize: 13,
+		fontWeight: '400',
+		lineHeight: 16,
+		color: theme.colors.text200
+	},
+	commonText: {
+		fontSize: 13,
+		fontWeight: '400',
+		lineHeight: 16,
+		color: theme.colors.text200
 	}
 }))

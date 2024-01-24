@@ -159,7 +159,10 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 					const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 					const title = movie.title.russian ?? movie.title.original ?? movie.title.english
-					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? movie.title.original : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : movie.__typename === 'Video' ? 'видео' : movie.__typename === 'TvShow' ? 'ТВ' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null].filter(it => !!it).join(', ')
+					const secondaryInfo = [!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original ? ' ' : '', movie.__typename === 'MiniSeries' ? 'мини–сериал' : movie.__typename === 'TvSeries' ? 'сериал' : movie.__typename === 'Video' ? 'видео' : movie.__typename === 'TvShow' ? 'ТВ' : '', 'releaseYears' in movie && movie.releaseYears.length !== 0 ? (movie.releaseYears[0]?.start === movie.releaseYears[0]?.end ? movie.releaseYears[0].start ?? '' : movie.releaseYears[0].start != null || movie.releaseYears[0].end != null ? (movie.releaseYears[0].start ?? '...') + ' - ' + (movie.releaseYears[0].end ?? '...') : '') : 'productionYear' in movie && movie.productionYear !== 0 ? movie.productionYear : null]
+						.filter(it => !!it)
+						.map(it => (it === ' ' ? '' : it))
+						.join(', ')
 					const tertiaryInfo = [
 						participations.items
 							.map(it => [it.name, it.notice].filter(it => !!it).join(', '))
@@ -184,13 +187,18 @@ export const FilmographyItems = ({ id: personId }: Props) => {
 										{title}
 									</Text>
 									{/* TODO fix textTransform */}
-									{secondaryInfo && (
-										<Text style={{ color: theme.colors.text100, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={1}>
-											{secondaryInfo}
-										</Text>
-									)}
+
+									<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
+										{!!movie.title.russian && movie.title.original !== movie.title.english && movie.title.original && (
+											<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
+												{movie.title.original}
+											</Text>
+										)}
+										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>{secondaryInfo}</Text>
+									</View>
+
 									{tertiaryInfo && (
-										<Text style={{ color: theme.colors.text200, fontSize: 13, textTransform: 'capitalize', marginTop: 4 }} numberOfLines={1}>
+										<Text style={{ color: theme.colors.text200, fontSize: 13, textTransform: 'capitalize' }} numberOfLines={2}>
 											{tertiaryInfo}
 										</Text>
 									)}

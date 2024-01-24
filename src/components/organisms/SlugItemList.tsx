@@ -3,7 +3,6 @@ import { SlugItem } from '@components/molecules'
 import { NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
-import React from 'react'
 import { Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 

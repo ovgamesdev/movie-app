@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IListBySlugResults, IListSlugFilter, IOriginalMoviesResults, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
+import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IHdShowcaseResults, IListBySlugResults, IListSlugFilter, IOriginalMoviesResults, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
 import { ToastAndroid } from 'react-native'
 
 export const kinopoiskApi = createApi({
@@ -393,8 +393,37 @@ export const kinopoiskApi = createApi({
 
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
+		}),
+		getHdShowcase: build.query<IHdShowcaseResults, undefined>({
+			query: () => ({
+				url: '?operationName=HdShowcase',
+				method: 'post',
+				body: {
+					operationName: 'OriginalMovies',
+					variables: {
+						id: 'kp-morda-ml',
+						limit: 5,
+						offset: 0
+					},
+					query:
+						'query HdShowcase($id: String!, $offset: Int!, $limit: Int!) { showcase(id: $id) { content(offset: $offset, limit: $limit) { items { ... on OttTopSelection { title id content(limit: 20, offset: 0) { items { ... on MovieSelectionItem { ...Selection __typename } __typename } __typename } __typename } ... on Selection { title id content(limit: 20, offset: 0) { items { ... on MovieSelectionItem { ...Selection __typename } __typename } __typename } __typename } __typename } __typename } __typename } } fragment Selection on MovieSelectionItem { movie { id contentId title { russian __typename } genres { id name __typename } gallery { posters { vertical(override: OTT_WHEN_EXISTS) { avatarsUrl __typename } verticalWithRightholderLogo { avatarsUrl __typename } __typename } __typename } rating { kinopoisk { isActive count value __typename } __typename } viewOption { type isAvailableOnline: isWatchable(filter: {anyDevice: false, anyRegion: false}) buttonText purchasabilityStatus contentPackageToBuy { billingFeatureName __typename } __typename } top10 top250 __typename } __typename } '
+				},
+				headers: {
+					'Service-Id': '25'
+				}
+			}),
+			transformResponse: (response, meta, arg) => {
+				const data = (response as any)?.data?.showcase?.content
+
+				return data
+			},
+			transformErrorResponse: (response, meta, arg) => {
+				console.log('transformErrorResponse', { response, meta, arg })
+
+				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+			}
 		})
 	})
 })
 
-export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery, useGetFilmographyItemsQuery, useGetFilmographyFiltersQuery, useGetOriginalMoviesQuery } = kinopoiskApi
+export const { useGetListBySlugQuery, useGetSuggestSearchQuery, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery, useGetPersonBaseInfoQuery, useGetTvSeriesEpisodesQuery, useGetFilmographyItemsQuery, useGetFilmographyFiltersQuery, useGetOriginalMoviesQuery, useGetHdShowcaseQuery } = kinopoiskApi
