@@ -1,12 +1,12 @@
 import { Button } from '@components/atoms'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
-import React, { useEffect, useRef } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { Animated, Dimensions, ScrollView, TVFocusGuideView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const TabBar = ({ state, descriptors, navigation, position }: MaterialTopTabBarProps) => {
+export const TabBar: FC<MaterialTopTabBarProps> = ({ state, descriptors, navigation, position }) => {
 	const tabWidth = Dimensions.get('window').width / 2 // 120
 
 	const insets = useSafeAreaInsets()

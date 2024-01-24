@@ -1,7 +1,7 @@
 import { UpdateApk, User } from '@components/molecules'
 import { Switch } from '@components/molecules/settings'
 import { useTypedSelector } from '@hooks'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'

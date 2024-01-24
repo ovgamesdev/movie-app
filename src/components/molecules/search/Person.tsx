@@ -2,7 +2,7 @@ import { Button, ImageBackground } from '@components/atoms'
 import { IGraphqlSuggestPerson } from '@store/kinopoisk'
 import { SearchHistoryPerson } from '@store/settings'
 import { normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -11,7 +11,7 @@ type Props = {
 	onPress: (item: Omit<SearchHistoryPerson, 'timestamp'>) => void
 }
 
-export const Person = ({ item, onPress }: Props) => {
+export const Person: FC<Props> = ({ item, onPress }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/80x120' })

@@ -1,12 +1,12 @@
-import { Button, DropDown, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
+import { Button, DropDown, FocusableFlashList, FocusableFlashListRenderItem, ImageBackground, Rating } from '@components/atoms'
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
-import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { getRatingColor, isSeries, normalizeUrlWithNull, releaseYearsToString } from '@utils'
+import { Dispatch, FC, SetStateAction, useCallback, useMemo, useRef, useState } from 'react'
 import { FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
@@ -17,7 +17,7 @@ type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 
 const skeletonData: Skeleton[] = Array.from({ length: 50 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
-const Text250 = ({ top, rating }: { top: number; rating: string }) => {
+const Text250: FC<{ top: number; rating: string }> = ({ top, rating }) => {
 	return (
 		<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 			<KpTop250LIcon width={10} height={21} viewBox='0 0 10 24' />
@@ -42,11 +42,11 @@ const Text250 = ({ top, rating }: { top: number; rating: string }) => {
 interface FiltersProps {
 	onResetPage: (page: number) => void
 	filters: IListSlugFilter
-	setFilters: React.Dispatch<React.SetStateAction<IListSlugFilter>>
+	setFilters: Dispatch<SetStateAction<IListSlugFilter>>
 	availableFilters: IAvailableFilters
 }
 
-export const Filter = ({ id, onResetPage, filters, setFilters, availableFilters }: { id: string } & FiltersProps) => {
+export const Filter: FC<{ id: string } & FiltersProps> = ({ id, onResetPage, filters, setFilters, availableFilters }) => {
 	const filter = availableFilters.items.find(it => it.id === id && it.__typename === 'SingleSelectFilter') as SingleSelectFilter | undefined
 
 	// TODO add Boolean
@@ -75,7 +75,7 @@ export const Filter = ({ id, onResetPage, filters, setFilters, availableFilters 
 	)
 }
 
-export const MovieListSlug = ({ route }: Props) => {
+export const MovieListSlug: FC<Props> = ({ route }) => {
 	const { slug, filters } = route.params.data
 
 	const insets = useSafeAreaInsets()
@@ -95,7 +95,7 @@ export const MovieListSlug = ({ route }: Props) => {
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
-	const renderItem: FocusableListRenderItem<Skeleton | IListBySlugResultsDocs> = useCallback(
+	const renderItem: FocusableFlashListRenderItem<Skeleton | IListBySlugResultsDocs> = useCallback(
 		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 			if (item.__typename === 'Skeleton') {
 				return (
@@ -111,7 +111,6 @@ export const MovieListSlug = ({ route }: Props) => {
 			}
 
 			const itemPosition = ((data.page ?? 1) - 1) * 50 + (index + 1)
-			const rating: null | { value: string; color: string } = item.movie.rating.expectation?.isActive && item.movie.rating.expectation.value && item.movie.rating.expectation.value > 0 ? { value: `${item.movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(item.movie.rating.expectation.value / 10) } : item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value) } : null
 			const ratingKinopoisk: null | { value: string; color: string; count: number } = item.movie.rating.kinopoisk?.isActive && item.movie.rating.kinopoisk.value && item.movie.rating.kinopoisk.value > 0 ? { value: `${item.movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(item.movie.rating.kinopoisk.value), count: item.movie.rating.kinopoisk.count } : null
 
 			// Популярные фильмы
@@ -134,11 +133,7 @@ export const MovieListSlug = ({ route }: Props) => {
 							))}
 						<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
 							<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6}>
-								{orientation.portrait && rating && (
-									<View style={{ position: 'absolute', top: 6, left: 6 }}>
-										<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
-									</View>
-								)}
+								{orientation.portrait && <Rating {...item.movie.rating} />}
 							</ImageBackground>
 						</View>
 
@@ -155,8 +150,10 @@ export const MovieListSlug = ({ route }: Props) => {
 										</Text>
 									)}
 									<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>
-										{item.movie.title.russian && item.movie.title.original && ', '}
-										{[isSeries(item.movie.__typename) ? item.movie.releaseYears?.[0]?.start : item.movie.productionYear, item.movie.duration ? `${item.movie.duration} мин.` : ''].filter(it => !!it).join(', ')}
+										{[item.movie.title.russian && item.movie.title.original ? ' ' : null, isSeries(item.movie.__typename) ? releaseYearsToString(item.movie.releaseYears) : item.movie.productionYear, item.movie.duration ?? item.movie.totalDuration ? `${item.movie.duration ?? item.movie.totalDuration} мин.` : null]
+											.filter(it => !!it)
+											.map(it => (it === ' ' ? '' : it))
+											.join(', ')}
 									</Text>
 								</View>
 
@@ -205,8 +202,7 @@ export const MovieListSlug = ({ route }: Props) => {
 	)
 
 	const keyExtractor = useCallback((item: Skeleton | IListBySlugResultsDocs) => `list_${slug}_item_${item.movie.id}`, [slug])
-	const getItemLayout = useCallback((_: unknown, index: number) => ({ length: 100, offset: 100 * index, index }), [])
-	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }), [isShowNetInfo, insets.bottom])
+	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }), [isShowNetInfo, insets.bottom])
 
 	const ListEmptyComponent = useCallback(() => {
 		if (isSuccess) return null
@@ -323,10 +319,10 @@ export const MovieListSlug = ({ route }: Props) => {
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
-			<FocusableFlatList
+			<FocusableFlashList
 				//
 				keyExtractor={keyExtractor}
-				getItemLayout={getItemLayout}
+				estimatedItemSize={146}
 				data={isError ? [] : !isSuccess ? skeletonData : data.docs}
 				showsHorizontalScrollIndicator={!false}
 				contentContainerStyle={contentContainerStyle}

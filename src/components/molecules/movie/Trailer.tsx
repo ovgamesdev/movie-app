@@ -3,10 +3,19 @@ import { PlayIcon } from '@icons'
 import { navigation } from '@navigation'
 import { IMainTrailer } from '@store/kinopoisk'
 import { normalizeUrlWithNull } from '@utils'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const Trailer = ({ mainTrailer, showTime, aspectRatio, disabled, showPlay = true }: { mainTrailer: IMainTrailer; showTime?: boolean; aspectRatio?: number; disabled?: boolean; showPlay?: boolean }) => {
+interface Props {
+	mainTrailer: IMainTrailer
+	showTime?: boolean
+	aspectRatio?: number
+	disabled?: boolean
+	showPlay?: boolean
+}
+
+export const Trailer: FC<Props> = ({ mainTrailer, showTime, aspectRatio, disabled, showPlay = true }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const poster = normalizeUrlWithNull(mainTrailer.preview?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })

@@ -4,7 +4,7 @@ import { navigation } from '@navigation'
 import { ISuggestSearchResults } from '@store/kinopoisk'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
 import { movieListUrlToFilters } from '@utils'
-import React from 'react'
+import type { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -12,7 +12,7 @@ type Props = {
 	data: ISuggestSearchResults
 }
 
-export const SearchResults = ({ data }: Props) => {
+export const SearchResults: FC<Props> = ({ data }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)

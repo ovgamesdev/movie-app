@@ -146,7 +146,7 @@ interface Rating {
 	// __typename: string
 }
 
-interface ReleaseYear {
+export interface ReleaseYear {
 	start: number | null
 	end: number | null
 	// __typename: string
@@ -617,7 +617,7 @@ export interface Release {
 	date: { accuracy: string; date: string } | null
 }
 
-interface RatingValue {
+export interface RatingValue {
 	count: number
 	isActive: boolean
 	value: number | null

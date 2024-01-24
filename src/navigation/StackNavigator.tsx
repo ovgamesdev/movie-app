@@ -2,8 +2,8 @@ import { RootStackParamList, navigation } from '@navigation'
 import notifee, { EventType, Notification, NotificationPressAction } from '@notifee/react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { MovieType } from '@store/kinopoisk'
-import { WatchHistoryProvider } from '@store/settings'
-import { useEffect } from 'react'
+import { restrictDisplayNotificationData } from '@utils'
+import { FC, useEffect } from 'react'
 import { ColorTypes } from 'src/theme/themes'
 import { TabNavigator } from './TabNavigator'
 import { Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
@@ -14,7 +14,7 @@ interface Props {
 	colors: ColorTypes
 }
 
-export const StackNavigator = ({ colors }: Props) => {
+export const StackNavigator: FC<Props> = ({ colors }) => {
 	useEffect(() => {
 		notifee.getInitialNotification().then(initialNotification => {
 			if (initialNotification) {
@@ -36,8 +36,7 @@ export const StackNavigator = ({ colors }: Props) => {
 						navigation.push('Movie', { data: { id: data.id as number, type: data.type as MovieType } })
 						break
 					case 'watch':
-						// TODO check data is types
-						navigation.navigate('Watch', { data: { id: data.id as number, type: data.type as MovieType, title: data.title as string, poster: 'poster' in data ? (data.poster as string) : null, year: 'year' in data ? (data.year as number) : null, provider: data.provider as WatchHistoryProvider | null } })
+						navigation.navigate('Watch', { data: restrictDisplayNotificationData(data) })
 						break
 				}
 			}

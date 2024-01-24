@@ -1,8 +1,8 @@
-import { Button, FocusableFlatList, ImageBackground } from '@components/atoms'
+import { Button, FocusableFlatList, ImageBackground, Rating } from '@components/atoms'
 import { navigation } from '@navigation'
 import { ISimilarMovieResults, MovieType, useGetFilmSimilarMoviesQuery, useGetTvSeriesSimilarMoviesQuery } from '@store/kinopoisk'
-import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { isSeries, normalizeUrlWithNull } from '@utils'
+import { FC } from 'react'
 import { FlatList, TVFocusGuideView, Text, View } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
@@ -11,7 +11,7 @@ type Props = {
 	type: MovieType
 }
 
-export const SimilarMovie = ({ id, type }: Props) => {
+export const SimilarMovie: FC<Props> = ({ id, type }) => {
 	const { theme } = useStyles()
 
 	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmSimilarMoviesQuery({ filmId: id }, { skip: type !== 'Film' && type !== 'Video' })
@@ -53,17 +53,12 @@ export const SimilarMovie = ({ id, type }: Props) => {
 					horizontal
 					showsHorizontalScrollIndicator={!false}
 					renderItem={({ item: { movie }, hasTVPreferredFocus, onBlur, onFocus }) => {
-						const rating: null | { value: string; color: string } = movie.rating.expectation?.isActive && movie.rating.expectation.value && movie.rating.expectation.value > 0 ? { value: `${movie.rating.expectation.value.toFixed(0)}%`, color: getRatingColor(movie.rating.expectation.value / 10) } : movie.rating.kinopoisk?.isActive && movie.rating.kinopoisk.value && movie.rating.kinopoisk.value > 0 ? { value: `${movie.rating.kinopoisk.value.toFixed(1)}`, color: getRatingColor(movie.rating.kinopoisk.value) } : null
 						const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 						return (
 							<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onBlur={onBlur} onFocus={onFocus} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>
 								<ImageBackground source={{ uri: poster }} style={{ height: 140, /* width: 93.5 */ aspectRatio: 667 / 1000 }} borderRadius={6}>
-									{rating && (
-										<View style={{ position: 'absolute', top: 6, left: 6 }}>
-											<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 20, minWidth: 32, color: '#fff', textAlign: 'center', paddingHorizontal: 5, backgroundColor: rating.color }}>{rating.value}</Text>
-										</View>
-									)}
+									<Rating {...movie.rating} />
 								</ImageBackground>
 
 								<View style={{ paddingTop: 5 }}>

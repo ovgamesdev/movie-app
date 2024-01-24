@@ -1,11 +1,11 @@
 import { BookmarksTabParamList, TabBar, TabBarTv, navigation } from '@navigation'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import React, { useState } from 'react'
+import { FC, useState } from 'react'
 import { Dimensions, View } from 'react-native'
 import { Favorites, History } from '.'
 
-export const TvBookmarks = () => {
+export const TvBookmarks: FC = () => {
 	const Stack = createNativeStackNavigator<BookmarksTabParamList>()
 	const [activeTab, setActiveTab] = useState<keyof BookmarksTabParamList>('History')
 
@@ -31,7 +31,7 @@ export const TvBookmarks = () => {
 	)
 }
 
-export const Bookmarks = () => {
+export const Bookmarks: FC = () => {
 	const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
 	return (

@@ -1,7 +1,13 @@
+import { FC } from 'react'
 import { View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const Progress = ({ duration, lastTime }: { duration: number; lastTime: number }) => {
+interface Props {
+	duration: number
+	lastTime: number
+}
+
+export const Progress: FC<Props> = ({ duration, lastTime }) => {
 	const position = Math.max(2, (lastTime / duration) * 100)
 	const { styles } = useStyles(stylesheet)
 

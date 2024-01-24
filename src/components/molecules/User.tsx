@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { useActions, useAuth } from '@hooks'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 

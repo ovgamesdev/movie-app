@@ -1,7 +1,7 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { IGraphqlMovie, MovieType } from '@store/kinopoisk'
-import { normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { normalizeUrlWithNull, releaseYearsToString } from '@utils'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -14,7 +14,7 @@ type Props = {
 	onPress: ({ id }: { id: number; type: MovieType }) => void
 }
 
-export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }: Props) => {
+export const SlugItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }) => {
 	const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 	const { styles } = useStyles(stylesheet)
 
@@ -27,7 +27,7 @@ export const SlugItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, on
 					{data.title.russian ?? data.title.original}
 				</Text>
 				<Text style={styles.detailDescription} numberOfLines={1}>
-					{data.releaseYears && data.releaseYears.length !== 0 ? (data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0].start === 0 ? null : data.releaseYears[0].start) ?? '' : data.releaseYears[0].start != null || data.releaseYears[0].end != null ? (data.releaseYears[0].start ?? '...') + ' - ' + (data.releaseYears[0].end ?? '...') : '') : data.productionYear === 0 ? null : data.productionYear}
+					{data.releaseYears ? releaseYearsToString(data.releaseYears) : data.productionYear === 0 ? null : data.productionYear}
 				</Text>
 			</View>
 		</Button>

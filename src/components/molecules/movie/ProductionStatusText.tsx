@@ -1,4 +1,5 @@
 import { ProductionStatus } from '@store/kinopoisk'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -7,7 +8,7 @@ interface Props {
 	productionStatusUpdateDate: string
 }
 
-export const ProductionStatusText = ({ productionStatus, productionStatusUpdateDate }: Props) => {
+export const ProductionStatusText: FC<Props> = ({ productionStatus, productionStatusUpdateDate }) => {
 	const { styles } = useStyles(stylesheet, { color: productionStatus ?? undefined })
 
 	let statusMessage = ''

@@ -2,7 +2,7 @@ import { Button, ImageBackground } from '@components/atoms'
 import { IGraphqlSuggestMovieList } from '@store/kinopoisk'
 import { SearchHistoryMovieList } from '@store/settings'
 import { normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -11,7 +11,7 @@ type Props = {
 	onPress: (item: Omit<SearchHistoryMovieList, 'timestamp'>) => void
 }
 
-export const MovieList = ({ item, onPress }: Props) => {
+export const MovieList: FC<Props> = ({ item, onPress }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/64x64' })

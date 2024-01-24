@@ -3,6 +3,7 @@ import { SlugItem } from '@components/molecules'
 import { NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
+import { FC } from 'react'
 import { Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -14,7 +15,7 @@ type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 
 const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
-export const SlugItemList = ({ slug, title }: Props) => {
+export const SlugItemList: FC<Props> = ({ slug, title }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const { isError, isSuccess, data, refetch } = useGetListBySlugQuery({ slug, page: 1, limit: 25 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.docs ?? [], ...otherParams }) })

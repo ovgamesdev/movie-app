@@ -7,7 +7,11 @@ import { Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-const ModalContent = memo(({ item }: { item: WatchHistory }) => {
+interface Props {
+	item: WatchHistory
+}
+
+const ModalContent = memo<Props>(({ item }) => {
 	const { removeItemByPath, mergeItem, isBatteryOptimizationEnabled, setItemHiddenModal } = useActions()
 	const { styles } = useStyles(stylesheet)
 
@@ -19,12 +23,14 @@ const ModalContent = memo(({ item }: { item: WatchHistory }) => {
 		<View style={styles.container}>
 			<View style={styles.header} />
 			<Text style={styles.title}>«{item.title}»</Text>
-			<Text style={styles.detailText}>{new Date(item.timestamp).toLocaleDateString()}</Text>
+			<Text style={styles.detailText}>created: {new Date(item.startTimestamp).toLocaleDateString()}</Text>
+			<Text style={styles.detailText}>updated: {new Date(item.timestamp).toLocaleDateString()}</Text>
 
 			<View style={{ height: 10 }} />
 
 			<View style={styles.buttonContainer}>
 				<Button
+					hasTVPreferredFocus
 					text='Детали'
 					onPress={() => {
 						onClose()
@@ -106,6 +112,13 @@ const ModalContent = memo(({ item }: { item: WatchHistory }) => {
 						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
 					}}
 				/>
+				<View style={{ height: 1 }} />
+				<Button
+					text='Закрыть'
+					onPress={() => {
+						onClose()
+					}}
+				/>
 			</View>
 		</View>
 	)
@@ -120,12 +133,8 @@ export const ItemMenuModal = () => {
 		setItemHiddenModal()
 	}
 
-	const _onShow = () => {
-		//
-	}
-
 	return (
-		<Modal isVisible={isVisibleModal} onShow={_onShow} onSwipeComplete={onClose} onBackdropPress={onClose} onBackButtonPress={onClose} swipeDirection={['down']} useNativeDriverForBackdrop style={styles.modal}>
+		<Modal isVisible={isVisibleModal} onSwipeComplete={onClose} onBackdropPress={onClose} onBackButtonPress={onClose} swipeDirection={['down']} useNativeDriverForBackdrop style={styles.modal}>
 			{item ? <ModalContent item={item} /> : <View />}
 		</Modal>
 	)

@@ -1,24 +1,24 @@
 import { ActivityIndicator, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults } from '@components/organisms'
-import { useNavigation } from '@hooks'
+import { useDebounce, useNavigation } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
-import React, { useDeferredValue, useEffect, useRef, useState } from 'react'
-import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { FC, useEffect, useRef, useState } from 'react'
+import { KeyboardAvoidingView, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 
-export const Search = ({ route }: Props) => {
+export const Search: FC<Props> = ({ route }) => {
 	const defaultFilters = route.params?.data ?? {}
 	const insets = useSafeAreaInsets()
 	const navigation = useNavigation()
 	const { styles } = useStyles(stylesheet)
 
 	const [keyword, setKeyword] = useState('')
-	const deferredKeyword = useDeferredValue(keyword)
+	const deferredKeyword = useDebounce(keyword, 300)
 	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: deferredKeyword.length === 0 })
 	const isEmpty = !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
 	const isLoading = keyword !== deferredKeyword || isFetching
@@ -33,21 +33,23 @@ export const Search = ({ route }: Props) => {
 				<Input ref={ref} value={keyword} onChangeText={setKeyword} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
-			{keyword.length === 0 ? (
-				<SearchHistory />
-			) : isLoading ? (
-				<View style={styles.emptyContainer}>
-					<ActivityIndicator size='small' />
-				</View>
-			) : isEmpty ? (
-				<View style={styles.emptyContainer}>
-					<Text style={styles.emptyText}>По вашему запросу ничего не найдено</Text>
-				</View>
-			) : (
-				<ScrollView contentContainerStyle={[styles.resultsContainer, { paddingBottom: 15 + insets.bottom }]}>
-					<SearchResults data={data} />
-				</ScrollView>
-			)}
+			<KeyboardAvoidingView behavior='padding'>
+				{keyword.length === 0 ? (
+					<SearchHistory />
+				) : isLoading ? (
+					<View style={styles.emptyContainer}>
+						<ActivityIndicator size='small' />
+					</View>
+				) : isEmpty ? (
+					<View style={styles.emptyContainer}>
+						<Text style={styles.emptyText}>По вашему запросу ничего не найдено</Text>
+					</View>
+				) : (
+					<ScrollView contentContainerStyle={[styles.resultsContainer, { paddingBottom: 15 + insets.bottom }]}>
+						<SearchResults data={data} />
+					</ScrollView>
+				)}
+			</KeyboardAvoidingView>
 		</TVFocusGuideView>
 	)
 }

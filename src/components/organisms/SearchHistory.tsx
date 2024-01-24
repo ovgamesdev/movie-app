@@ -3,7 +3,7 @@ import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
 import { movieListUrlToFilters, normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import type { FC } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -13,7 +13,7 @@ type Props = {
 	onPress: (item: SearchHistoryType) => void
 }
 
-const SearchHistoryItem: React.FC<Props> = ({ item, onPress }) => {
+const SearchHistoryItem: FC<Props> = ({ item, onPress }) => {
 	const { theme } = useStyles()
 	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: item.type === 'MovieListMeta' ? '/64x64' : '/80x120' })
 

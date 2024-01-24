@@ -1,11 +1,17 @@
 import { Button } from '@components/atoms'
 import { BookmarksTabParamList } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { FC } from 'react'
 import { Dimensions, TVFocusGuideView, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const TabBarTv = ({ activeTab, setActiveTab }: { activeTab: keyof BookmarksTabParamList; setActiveTab: (tab: keyof BookmarksTabParamList) => void }) => {
+interface Props {
+	activeTab: keyof BookmarksTabParamList
+	setActiveTab: (tab: keyof BookmarksTabParamList) => void
+}
+
+export const TabBarTv: FC<Props> = ({ activeTab, setActiveTab }) => {
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const { styles } = useStyles(stylesheet)

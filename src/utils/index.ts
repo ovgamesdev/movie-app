@@ -1,4 +1,5 @@
-import { IFilmBaseInfo, IListSlugFilter, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType } from '@store/kinopoisk'
+import { IFilmBaseInfo, IListSlugFilter, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType, ReleaseYear } from '@store/kinopoisk'
+import { WatchHistory, WatchHistoryProvider, WatchHistoryStatus } from '@store/settings'
 
 // MOVIE
 
@@ -96,9 +97,13 @@ export const declineChildren = (count: number): string => {
 	return `${count} ${titles[count % 100 > 4 && count % 100 < 20 ? 2 : cases[Math.min(count % 10, 5)]]}`
 }
 
-// TODO https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-3.html#narrowing-on-comparisons-to-booleans
 export const isSeries = (type: MovieType): boolean => {
 	return type === 'TvSeries' || type === 'MiniSeries' || type === 'TvShow'
+}
+
+type IsSeriesType = ITvSeriesBaseInfo | IFilmBaseInfo
+export const isSeriesData = (data: IsSeriesType): data is ITvSeriesBaseInfo => {
+	return data.__typename === 'TvSeries' || data.__typename === 'MiniSeries' || data.__typename === 'TvShow'
 }
 
 export const pickIsSeries = <T extends Partial<IMovieBaseInfo>>(type: T, series: keyof ITvSeriesBaseInfo, notSeries: keyof IFilmBaseInfo): any => {
@@ -185,4 +190,50 @@ export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: s
 		slug,
 		filters: { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues }
 	}
+}
+
+export const releaseYearsToString = (releaseYears: ReleaseYear[] | undefined): string | null => {
+	return !releaseYears ? null : releaseYears.length !== 0 ? (releaseYears[0]?.start === releaseYears[0]?.end ? (releaseYears[0].start === null || releaseYears[0].start === 0 ? null : String(releaseYears[0].start)) ?? '' : releaseYears[0].start != null || releaseYears[0].end != null ? (releaseYears[0].start ?? '...') + ' - ' + (releaseYears[0].end ?? '...') : '') : null
+}
+
+// notifee
+export const validateDisplayNotificationData = <T extends object>(obj: T) => {
+	const resObj: { [key: string]: string | number | object } = {}
+
+	for (const f in obj) {
+		const value: unknown = obj[f as keyof T]
+
+		if (value === null) {
+			continue
+		} else if (typeof value === 'string' || typeof value === 'number') {
+			resObj[f] = value
+		} else if (typeof value === 'object') {
+			resObj[f] = validateDisplayNotificationData(value)
+		}
+	}
+
+	return resObj
+}
+
+export const restrictDisplayNotificationData = (obj: { [key: string]: string | number | object }) => {
+	const resObj: WatchHistory = {
+		id: obj.id as number,
+		provider: (obj.provider as WatchHistoryProvider | undefined) ?? null,
+		type: obj.type as MovieType,
+		title: obj.title as string,
+		poster: (obj.poster as string | undefined) ?? null,
+		year: (obj.year as number | undefined) ?? null,
+		startTimestamp: obj.startTimestamp as number,
+		timestamp: obj.timestamp as number,
+		status: obj.status as WatchHistoryStatus
+		//
+		// duration?: number
+		// lastTime?: number
+		// //
+		// notify?: boolean
+		// fileIndex?: number
+		// releasedEpisodes?: number
+	}
+
+	return resObj
 }

@@ -5,16 +5,15 @@ import { useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
-import { isSeries, normalizeUrlWithNull } from '@utils'
+import { isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
+import { FC } from 'react'
 import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 
-// TODO releaseYears to string (releaseYears) => string
-
-export const Movie = ({ route }: Props) => {
+export const Movie: FC<Props> = ({ route }) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles } = useStyles(stylesheet)
@@ -93,8 +92,7 @@ export const Movie = ({ route }: Props) => {
 							<View style={styles.detailsInfo}>
 								{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 								<Text style={styles.detailsInfoTitle} selectable={!Platform.isTV}>
-									{/* TODO releaseYears to utils */}
-									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeries(data.__typename) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'}${'releaseYears' in data && data.releaseYears[0]?.start === data.releaseYears[0]?.end ? (data.releaseYears[0]?.start === null || data.releaseYears[0]?.start === 0 ? '' : ' ' + data.releaseYears[0]?.start) : 'releaseYears' in data && (data.releaseYears[0]?.start !== null || data.releaseYears[0]?.end !== null) ? ' ' + (data.releaseYears[0]?.start ?? '...') + ' - ' + (data.releaseYears[0]?.end ?? '...') : ''})` : data.productionYear ? `(${data.productionYear})` : ''}</Text>
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeriesData(data) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${releaseYearsToString(data.releaseYears)})` : data.productionYear ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
 								<Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>

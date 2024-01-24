@@ -1,6 +1,7 @@
 export * from './useActions'
 export * from './useAuth'
 export * from './useBackgroundFetch'
+export * from './useDebounce'
 export * from './useNavigation'
 export * from './useOrientation'
 export * from './useTypedSelector'

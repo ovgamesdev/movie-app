@@ -1,6 +1,6 @@
 import { useNavigation } from '@hooks'
 import { AnimatedFlashList, FlashList, FlashListProps } from '@shopify/flash-list'
-import React, { useEffect, useRef, useState } from 'react'
+import { ReactElement, useEffect, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 
 interface FocusableListRenderItemInfo<ItemT> {
@@ -19,7 +19,7 @@ interface FocusableListRenderItemInfo<ItemT> {
 }
 
 // TODO movie to types
-export type FocusableFlashListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => React.ReactElement | null
+export type FocusableFlashListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => ReactElement | null
 
 export const FocusableFlashList = <ItemT,>({ renderItem, animated, ...props }: Omit<FlashListProps<ItemT>, 'renderItem'> & { renderItem: FocusableFlashListRenderItem<ItemT> | null | undefined; animated?: boolean }) => {
 	const navigation = useNavigation()

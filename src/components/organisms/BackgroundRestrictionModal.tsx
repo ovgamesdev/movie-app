@@ -15,10 +15,6 @@ export const BackgroundRestrictionModal = () => {
 		setIsVisibleModal(false)
 	}
 
-	const _onShow = () => {
-		//
-	}
-
 	if (!isVisibleModal) return null
 
 	const uri = `https://dontkillmyapp-com.translate.goog/${isInDontKillMyApp ? powerManagerInfo?.manufacturer?.toLocaleLowerCase() ?? '' : 'general'}?_x_tr_sl=en&_x_tr_tl=ru&_x_tr_hl=ru&_x_tr_pto=sc#user-solution-section`
@@ -26,7 +22,6 @@ export const BackgroundRestrictionModal = () => {
 	return (
 		<Modal
 			isVisible={isVisibleModal}
-			onShow={_onShow}
 			onSwipeComplete={onClose}
 			onBackdropPress={onClose}
 			onBackButtonPress={onClose}
@@ -52,7 +47,7 @@ export const BackgroundRestrictionModal = () => {
 					/>
 				</View>
 				<View style={styles.buttonContainer}>
-					<Button onPress={notifee.openBatteryOptimizationSettings} text='Открыть «Оптимизация батареи»' />
+					<Button hasTVPreferredFocus onPress={notifee.openBatteryOptimizationSettings} text='Открыть «Оптимизация батареи»' />
 					<Button onPress={notifee.openPowerManagerSettings} text='Открыть «Диспетчер питания»' />
 				</View>
 			</View>

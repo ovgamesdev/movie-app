@@ -1,7 +1,7 @@
 import { Button, ButtonType } from '@components/atoms'
 import { VoiceComponent } from '@components/molecules/search'
 import { CloseIcon, SearchIcon } from '@icons'
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Keyboard, TVFocusGuideView, TextInput, TextInputProps, ToastAndroid } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 

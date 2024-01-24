@@ -1,8 +1,13 @@
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
+import { FC } from 'react'
 import { View } from 'react-native'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 
-export const Text250 = ({ top250 }: { top250: number }) => {
+interface Props {
+	top250: number
+}
+
+export const Text250: FC<Props> = ({ top250 }) => {
 	const length = top250.toString().length
 	const width = length === 1 ? 60 : length === 2 ? 64 : 72
 

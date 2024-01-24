@@ -4,7 +4,7 @@ import { useTypedSelector } from '@hooks'
 import { NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
-import React from 'react'
+import { FC } from 'react'
 import { Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -13,7 +13,7 @@ type Props = {
 	title: string
 }
 
-export const ContinueWatchItemList = ({ status, title }: Props) => {
+export const ContinueWatchItemList: FC<Props> = ({ status, title }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)

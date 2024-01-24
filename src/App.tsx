@@ -179,6 +179,18 @@ const App: FC = () => {
 
 export default App
 
+// utils
+
+declare global {
+	interface String {
+		Capitalize(): string
+	}
+}
+
+String.prototype.Capitalize = function () {
+	return this.charAt(0).toUpperCase() + this.slice(1)
+}
+
 // TODO can help
 // movie-view https://github.com/bamlab/react-native-image-header-scroll-view/tree/master
 // image-view https://github.com/zachgibson/react-native-parallax-swiper/tree/master | https://github.com/merryjs/photo-viewer | https://github.com/leecade/react-native-swiper

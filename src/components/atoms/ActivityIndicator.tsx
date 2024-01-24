@@ -1,4 +1,3 @@
-import React from 'react'
 import { ActivityIndicatorProps, ActivityIndicator as RNActivityIndicator } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 

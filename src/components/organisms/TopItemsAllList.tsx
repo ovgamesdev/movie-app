@@ -1,9 +1,8 @@
 import { Button, FocusableFlatList, FocusableListRenderItem } from '@components/atoms'
-import { SlugItem } from '@components/molecules'
 import { TopItemsAllItem } from '@components/molecules/TopItemsAllItem'
 import { navigation } from '@navigation'
 import { MovieSelectionItem, useGetHdShowcaseQuery } from '@store/kinopoisk'
-import React from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -11,7 +10,7 @@ type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 
 const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
-export const TopItemsAllList = () => {
+export const TopItemsAllList: FC = () => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const { isError, isSuccess, data, refetch } = useGetHdShowcaseQuery(undefined, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.items.find(it => it.id === 'top_items_all') ?? data?.items[0] ?? { content: { items: [] }, id: '', title: '' }, ...otherParams }) })

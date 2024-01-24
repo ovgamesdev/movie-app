@@ -1,6 +1,6 @@
 import { Button, ButtonType } from '@components/atoms'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Dimensions, FlatList, PressableProps, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

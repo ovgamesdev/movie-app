@@ -3,7 +3,6 @@ import { Kp3dIcon, KpImaxIcon } from '@icons'
 import { navigation } from '@navigation'
 import { Audience, Country, Genre, IFilmBaseInfo, ITvSeriesBaseInfo, MoneyAmount, MovieType, Person, Release, Releases } from '@store/kinopoisk'
 import { declineSeasons, formatDuration, isSeries, ratingMPAA } from '@utils'
-import React from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
@@ -38,7 +37,7 @@ const YearItem = ({ title, productionYear, seasons, type }: { title: string; pro
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flexDirection: 'row', flex: 1 }}>
 				{!productionYear ? (
-					<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text='—' />
+					<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text='—' />
 				) : (
 					<Button
 						onPress={() => {
@@ -190,12 +189,14 @@ const BudgetItem = ({ title, budget }: { title: string; budget: MoneyAmount | nu
 const WorldBudgetItem = ({ title, usaBudget, worldBudget }: { title: string; usaBudget: MoneyAmount | null; worldBudget: MoneyAmount | null }) => {
 	const { theme } = useStyles()
 
-	if (!(worldBudget && usaBudget && worldBudget.amount !== usaBudget.amount)) return null
+	console.log({ worldBudget, usaBudget })
+
+	if (!(worldBudget && worldBudget.amount !== usaBudget?.amount)) return null
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={`+ ${usaBudget.currency.symbol}${(worldBudget.amount - usaBudget.amount).toLocaleString()} = ${worldBudget.currency.symbol}${worldBudget.amount.toLocaleString()}`} />
+			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={usaBudget ? `+ ${usaBudget.currency.symbol}${(worldBudget.amount - usaBudget.amount).toLocaleString()} = ${worldBudget.currency.symbol}${worldBudget.amount.toLocaleString()}` : `${worldBudget.currency.symbol}${worldBudget.amount.toLocaleString()}`} />
 		</View>
 	)
 }
@@ -306,7 +307,7 @@ const DurationItem = ({ title, duration, seriesDuration, totalDuration }: { titl
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={!durationValue ? '—' : `${durationValue} мин${durationValue > 60 ? '. / ' + formatDuration(durationValue) : ''}` + (totalDuration && seriesDuration ? `${totalDuration && seriesDuration ? `. серия (${totalDuration} мин. всего)` : totalDuration ? '. всего' : ''}` : '')} />
+			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={(durationValue === null ? (totalDuration === null ? '—' : `${totalDuration} мин. всего`) : `${durationValue} мин${durationValue > 60 ? '. / ' + formatDuration(durationValue) : ''}`) + (totalDuration && seriesDuration ? `${totalDuration && seriesDuration ? `. серия (${totalDuration} мин. всего)` : totalDuration ? '. всего' : ''}` : '')} />
 		</View>
 	)
 }

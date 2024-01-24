@@ -7,7 +7,7 @@ export interface IInitialStateSettings {
 	lastSaveTime: number
 }
 
-export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new'
+export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' // TODO await
 export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | 'HDVB' | 'VOIDBOOST'
 
 export type WatchHistory = {
@@ -17,7 +17,8 @@ export type WatchHistory = {
 	title: string
 	poster: string | null
 	year: number | null
-	timestamp: number
+	startTimestamp: number // Время начала просмотра
+	timestamp: number // Время последнего просмотра
 	status: WatchHistoryStatus
 	//
 	duration?: number

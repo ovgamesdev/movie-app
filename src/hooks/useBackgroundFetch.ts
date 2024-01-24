@@ -1,9 +1,8 @@
 import notifee, { AndroidImportance } from '@notifee/react-native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
-import { MovieType } from '@store/kinopoisk'
-import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
-import { delay, isSeries, normalizeUrlWithNull, rusToLatin } from '@utils'
+import { WatchHistory, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
+import { delay, isSeries, normalizeUrlWithNull, rusToLatin, validateDisplayNotificationData } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
 import Config from 'react-native-config'
@@ -58,23 +57,7 @@ const displayNotificationNewFilm = (movie: WatchHistory) => {
 		id: `${movie.type}:${movie.id}`,
 		title: 'Новый контент доступен!',
 		body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
-		data: Object.assign(
-			{
-				id: movie.id,
-				type: movie.type,
-				title: movie.title
-			},
-			'provider' in movie && movie.provider ? { provider: movie.provider } : {},
-			'poster' in movie && movie.poster ? { poster: movie.poster } : {},
-			'year' in movie && movie.year ? { year: movie.year } : {}
-		) as {
-			id: number
-			title: string
-			poster?: string
-			provider?: WatchHistoryProvider
-			type: MovieType
-			year?: number
-		},
+		data: validateDisplayNotificationData(movie),
 		android: {
 			channelId: 'content-release-channel',
 			largeIcon: poster,
@@ -106,23 +89,7 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 		id: `${movie.type}:${movie.id}`,
 		title: 'Новый контент доступен!',
 		body: `Новый эпизод «${movie.title}»`, // (эпизод 0, сезон 0).
-		data: Object.assign(
-			{
-				id: movie.id,
-				type: movie.type,
-				title: movie.title
-			},
-			'provider' in movie && movie.provider ? { provider: movie.provider } : {},
-			'poster' in movie && movie.poster ? { poster: movie.poster } : {},
-			'year' in movie && movie.year ? { year: movie.year } : {}
-		) as {
-			id: number
-			title: string
-			poster?: string
-			provider?: WatchHistoryProvider
-			type: MovieType
-			year?: number
-		},
+		data: validateDisplayNotificationData(movie),
 		android: {
 			channelId: 'content-release-channel',
 			largeIcon: poster,

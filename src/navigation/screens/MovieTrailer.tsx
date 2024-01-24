@@ -2,14 +2,14 @@ import { ActivityIndicator } from '@components/atoms'
 import { RootStackParamList } from '@navigation'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useCallback } from 'react'
+import { FC, useCallback } from 'react'
 import { AppState, Dimensions, StatusBar, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MovieTrailer'>
 
-export const MovieTrailer = ({ route }: Props) => {
+export const MovieTrailer: FC<Props> = ({ route }) => {
 	const { streamUrl, sourceVideoUrl } = route.params.data
 	const { styles } = useStyles(stylesheet)
 

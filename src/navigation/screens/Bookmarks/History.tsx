@@ -7,14 +7,14 @@ import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { isSeries, normalizeUrlWithNull } from '@utils'
-import React, { useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 export const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
 
-export const History: React.FC = () => {
+export const History: FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 	const { setItemVisibleModal } = useActions()
 	const insets = useSafeAreaInsets()
@@ -31,7 +31,7 @@ export const History: React.FC = () => {
 
 	console.log('History data:', data)
 
-	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item }) // TODO tnfm
+	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item })
 
 	const renderItem: FocusableFlashListRenderItem<WatchHistory> = useCallback(({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 		const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
@@ -47,8 +47,7 @@ export const History: React.FC = () => {
 						</Text>
 
 						<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }} numberOfLines={1}>
-							{item.provider ? `[${item.provider}] • ` : ''}
-							{item.year ? item.year : ''}
+							{[item.provider ? `[${item.provider}]` : null, item.year].filter(it => it).join(' • ')}
 						</Text>
 
 						{/* {item.duration && item.lastTime && (
@@ -87,7 +86,6 @@ export const History: React.FC = () => {
 
 	const handleOnScroll = useMemo(() => Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }), [scrollY])
 
-	// TODO test FocusableFlashList
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
 			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={setActiveFilter} scrollY={scrollY} />

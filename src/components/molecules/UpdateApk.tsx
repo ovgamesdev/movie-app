@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { DownloadIcon } from '@icons'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 

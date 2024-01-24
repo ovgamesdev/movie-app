@@ -1,7 +1,7 @@
-import React from 'react'
+import type { FC } from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 
-export const Favorites: React.FC = () => {
+export const Favorites: FC = () => {
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} trapFocusLeft trapFocusRight>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 }}>

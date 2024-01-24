@@ -1,7 +1,7 @@
 import { Input as MyInput } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { InputSettingsKey } from '@store/settings'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, TextInputProps, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 

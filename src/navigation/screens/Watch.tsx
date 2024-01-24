@@ -5,8 +5,8 @@ import { RootStackParamList, navigationRef } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
-import { isSeries } from '@utils'
-import { useEffect, useState } from 'react'
+import { isSeries, validateDisplayNotificationData } from '@utils'
+import { FC, useEffect, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -15,7 +15,7 @@ import WebView from 'react-native-webview'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Watch'>
 
-const Loading = () => {
+const Loading: FC = () => {
 	return (
 		<View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
 			<ActivityIndicator size='large' />
@@ -38,7 +38,7 @@ interface kinoboxPlayers {
 	message: string
 }
 
-export const Watch = ({ navigation, route }: Props) => {
+export const Watch: FC<Props> = ({ navigation, route }) => {
 	const { data } = route.params
 
 	const insets = useSafeAreaInsets()
@@ -145,6 +145,11 @@ export const Watch = ({ navigation, route }: Props) => {
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
 			}
 		})
+	}, [])
+
+	useEffect(() => {
+		console.log('data_inp:', data)
+		console.log('data_res:', validateDisplayNotificationData(data))
 	}, [])
 
 	const handleProviderChange = (it: kinoboxPlayersData) => {

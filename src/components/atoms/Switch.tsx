@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { FC, useCallback } from 'react'
 import { Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { clamp, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
@@ -21,7 +21,7 @@ const animConfig = {
 }
 
 // TODO remove pan
-export const Switch = ({ onValueChange, trackColor, thumbColor, value }: Props) => {
+export const Switch: FC<Props> = ({ onValueChange, trackColor, thumbColor, value }) => {
 	const switchTranslate = useSharedValue(value ? 21 : 0)
 	const { theme } = useStyles()
 

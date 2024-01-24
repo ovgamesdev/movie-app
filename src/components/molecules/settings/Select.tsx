@@ -1,7 +1,7 @@
 import { Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { ISettings, SelectSettingsKey } from '@store/settings'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 

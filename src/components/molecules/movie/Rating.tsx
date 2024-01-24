@@ -1,10 +1,11 @@
 import { RatingText, Text250 } from '@components/molecules/movie'
 import { IMovieBaseInfo } from '@store/kinopoisk'
 import { isSeries } from '@utils'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const Rating = ({ rating, top250, __typename }: Pick<IMovieBaseInfo, '__typename' | 'rating' | 'top250'>) => {
+export const Rating: FC<Pick<IMovieBaseInfo, '__typename' | 'rating' | 'top250'>> = ({ rating, top250, __typename }) => {
 	const { styles } = useStyles(stylesheet)
 
 	return (

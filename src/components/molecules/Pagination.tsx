@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { NavigateNextIcon } from '@icons'
-import React from 'react'
+import { FC } from 'react'
 import { ScrollView, StyleSheet, TVFocusGuideView, Text } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
@@ -26,7 +26,7 @@ type Props = {
 	onPageChange: (page: number) => void
 }
 
-export const Pagination = ({ pageCount, currentPage, pageNeighbours = 2, onPageChange }: Props) => {
+export const Pagination: FC<Props> = ({ pageCount, currentPage, pageNeighbours = 2, onPageChange }) => {
 	const { theme } = useStyles()
 
 	const goToPage = (page: number) => {

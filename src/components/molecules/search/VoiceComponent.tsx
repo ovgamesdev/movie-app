@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { VoiceIcon } from '@icons'
 import Voice, { SpeechErrorEvent } from '@react-native-voice/voice'
 import { mapValue } from '@utils'
-import React, { useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -13,7 +13,7 @@ interface VoiceComponentProps {
 	onPress?: () => void
 }
 
-export const VoiceComponent: React.FC<VoiceComponentProps> = ({ onSpeechResult, onSpeechPartialResult, onSpeechError, onPress }) => {
+export const VoiceComponent: FC<VoiceComponentProps> = ({ onSpeechResult, onSpeechPartialResult, onSpeechError, onPress }) => {
 	const [recognizing, setRecognizing] = useState(false)
 	const [isSupported, setIsSupported] = useState(true)
 	const [volumeScale, setVolumeScale] = useState(1)

@@ -1,7 +1,7 @@
 import { Button, ImageBackground, Progress } from '@components/atoms'
 import { WatchHistory } from '@store/settings'
 import { normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -14,7 +14,7 @@ type Props = {
 	onPress: (value: WatchHistory) => void
 }
 
-export const ContinueWatchItem = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }: Props) => {
+export const ContinueWatchItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }) => {
 	const poster = normalizeUrlWithNull(data.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 	const { styles } = useStyles(stylesheet)
 

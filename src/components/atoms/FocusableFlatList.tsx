@@ -1,5 +1,5 @@
 import { useNavigation } from '@hooks'
-import React, { useEffect, useRef, useState } from 'react'
+import { ReactElement, useEffect, useRef, useState } from 'react'
 import { Animated, FlatList, FlatListProps, Platform } from 'react-native'
 
 interface FocusableListRenderItemInfo<ItemT> {
@@ -18,7 +18,7 @@ interface FocusableListRenderItemInfo<ItemT> {
 }
 
 // TODO movie to types
-export type FocusableListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => React.ReactElement | null
+export type FocusableListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => ReactElement | null
 
 export const FocusableFlatList = <ItemT,>({ renderItem, animated, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: FocusableListRenderItem<ItemT> | null | undefined; animated?: boolean }) => {
 	const navigation = useNavigation()

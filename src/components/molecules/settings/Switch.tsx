@@ -1,7 +1,7 @@
 import { Switch as CustomSwitch } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { SwitchSettingsKey } from '@store/settings'
-import { FC } from 'react'
+import type { FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 

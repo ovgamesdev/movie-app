@@ -3,10 +3,10 @@ import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
-import { useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import Config from 'react-native-config'
 
-// TODO movie to api
+// TODO move to api
 const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> => {
 	try {
 		const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
@@ -20,18 +20,22 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 	}
 }
 
-export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
-	const { mergeItem, removeItemByPath, isBatteryOptimizationEnabled } = useActions()
-	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
+type Status = 'loading' | 'watch' | 'continue' | 'off-notify' | 'on-notify'
 
-	const [status, setStatus] = useState<'loading' | 'watch' | 'continue' | 'off-notify' | 'on-notify'>('loading')
+interface Props {
+	data: IFilmBaseInfo | ITvSeriesBaseInfo
+}
+
+export const WatchButton: FC<Props> = ({ data }) => {
+	const { mergeItem, removeItemByPath, isBatteryOptimizationEnabled } = useActions()
+	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]) as WatchHistory | undefined
+
+	const [providers, setProviders] = useState<unknown[] | null | 'loading'>('loading')
+
+	const status: Status = providers === 'loading' ? 'loading' : providers ? (watchHistory ? 'continue' : 'watch') : watchHistory?.notify ? 'on-notify' : 'off-notify'
 
 	useEffect(() => {
-		const item = watchHistory[`${data.id}`] as WatchHistory | undefined
-
-		const init = async () => setStatus((await getProviders(data)) ? (item ? 'continue' : 'watch') : item?.notify ? 'on-notify' : 'off-notify')
-
-		init()
+		getProviders(data).then(it => setProviders(it))
 	}, [])
 
 	return (
@@ -39,17 +43,26 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'continue' ? 'Продолжить просмотр' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
 			style={{ minWidth: 54 }}
 			onPress={async () => {
-				const item: WatchHistory = {
-					id: data.id,
-					type: data.__typename,
-					title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-					// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-					year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
-					poster: data.poster?.avatarsUrl ?? null,
-					provider: null,
-					timestamp: Date.now(),
-					status: 'pause'
-				}
+				const item: WatchHistory = watchHistory
+					? {
+							...watchHistory,
+							title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+							// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+							year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
+							poster: data.poster?.avatarsUrl ?? null
+					  }
+					: {
+							id: data.id,
+							type: data.__typename,
+							title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
+							// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+							year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
+							poster: data.poster?.avatarsUrl ?? null,
+							provider: null,
+							startTimestamp: Date.now(),
+							timestamp: Date.now(),
+							status: 'pause'
+					  }
 
 				switch (status) {
 					case 'loading':
@@ -59,12 +72,10 @@ export const WatchButton = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo 
 						navigation.navigate('Watch', { data: item })
 						break
 					case 'off-notify':
-						setStatus('on-notify')
 						mergeItem({ watchHistory: { [`${item.id}`]: { ...item, notify: true } } })
 						isBatteryOptimizationEnabled()
 						break
 					case 'on-notify':
-						setStatus('off-notify')
 						removeItemByPath(['watchHistory', `${item.id}`])
 						break
 				}

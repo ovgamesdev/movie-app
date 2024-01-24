@@ -1,9 +1,10 @@
 import { IMovieBaseInfo } from '@store/kinopoisk'
 import { getRatingColor } from '@utils'
+import { FC } from 'react'
 import { Text } from 'react-native'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 
-export const RatingText = ({ rating, top250 }: Pick<IMovieBaseInfo, 'rating' | 'top250'>) => {
+export const RatingText: FC<Pick<IMovieBaseInfo, 'rating' | 'top250'>> = ({ rating, top250 }) => {
 	if (rating.expectation && rating.expectation.isActive && rating.expectation.value && rating.expectation.value > 0) return <Text style={{ fontSize: 48, fontWeight: '500', color: getRatingColor(rating.expectation.value / 10) }}>{rating.expectation.value.toFixed(0)}%</Text>
 	if (!rating.kinopoisk?.value || !rating.kinopoisk.isActive) return null
 	const top = rating.kinopoisk.value.toFixed(1)

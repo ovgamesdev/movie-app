@@ -1,4 +1,3 @@
-import React from 'react'
 import { ImageBackgroundProps, ImageBackground as RNImageBackground } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 

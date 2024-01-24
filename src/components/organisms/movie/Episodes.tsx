@@ -1,6 +1,6 @@
 import { useGetTvSeriesEpisodesQuery } from '@store/kinopoisk'
 import { getNoun } from '@utils'
-import React from 'react'
+import type { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -8,7 +8,7 @@ type Props = {
 	id: number
 }
 
-export const Episodes = ({ id: tvSeriesId }: Props) => {
+export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const { data, isFetching } = useGetTvSeriesEpisodesQuery({ tvSeriesId })

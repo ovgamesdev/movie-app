@@ -1,8 +1,8 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { IGraphqlSuggestMovie } from '@store/kinopoisk'
 import { SearchHistoryMovie } from '@store/settings'
-import { getRatingColor, isSeries, normalizeUrlWithNull } from '@utils'
-import React from 'react'
+import { getRatingColor, isSeries, normalizeUrlWithNull, releaseYearsToString } from '@utils'
+import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -11,7 +11,7 @@ type Props = {
 	onPress: (item: Omit<SearchHistoryMovie, 'timestamp'>) => void
 }
 
-export const Movie = ({ item, onPress }: Props) => {
+export const Movie: FC<Props> = ({ item, onPress }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/80x120' })
@@ -39,7 +39,7 @@ export const Movie = ({ item, onPress }: Props) => {
 					</Text>
 					<Text style={styles.commonText} numberOfLines={1}>
 						{/* TODO fix '' !! */}
-						{[item.title.russian !== null && item.title.original !== null ? ' ' : null, isSeries(item.__typename) ? 'сериал' : null, item.releaseYears && item.releaseYears.length !== 0 ? (item.releaseYears[0]?.start === item.releaseYears[0]?.end ? (item.releaseYears[0].start === null ? '' : item.releaseYears[0]?.start) : item.releaseYears[0].start != null || item.releaseYears[0].end != null ? (item.releaseYears[0]?.start ?? '...') + ' - ' + (item.releaseYears[0]?.end ?? '...') : '') : item.productionYear]
+						{[item.title.russian !== null && item.title.original !== null ? ' ' : null, isSeries(item.__typename) ? 'сериал' : null, item.releaseYears && item.releaseYears.length !== 0 ? releaseYearsToString(item.releaseYears) : item.productionYear]
 							.filter(it => it)
 							.map(it => (it === ' ' ? '' : it))
 							.join(', ')}
