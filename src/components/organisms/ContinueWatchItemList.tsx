@@ -1,7 +1,7 @@
 import { Button, FocusableFlatList, FocusableListRenderItem } from '@components/atoms'
 import { ContinueWatchItem } from '@components/molecules'
 import { useTypedSelector } from '@hooks'
-import { NavigateNextIcon } from '@icons'
+import { ArrowBackIcon, NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { FC } from 'react'
@@ -49,10 +49,12 @@ export const ContinueWatchItemList: FC<Props> = ({ status, title }) => {
 									<Text style={{ color: theme.colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>История просмотров пуста</Text>
 									<Text style={{ color: theme.colors.text200, fontSize: 15, textAlign: 'center' }}>Начни смотреть, я сохраню место {'\n'}на котором ты остановился.</Text>
 								</View>
-							) : null}
-							{!Platform.isTV || isEmpty ? null : (
-								<Button onPress={() => navigation.navigate('Bookmarks', { screen: 'History' })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
-									<Text style={styles.footerItemText}>More..</Text>
+							) : (
+								<Button onPress={() => navigation.navigate('Bookmarks', { screen: 'History' })} animation='scale' flex={0} padding={0} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
+									<View style={styles.footerItemIconContainer}>
+										<ArrowBackIcon width={30} height={30} fill={theme.colors.text200} rotation={180} />
+									</View>
+									<Text style={styles.footerItemText}>Показать все</Text>
 								</Button>
 							)}
 						</>
@@ -76,10 +78,14 @@ const stylesheet = createStyleSheet(theme => ({
 	footerContainer: {
 		flexGrow: 1
 	},
+	footerItemIconContainer: {
+		borderRadius: 999,
+		padding: 10,
+		backgroundColor: theme.colors.bg200
+	},
 	footerItemText: {
 		color: theme.colors.text200,
 		fontSize: 14,
-		paddingHorizontal: 10,
 		paddingTop: 20,
 		paddingBottom: 75.5
 	},

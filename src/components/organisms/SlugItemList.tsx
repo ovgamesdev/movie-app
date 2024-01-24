@@ -1,6 +1,6 @@
 import { Button, FocusableFlatList, FocusableListRenderItem } from '@components/atoms'
 import { SlugItem } from '@components/molecules'
-import { NavigateNextIcon } from '@icons'
+import { ArrowBackIcon, NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { IListBySlugResultsDocs, useGetListBySlugQuery } from '@store/kinopoisk'
 import { FC } from 'react'
@@ -69,9 +69,12 @@ export const SlugItemList: FC<Props> = ({ slug, title }) => {
 									<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
 								</Button>
 							)}
-							{!Platform.isTV || isEmpty ? null : (
-								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
-									<Text style={styles.footerItemText}>More..</Text>
+							{isEmpty ? null : (
+								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={0} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
+									<View style={styles.footerItemIconContainer}>
+										<ArrowBackIcon width={30} height={30} fill={theme.colors.text200} rotation={180} />
+									</View>
+									<Text style={styles.footerItemText}>Показать все</Text>
 								</Button>
 							)}
 						</>
@@ -95,10 +98,14 @@ const stylesheet = createStyleSheet(theme => ({
 	footerContainer: {
 		flexGrow: 1
 	},
+	footerItemIconContainer: {
+		borderRadius: 999,
+		padding: 10,
+		backgroundColor: theme.colors.bg200
+	},
 	footerItemText: {
 		color: theme.colors.text200,
 		fontSize: 14,
-		paddingHorizontal: 10,
 		paddingTop: 20,
 		paddingBottom: 75.5
 	},

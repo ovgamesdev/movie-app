@@ -84,11 +84,6 @@ export const OttTop10Monthly = () => {
 								<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
 							</Button>
 						)}
-						{/* {!Platform.isTV || isEmpty ? null : (
-								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
-									<Text style={styles.footerItemText}>More..</Text>
-								</Button>
-							)} */}
 					</>
 				}
 				ListFooterComponentStyle={styles.footerContainer}

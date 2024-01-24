@@ -1,5 +1,5 @@
 import { Button, FocusableFlatList, ImageBackground, Rating } from '@components/atoms'
-import { NavigateNextIcon } from '@icons'
+import { ArrowBackIcon, NavigateNextIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useGetOriginalMoviesQuery } from '@store/kinopoisk'
 import { isSeries, normalizeUrlWithNull } from '@utils'
@@ -62,13 +62,12 @@ export const OriginalMovies: FC<Props> = ({ id }) => {
 						)
 					}}
 					ListFooterComponent={
-						<>
-							{!Platform.isTV ? null : (
-								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={5} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
-									<Text style={{ color: theme.colors.text200, fontSize: 14, paddingHorizontal: 10, paddingTop: 20, paddingBottom: 75.5 }}>More..</Text>
-								</Button>
-							)}
-						</>
+						<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={0} transparent alignItems='center' justifyContent='center' style={{ width: 110, height: 215.5 }}>
+							<View style={{ borderRadius: 999, padding: 10, backgroundColor: theme.colors.bg200 }}>
+								<ArrowBackIcon width={30} height={30} fill={theme.colors.text200} rotation={180} />
+							</View>
+							<Text style={{ color: theme.colors.text200, fontSize: 14, paddingTop: 20, paddingBottom: 75.5 }}>Показать все</Text>
+						</Button>
 					}
 				/>
 			</TVFocusGuideView>
