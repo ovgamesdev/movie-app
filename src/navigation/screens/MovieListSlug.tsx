@@ -7,7 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { Dispatch, FC, SetStateAction, useCallback, useMemo, useRef, useState } from 'react'
-import { FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
+import { Dimensions, FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { useStyles } from 'react-native-unistyles'
@@ -88,6 +88,8 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	const [order, setOrder] = useState('POSITION_ASC')
 	const [newFilters, setNewFilters] = useState<IListSlugFilter>(filters ?? { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues: [] })
 	const { isError, isSuccess, data, refetch } = useGetListBySlugQuery({ slug, filters: newFilters, order, page, limit: 50 }, { selectFromResult: ({ data, ...otherParams }) => ({ data: { ...data, docs: data?.docs ?? [] }, ...otherParams }) })
+
+	const window = Dimensions.get('window')
 
 	const onPageChange = (page: number) => {
 		setPage(page)
@@ -202,13 +204,13 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	)
 
 	const keyExtractor = useCallback((item: Skeleton | IListBySlugResultsDocs) => `list_${slug}_item_${item.movie.id}`, [slug])
-	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }), [isShowNetInfo, insets.bottom])
+	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }), [isShowNetInfo, insets.bottom])
 
 	const ListEmptyComponent = useCallback(() => {
-		if (isSuccess) return null
+		if (!isSuccess) return null
 
 		return (
-			<View style={{ width: '100%', flexGrow: 1, flexShrink: 1, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
+			<View style={{ flex: 1, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30 }}>
 				<View style={{ height: 300, justifyContent: 'center', alignItems: 'center' }}>
 					<Text style={{ color: theme.colors.text100, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>Ничего не найдено</Text>
 					<Text style={{ color: theme.colors.text200, fontSize: 15, textAlign: 'center' }}>Попробуйте изменить параметры фильтра</Text>
@@ -220,10 +222,13 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	const ListFooterComponent = useCallback(() => {
 		if (isError) {
 			return (
-				<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={{ backgroundColor: theme.colors.bg200, height: 215.5 }}>
-					<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10 }}>Произошла ошибка</Text>
-					<Text style={{ color: theme.colors.text200, fontSize: 12, paddingHorizontal: 10, paddingTop: 5 }}>Повторите попытку</Text>
-				</Button>
+				// - (isShowNetInfo ? 0 : insets.bottom)
+				<View style={{ height: window.height - insets.top - 20 - 5, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30, justifyContent: 'center' }}>
+					<Button onPress={refetch} animation='scale' padding={5} paddingVertical={50} transparent alignItems='center' justifyContent='center' style={{ backgroundColor: theme.colors.bg200 }}>
+						<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10 }}>Произошла ошибка</Text>
+						<Text style={{ color: theme.colors.text200, fontSize: 12, paddingHorizontal: 10, paddingTop: 5 }}>Повторите попытку</Text>
+					</Button>
+				</View>
 			)
 		}
 
@@ -231,6 +236,8 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	}, [isError, data.page, data.pages, orientation])
 
 	const ListHeaderComponent = useCallback(() => {
+		if (!isSuccess) return null
+
 		return (
 			<>
 				{/* <Button text='back' onPress={() => navigation.pop()} hasTVPreferredFocus /> */}
@@ -249,8 +256,8 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 						<DescriptionText />
 					</View>
 				)}
-				<ScrollView horizontal>
-					{data.availableFilters && (
+				{data.availableFilters && (
+					<ScrollView horizontal>
 						<TVFocusGuideView style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 							<Filter id='country' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='genre' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
@@ -271,11 +278,11 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 								type='fullWidthToBottom'
 							/>
 						</TVFocusGuideView>
-					)}
-				</ScrollView>
+					</ScrollView>
+				)}
 			</>
 		)
-	}, [orientation, order, data])
+	}, [orientation, order, data, isSuccess])
 
 	const ListFooterComponentStyle = useMemo(() => (data.page != null && data.pages != null && data.pages > 1 ? { flexGrow: 1 } : {}), [data.page, data.pages])
 	const ListHeaderComponentStyle = useMemo(() => ({ marginTop: insets.top, marginBottom: 5 }), [insets.top])

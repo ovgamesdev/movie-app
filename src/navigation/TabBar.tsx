@@ -15,7 +15,7 @@ export const TabBar: FC<MaterialTopTabBarProps> = ({ state, descriptors, navigat
 	const { styles, theme } = useStyles(stylesheet)
 
 	const inputRange = state.routes.map((_, i) => i)
-	const indicatorTranslateX = position.interpolate({ inputRange, outputRange: inputRange.map(it => it * tabWidth + 10) })
+	const indicatorTranslateX = position.interpolate({ inputRange, outputRange: inputRange.map(it => it * tabWidth) })
 
 	useEffect(() => {
 		// const listener = position.addListener(({ value }: { value: number }) => {
@@ -58,7 +58,7 @@ export const TabBar: FC<MaterialTopTabBarProps> = ({ state, descriptors, navigat
 						</Button>
 					)
 				})}
-				<Animated.View style={[styles.line, { transform: [{ translateX: indicatorTranslateX }], width: tabWidth - 20 }]} />
+				<Animated.View style={[styles.line, { transform: [{ translateX: indicatorTranslateX }], width: tabWidth }]} />
 			</TVFocusGuideView>
 		</ScrollView>
 	)

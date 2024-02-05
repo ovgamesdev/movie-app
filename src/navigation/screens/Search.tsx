@@ -33,7 +33,7 @@ export const Search: FC<Props> = ({ route }) => {
 				<Input ref={ref} value={keyword} onChangeText={setKeyword} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
-			<KeyboardAvoidingView behavior='padding'>
+			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
 				{keyword.length === 0 ? (
 					<SearchHistory />
 				) : isLoading ? (

@@ -35,7 +35,7 @@ export const Bookmarks: FC = () => {
 	const Tab = createMaterialTopTabNavigator<BookmarksTabParamList>()
 
 	return (
-		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='History' tabBar={TabBar}>
+		<Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName='History' backBehavior='initialRoute' tabBar={TabBar}>
 			<Tab.Screen name='Favorites' component={Favorites} options={{ tabBarLabel: 'Избранное' }} />
 			<Tab.Screen name='History' component={History} options={{ tabBarLabel: 'История' }} />
 		</Tab.Navigator>

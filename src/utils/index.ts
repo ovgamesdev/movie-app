@@ -166,15 +166,15 @@ export const rusToLatin = (str: string): string =>
 // Search
 
 export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: string; filters: IListSlugFilter } => {
-	const isFilter = url.includes('--') || url.includes('?ss_')
+	const isFilter = url.includes('--') || url.includes('ss_')
 	const slug = url.split('/')[url.split('/').length - (url.endsWith('/') ? 2 : 1)]
 
-	const stringFilters = url.split('movies/')[1]
+	const stringFilters = url.includes('movies/?') ? '' : url.split('movies/')[1]
 
 	const arrayStringFilters = stringFilters
 		.split('/')
 		.filter(filter => filter.length > 0)
-		.filter(it => !it.includes('?ss_'))
+		.filter(it => !it.includes('ss_') && !it.includes('b='))
 	const arrayFilters = arrayStringFilters.map(filter => filter.split('--'))
 
 	const search =
@@ -183,12 +183,13 @@ export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: s
 			?.split('&')
 			.map(search => search.replace('ss_', '').split('=')) ?? []
 
-	const singleSelectFilterValues = [...arrayFilters, ...search].map(filter => ({ filterId: filter[0], value: filter[1] }))
+	const booleanFilterValues = [...search.filter(it => it[0] === 'b')].map(filter => ({ filterId: filter[1], value: true }))
+	const singleSelectFilterValues = [...arrayFilters, ...search.filter(it => it[0] !== 'b')].map(filter => ({ filterId: filter[0], value: filter[1] }))
 
 	return {
 		isFilter,
-		slug,
-		filters: { booleanFilterValues: [], intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues }
+		slug: slug.startsWith('?') ? '' : slug,
+		filters: { booleanFilterValues, intRangeFilterValues: [], multiSelectFilterValues: [], realRangeFilterValues: [], singleSelectFilterValues }
 	}
 }
 

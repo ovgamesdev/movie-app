@@ -1,9 +1,10 @@
 import { Button, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
 import { TopItemsAllItem } from '@components/molecules/TopItemsAllItem'
 import { navigation } from '@navigation'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { MovieSelectionItem, useGetHdShowcaseQuery } from '@store/kinopoisk'
 import { normalizeUrlWithNull } from '@utils'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dimensions, Platform, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
@@ -12,42 +13,121 @@ type Skeleton = { __typename: 'Skeleton'; movie: { id: number } }
 
 const skeletonData: Skeleton[] = Array.from({ length: 10 }, (_, index) => ({ __typename: 'Skeleton', movie: { id: index + 1 } }))
 
+type SavedDataType = {
+	content: {
+		items: MovieSelectionItem[]
+	}
+	id: string
+	title: string
+	lastUpdate?: number
+}
+
+const oneHourInMillis = 3600000 // 60000
+
 export const OttTop10Monthly = () => {
 	const insets = useSafeAreaInsets()
-	const { isError, isSuccess, data, refetch } = useGetHdShowcaseQuery(undefined, { selectFromResult: ({ data, ...otherParams }) => ({ data: data?.items.find(it => it.id === 'ott_top_10_monthly') ?? data?.items[1] ?? { content: { items: [] }, id: '', title: '' }, ...otherParams }) })
+	const { styles, theme } = useStyles(stylesheet)
 
-	console.log(data)
+	const [savedState, setSavedState] = useState<{ status: null | 'loading' | 'await_from_api'; data: SavedDataType | null }>({ status: 'loading', data: null })
+	const dateNow = useRef<number | boolean>(false)
+
+	useEffect(() => {
+		const init = async () => {
+			try {
+				const as_item: SavedDataType | null = JSON.parse((await AsyncStorage.getItem('top_10_monthly')) ?? 'null')
+
+				console.log({ as_item, time: as_item?.lastUpdate ? Date.now() - as_item.lastUpdate : null, oneHourInMillis, is: as_item?.lastUpdate && Date.now() - as_item.lastUpdate < oneHourInMillis })
+
+				if (as_item?.lastUpdate && Date.now() - as_item.lastUpdate < oneHourInMillis) {
+					setSavedState({ status: null, data: as_item })
+					console.log('loading data from AsyncStorage')
+					return
+				} else {
+					dateNow.current = Date.now()
+					setSavedState({ status: 'await_from_api', data: as_item })
+				}
+			} catch (e) {
+				console.error('[OttTop10Monthly] error:', e)
+			}
+		}
+
+		init()
+	}, [])
+
+	const {
+		isError,
+		isSuccess: _isSuccess,
+		data: _data,
+		refetch
+	} = useGetHdShowcaseQuery(undefined, {
+		selectFromResult: ({ data, ...otherParams }) => {
+			const _dta_ = { data: data?.items.find(it => it.id === 'ott_top_10_monthly') ?? data?.items[1] ?? null, ...otherParams }
+
+			try {
+				if (_dta_.data && typeof dateNow.current === 'number') {
+					console.log('set new data to AsyncStorage')
+					AsyncStorage.setItem('top_10_monthly', JSON.stringify({ ..._dta_.data, lastUpdate: Date.now() }))
+					dateNow.current = true
+				}
+			} catch (e) {
+				console.error('[OttTop10Monthly] error:', e)
+			}
+
+			return _dta_
+		},
+		skip: savedState.status !== 'await_from_api'
+	})
+
+	console.log('data:', { data: _data, savedState })
+
+	const data: SavedDataType = _data ?? savedState.data ?? { content: { items: [] }, id: 'loading', title: 'Loading' }
+	const isSuccess: boolean = _isSuccess || data.id !== 'loading'
 
 	const window = Dimensions.get('window')
 	const itemWidth = window.width
 
-	const { styles, theme } = useStyles(stylesheet)
-
-	useEffect(() => {}, [data])
+	const imageSize = itemWidth <= 720 ? 720 : itemWidth <= 1080 ? 1080 : itemWidth <= 1920 ? 1920 : 3840
 
 	const renderItem: FocusableListRenderItem<MovieSelectionItem | Skeleton> = ({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
 		if (item.__typename === 'Skeleton') {
-			return (
-				<Button focusable={false} flex={0} padding={5} transparent style={styles.skeletonItem}>
-					<View style={styles.skeletonImage} />
-					<View style={styles.skeletonDetailContainer}>
-						<View style={styles.skeletonDetailTitle} />
-						<View style={styles.skeletonDetailDescription} />
+			if (Platform.isTV) {
+				return (
+					<Button focusable={false} flex={0} padding={5} transparent style={styles.skeletonItem}>
+						<View style={styles.skeletonImage} />
+						<View style={styles.skeletonDetailContainer}>
+							<View style={styles.skeletonDetailTitle} />
+							<View style={styles.skeletonDetailDescription} />
+						</View>
+					</Button>
+				)
+			} else {
+				return (
+					<View style={{}}>
+						<View style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, backgroundColor: theme.colors.bg300 }}>
+							<View style={{ position: 'absolute', top: 30 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
+								<Text style={{ fontSize: 16, color: theme.colors.primary300, fontWeight: '700' }}>
+									{index + 1}/{data.content.items.length}
+								</Text>
+							</View>
+							<View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
+								<Button text='Смотреть' />
+							</View>
+						</View>
 					</View>
-				</Button>
-			)
+				)
+			}
 		}
 
 		if (Platform.isTV) {
 			return <TopItemsAllItem data={item.movie} index={index} onFocus={onFocus} onBlur={onBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={hasTVPreferredFocus} />
 		} else {
-			const poster = normalizeUrlWithNull(item.movie.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? item.movie.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+			const poster = normalizeUrlWithNull(item.movie.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? item.movie.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: `/${imageSize}x` })
 
 			return (
 				<View style={{}}>
 					<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} borderBottomLeftRadius={20} borderBottomRightRadius={20}>
 						<View style={{ position: 'absolute', top: 30 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
-							<Text style={{ fontSize: 16, color: theme.colors.text100, fontWeight: '700' }}>
+							<Text style={{ fontSize: 16, color: theme.colors.primary300, fontWeight: '700' }}>
 								{index + 1}/{data.content.items.length}
 							</Text>
 						</View>
@@ -63,14 +143,14 @@ export const OttTop10Monthly = () => {
 	return (
 		<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight>
 			<View style={{ position: 'absolute', top: 10 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', zIndex: 5 }}>
-				<Text style={{ fontSize: 20, color: theme.colors.text100, fontWeight: '700' }}>{data.title}</Text>
+				<Text style={{ fontSize: 20, color: theme.colors.primary300, fontWeight: '700' }}>{data.title}</Text>
 			</View>
 			<FocusableFlatList
 				keyExtractor={it => `list_${data.id}_item_${it.movie.id}`}
 				data={isError ? [] : !isSuccess ? skeletonData : data.content.items}
 				// data={skeletonData}
 				horizontal
-				showsHorizontalScrollIndicator={!false}
+				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={{ flexGrow: 1 }}
 				renderItem={renderItem}
 				snapToAlignment='center'
@@ -91,6 +171,7 @@ export const OttTop10Monthly = () => {
 		</TVFocusGuideView>
 	)
 }
+
 const stylesheet = createStyleSheet(theme => ({
 	button: {
 		color: theme.colors.text100,

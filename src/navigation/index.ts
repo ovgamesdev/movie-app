@@ -7,7 +7,7 @@ export * from './TabBar'
 export * from './TabBarTv'
 export * from './TabNavigator'
 
-type ParamList = RootStackParamList & HomeTabParamList
+type ParamList = RootStackParamList & HomeTabParamList & BookmarksTabParamList
 type NavigateType<RouteName extends keyof ParamList> = RouteName extends unknown ? (undefined extends ParamList[RouteName] ? [screen: RouteName] | [screen: RouteName, params: ParamList[RouteName]] : [screen: RouteName, params: ParamList[RouteName]]) : never
 
 export const navigationRef = createNavigationContainerRef<ParamList>()
@@ -36,6 +36,11 @@ export const navigation = {
 	navigate: <RouteName extends keyof ParamList>(...args: NavigateType<RouteName>) => {
 		if (navigationRef.isReady()) {
 			navigationRef.navigate(...args)
+		}
+	},
+	goBack: () => {
+		if (navigationRef.isReady() && navigationRef.canGoBack()) {
+			navigationRef.goBack()
 		}
 	}
 }
