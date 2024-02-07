@@ -764,7 +764,14 @@ export type IFilmographyItemsResults = { docs: OIFilmographyItem[]; total: numbe
 
 export interface OIFilmographyItem {
 	movie: IFilmographyItemSeries | IFilmographyItemFilm
-	participations: { items: { name: string | null; notice: string | null; role: { slug: string; title: { english: string | null; russian: string } } }[] } // TODO
+	participations: {
+		items: {
+			name: string | null
+			notice: string | null
+			relatedCast?: { name: string; person: { id: number; name: string; url: string } }
+			role: { slug: string; title: { english: string | null; russian: string } }
+		}[]
+	} // TODO
 	salaries: { items: [] } // TODO
 	__typename: 'FilmographyItem'
 }

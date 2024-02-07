@@ -1,4 +1,5 @@
 import { Button } from '@components/atoms'
+import { useTypedSelector } from '@hooks'
 import { BookmarksTabParamList } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { FC } from 'react'
@@ -14,6 +15,7 @@ interface Props {
 export const TabBarTv: FC<Props> = ({ activeTab, setActiveTab }) => {
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles } = useStyles(stylesheet)
 
 	const tabWidth = Dimensions.get('window').width / 2 // 120
@@ -33,7 +35,7 @@ export const TabBarTv: FC<Props> = ({ activeTab, setActiveTab }) => {
 				const isActive = key === activeTab
 
 				return (
-					<Button key={index} onPress={() => !isActive && setActiveTab(key)} isActive={isActive} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight - insets.bottom - 2 }} transparent>
+					<Button key={index} onPress={() => !isActive && setActiveTab(key)} isActive={isActive} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom) }} transparent>
 						<Text style={styles.text(isActive)}>{tab}</Text>
 					</Button>
 				)

@@ -1,4 +1,5 @@
 import { Button } from '@components/atoms'
+import { useTypedSelector } from '@hooks'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import { FC, useEffect, useRef } from 'react'
@@ -11,6 +12,7 @@ export const TabBar: FC<MaterialTopTabBarProps> = ({ state, descriptors, navigat
 
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const scrollView = useRef<ScrollView | null>(null)
 	const { styles, theme } = useStyles(stylesheet)
 
@@ -53,7 +55,7 @@ export const TabBar: FC<MaterialTopTabBarProps> = ({ state, descriptors, navigat
 					const opacity = position.interpolate({ inputRange, outputRange: inputRange.map(i => (i === index ? 1 : 0.6)) })
 
 					return (
-						<Button key={index} onPress={onPress} onLongPress={onLongPress} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight - insets.bottom - 2 }} transparent>
+						<Button key={index} onPress={onPress} onLongPress={onLongPress} padding={0} alignItems='center' justifyContent='center' style={{ width: tabWidth, height: bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom) }} transparent>
 							<Animated.Text style={[styles.text, { opacity }]}>{typeof label === 'function' ? label({ focused: isFocused, children: '', color: theme.colors.text100 }) : label}</Animated.Text>
 						</Button>
 					)

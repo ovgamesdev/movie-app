@@ -15,7 +15,7 @@ export const NetInfo: FC = () => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null)
 
-	const [netInfoHeight] = useState<Animated.Value>(new Animated.Value(isConnected ? 0 : 24 + insets.bottom))
+	const [netInfoHeight] = useState(new Animated.Value(isConnected ? 0 : 24 + insets.bottom))
 
 	useEffect(() => {
 		if (isConnected) {
@@ -62,7 +62,7 @@ export const NetInfo: FC = () => {
 	if (!isShowNetInfo || isConnected === null) return null
 
 	return (
-		<Animated.View style={styles.container(netInfoHeight, isConnected)}>
+		<Animated.View style={[{ height: netInfoHeight }, isConnected ? styles.containerConnected : styles.containerDisconnected]}>
 			<Button onPress={hideAnimation} transparent padding={0} justifyContent='center' style={styles.button}>
 				<Text style={styles.text}>{isConnected ? 'Подключение восстановлено' : 'Нет подключения'}</Text>
 			</Button>
@@ -71,10 +71,12 @@ export const NetInfo: FC = () => {
 }
 
 const stylesheet = createStyleSheet(theme => ({
-	container: (netInfoHeight: Animated.Value, isConnected: boolean) => ({
-		height: netInfoHeight,
-		backgroundColor: isConnected ? theme.colors.success : theme.colors.warning
-	}),
+	containerConnected: {
+		backgroundColor: theme.colors.success
+	},
+	containerDisconnected: {
+		backgroundColor: theme.colors.warning
+	},
 	button: {
 		height: 24,
 		borderRadius: 0

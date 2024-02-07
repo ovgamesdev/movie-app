@@ -19,13 +19,14 @@ export const History: FC = () => {
 	const { setItemVisibleModal } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
 	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
 
 	const data = Object.values(watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
 		.filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
-	const barHeight = bottomTabBarHeight - insets.bottom + 2
+	const barHeight = bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom)
 
 	const [scrollY] = useState(new Animated.Value(0))
 

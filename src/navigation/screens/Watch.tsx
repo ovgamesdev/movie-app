@@ -1,12 +1,12 @@
 import { ActivityIndicator, Button, Input } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { CheckIcon } from '@icons'
-import { RootStackParamList, navigationRef } from '@navigation'
+import { RootStackParamList } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
-import { isSeries, validateDisplayNotificationData } from '@utils'
-import { FC, useEffect, useState } from 'react'
+import { isSeries } from '@utils'
+import { FC, useEffect, useRef, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -41,6 +41,8 @@ interface kinoboxPlayers {
 export const Watch: FC<Props> = ({ navigation, route }) => {
 	const { data } = route.params
 
+	const isWatchFullscreen = useRef(false)
+
 	const insets = useSafeAreaInsets()
 	const { theme } = useStyles()
 	const { mergeItem } = useActions()
@@ -73,7 +75,21 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime: newLastTime } } })
 		}
 
-		const subscription = AppState.addEventListener('change', nextAppState => nextAppState === 'background' && saveWatchStatus())
+		const subscription = AppState.addEventListener('change', nextAppState => {
+			console.log('nextAppState:', nextAppState)
+
+			if (nextAppState === 'background') {
+				saveWatchStatus()
+			} else if (nextAppState === 'active') {
+				if (isWatchFullscreen.current) {
+					navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
+					StatusBar.setHidden(true) // need
+				} else {
+					navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
+					StatusBar.setHidden(false) // need
+				}
+			}
+		})
 		return () => {
 			subscription.remove()
 			saveWatchStatus()
@@ -134,6 +150,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 		getKinoboxPlayers(data).then(({ data, error, message }) => {
 			if (error) {
+				setIsLoading(false)
 				setError({ error, message })
 				return
 			}
@@ -142,14 +159,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				setProviders(data)
 				setProvider(route.params.data.provider ?? data[0]?.source)
 			} else {
+				setIsLoading(false)
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
 			}
 		})
-	}, [])
-
-	useEffect(() => {
-		console.log('data_inp:', data)
-		console.log('data_res:', validateDisplayNotificationData(data))
 	}, [])
 
 	const handleProviderChange = (it: kinoboxPlayersData) => {
@@ -176,34 +189,32 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 	const run = `
 		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
-		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(e.type), false) );
+		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(JSON.stringify({isFullscreen:document.fullscreenElement!=null,type:e.type})), false) );
 
 		true;
 	`
 
-	if (!providers || providers.length === 0 || !provider) {
-		return null
-	}
+	const currentProvider = providers && providers.length > 0 ? providers.find(it => it.source === provider) ?? providers[0] : null
+	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider?.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
 
-	const currentProvider = providers.find(it => it.source === provider) ?? providers[0]
-	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
-
-	console.log('currentProvider', currentProvider.source, provider)
+	console.log('currentProvider', currentProvider?.source, provider)
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: insets.top }} trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
 			<View style={{ width: '100%', aspectRatio: 16 / 9 }}>
-				{currentProvider.iframeUrl && !error ? (
+				{currentProvider?.iframeUrl && !error ? (
 					<WebView
 						source={currentProvider.source !== 'ALLOHA' && currentProvider.source !== 'KODIK' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
 						style={{ flex: 1 }}
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
-						onMessage={data => {
-							const isLandscape = (navigationRef.getCurrentOptions() as { orientation?: 'landscape' | 'portrait_up' } | undefined)?.orientation?.includes('landscape') ?? false
+						onMessage={({ nativeEvent }) => {
+							const { isFullscreen, type } = JSON.parse(nativeEvent.data) as { isFullscreen: boolean; type: string }
 
-							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(data.nativeEvent.data)) {
-								if (!isLandscape) {
+							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
+								isWatchFullscreen.current = isFullscreen
+
+								if (isFullscreen) {
 									navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
 									StatusBar.setHidden(true) // need
 								} else {
@@ -224,24 +235,34 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						<Text style={{ fontSize: 14, color: theme.colors.text100, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
 					</View>
 				)}
+
 				{isLoading && <Loading />}
 			</View>
 			<View style={{ flex: 1 }}>
 				<ScrollView contentContainerStyle={{ gap: 6, padding: 10 }}>
 					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 					<View style={{ gap: 6 }}>
-						{providers.map(it => {
-							const isActive = currentProvider.source === it.source
+						{currentProvider && providers ? (
+							providers.map(it => {
+								const isActive = currentProvider.source === it.source
 
-							return (
-								<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
-									{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
-									<Text style={{ fontSize: 14, color: theme.colors.text100 }}>
-										{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
-									</Text>
-								</Button>
-							)
-						})}
+								return (
+									<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
+										{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
+										<Text style={{ fontSize: 14, color: theme.colors.text100, flex: 1 }}>
+											{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
+										</Text>
+									</Button>
+								)
+							})
+						) : (
+							<>
+								<View style={{ height: 39.333, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ height: 39.333, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ height: 39.333, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+								<View style={{ height: 39.333, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+							</>
+						)}
 					</View>
 					{showDevOptions && (
 						<View>

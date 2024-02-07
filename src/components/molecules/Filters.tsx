@@ -1,4 +1,5 @@
 import { Button } from '@components/atoms'
+import { useTypedSelector } from '@hooks'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { Animated, ScrollView, TVFocusGuideView, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -14,9 +15,10 @@ interface Props<T extends string> {
 export const Filters = <T extends string>({ scrollY, activeFilter, setActiveFilter, filters }: Props<T>) => {
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { theme } = useStyles()
 
-	const barHeight = bottomTabBarHeight - insets.bottom + 2
+	const barHeight = bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom)
 
 	const diffClamp = Animated.diffClamp(scrollY, 0, barHeight)
 	const translateY = diffClamp.interpolate({ inputRange: [0, barHeight], outputRange: [0, -barHeight] })

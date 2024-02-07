@@ -92,7 +92,7 @@ export const Movie: FC<Props> = ({ route }) => {
 							<View style={styles.detailsInfo}>
 								{data.productionStatus && data.productionStatusUpdateDate && <ProductionStatusText productionStatus={data.productionStatus} productionStatusUpdateDate={data.productionStatusUpdateDate} />}
 								<Text style={styles.detailsInfoTitle} selectable={!Platform.isTV}>
-									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeriesData(data) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'} ${releaseYearsToString(data.releaseYears)})` : data.productionYear ? `(${data.productionYear})` : ''}</Text>
+									{data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english} <Text>{isSeriesData(data) ? `(${data.__typename === 'MiniSeries' ? 'мини–сериал' : 'сериал'}${releaseYearsToString(data.releaseYears) ? ' ' + releaseYearsToString(data.releaseYears) : ''})` : data.productionYear ? `(${data.productionYear})` : ''}</Text>
 								</Text>
 
 								<Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>

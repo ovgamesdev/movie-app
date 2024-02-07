@@ -163,12 +163,10 @@ export const FilmographyItems: FC<Props> = ({ id: personId }) => {
 						.filter(it => !!it)
 						.map(it => (it === ' ' ? '' : it))
 						.join(', ')
-					const tertiaryInfo = [
-						participations.items
-							.map(it => [it.name, it.notice].filter(it => !!it).join(', '))
-							.filter(it => !!it)
-							.join(', ')
-					].join(', ')
+					const tertiaryInfo = participations.items
+						.map(it => [it.name, it.relatedCast != null ? [it.relatedCast.person.name, it.relatedCast.name].filter(it => !!it).join(' — ') : null, it.notice === 'вокал' ? 'озвучка' : it.notice].filter(it => !!it).join(', '))
+						.filter(it => !!it)
+						.join(', ')
 
 					return (
 						<>
@@ -200,7 +198,7 @@ export const FilmographyItems: FC<Props> = ({ id: personId }) => {
 								</View>
 								<View style={{ flexDirection: 'row', gap: 2, paddingLeft: 5 }}>
 									{movie.isShortFilm && <TimelapseIcon width={20} height={20} fill={theme.colors.text200} />}
-									{participations.items.find(it => it.notice === 'озвучка') ? <VoiceIcon width={20} height={20} fill={theme.colors.text200} /> : null}
+									{participations.items.find(it => it.notice === 'озвучка' || it.notice === 'вокал') ? <VoiceIcon width={20} height={20} fill={theme.colors.text200} /> : null}
 								</View>
 							</Button>
 						</>
