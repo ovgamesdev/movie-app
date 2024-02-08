@@ -141,7 +141,8 @@ export const backgroundTask = async (taskId: string) => {
 			if (!Array.isArray(json) || json.length === 0) continue
 
 			const newWatchHistoryData: Partial<WatchHistory> = {
-				status: 'new'
+				status: 'new',
+				timestamp: Date.now()
 			}
 
 			if (movie.releasedEpisodes) {

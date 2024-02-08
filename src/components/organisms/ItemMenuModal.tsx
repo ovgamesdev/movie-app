@@ -107,7 +107,8 @@ const ModalContent = memo<Props>(({ item }) => {
 						onClose()
 
 						const newWatchHistoryData: Partial<WatchHistory> = {
-							status: 'new'
+							status: 'new',
+							timestamp: Date.now()
 						}
 						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
 					}}
