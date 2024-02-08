@@ -223,10 +223,10 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 		if (isError) {
 			return (
 				// - (isShowNetInfo ? 0 : insets.bottom)
-				<View style={{ height: window.height - insets.top - 20 - 5, backgroundColor: theme.colors.bg200, padding: 5, borderRadius: 6, paddingHorizontal: 30, justifyContent: 'center' }}>
-					<Button onPress={refetch} animation='scale' padding={5} paddingVertical={50} transparent alignItems='center' justifyContent='center' style={{ backgroundColor: theme.colors.bg200 }}>
-						<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10 }}>Произошла ошибка</Text>
-						<Text style={{ color: theme.colors.text200, fontSize: 12, paddingHorizontal: 10, paddingTop: 5 }}>Повторите попытку</Text>
+				<View style={{ height: window.height - insets.top - 20 - 5, padding: 50, paddingHorizontal: 30, alignItems: 'center', justifyContent: 'center' }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10, paddingBottom: 5 }}>Произошла ошибка</Text>
+					<Button onPress={refetch} animation='scale' paddingVertical={5}>
+						<Text style={{ color: theme.colors.text200, fontSize: 12 }}>Повторите попытку</Text>
 					</Button>
 				</View>
 			)
@@ -236,7 +236,7 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	}, [isError, data.page, data.pages, orientation])
 
 	const ListHeaderComponent = useCallback(() => {
-		if (!isSuccess) return null
+		if (isError) return null
 
 		return (
 			<>
@@ -256,8 +256,8 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 						<DescriptionText />
 					</View>
 				)}
-				{data.availableFilters && (
-					<ScrollView horizontal>
+				<ScrollView horizontal>
+					{data.availableFilters ? (
 						<TVFocusGuideView style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
 							<Filter id='country' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='genre' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
@@ -278,11 +278,18 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 								type='fullWidthToBottom'
 							/>
 						</TVFocusGuideView>
-					</ScrollView>
-				)}
+					) : (
+						<View style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }}>
+							<View style={{ height: 40, width: 124.6, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+							<View style={{ height: 40, width: 121.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+							<View style={{ height: 40, width: 109.3, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+							<View style={{ height: 40, width: 126, borderRadius: 6, backgroundColor: theme.colors.bg200 }} />
+						</View>
+					)}
+				</ScrollView>
 			</>
 		)
-	}, [orientation, order, data, isSuccess])
+	}, [orientation, newFilters, order, data, isError])
 
 	const ListFooterComponentStyle = useMemo(() => (data.page != null && data.pages != null && data.pages > 1 ? { flexGrow: 1 } : {}), [data.page, data.pages])
 	const ListHeaderComponentStyle = useMemo(() => ({ marginTop: insets.top, marginBottom: 5 }), [insets.top])

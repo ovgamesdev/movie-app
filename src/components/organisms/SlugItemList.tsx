@@ -63,18 +63,18 @@ export const SlugItemList: FC<Props> = ({ slug, title }) => {
 					renderItem={renderItem}
 					ListFooterComponent={
 						<>
-							{!isError && !isEmpty ? null : (
+							{isEmpty && !isError ? (
 								<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={styles.footerErrorContainer}>
 									<Text style={styles.footerErrorText}>Ничего не найдено</Text>
 									<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
 								</Button>
-							)}
-							{!isError ? null : (
+							) : null}
+							{isEmpty && isError ? (
 								<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={styles.footerErrorContainer}>
 									<Text style={styles.footerErrorText}>Произошла ошибка</Text>
 									<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
 								</Button>
-							)}
+							) : null}
 							{isEmpty ? null : (
 								<Button onPress={() => navigation.push('MovieListSlug', { data: { slug } })} animation='scale' flex={0} padding={0} transparent alignItems='center' justifyContent='center' style={styles.skeletonItem}>
 									<View style={styles.footerItemIconContainer}>

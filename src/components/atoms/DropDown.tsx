@@ -1,7 +1,7 @@
 import { Button, ButtonType } from '@components/atoms'
 import { CheckIcon, ExpandMoreIcon } from '@icons'
 import { useRef, useState } from 'react'
-import { Dimensions, FlatList, PressableProps, TVFocusGuideView, Text, View } from 'react-native'
+import { Dimensions, FlatList, LayoutChangeEvent, PressableProps, TVFocusGuideView, Text, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -20,7 +20,7 @@ interface Props<T> {
 	onChange: (value: T) => void
 }
 
-export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange, ...props }: Props<T> & PressableProps) => {
+export const DropDown = <T extends string | number | null>({ type = 'toLeftBottom', items, value, onChange, onLayout: _onLayout, ...props }: Props<T> & PressableProps) => {
 	const [isVisible, setIsVisible] = useState(false)
 	const insets = useSafeAreaInsets()
 	const { theme } = useStyles()
@@ -48,7 +48,11 @@ export const DropDown = <T extends string | number | null>({ type = 'toLeftBotto
 
 	const screen = Dimensions.get('window')
 
-	const onLayout = () => {
+	const onLayout = (event?: LayoutChangeEvent) => {
+		if (event) {
+			_onLayout?.(event)
+		}
+
 		buttonRef.current?.buttonRef?.measure((x, y, width, height, pageX, pageY) => {
 			console.log('measure:', type, { x, y, width, height, pageX, pageY })
 			const padding = 5
