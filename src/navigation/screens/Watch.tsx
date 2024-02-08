@@ -42,6 +42,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const { data } = route.params
 
 	const isWatchFullscreen = useRef(false)
+	const webViewRef = useRef<WebView>(null)
 
 	const insets = useSafeAreaInsets()
 	const { theme } = useStyles()
@@ -167,7 +168,12 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 	const handleProviderChange = (it: kinoboxPlayersData) => {
 		setIsLoading(true)
-		setProvider(it.source)
+
+		if (provider === it.source) {
+			webViewRef.current?.reload()
+		} else {
+			setProvider(it.source)
+		}
 	}
 
 	const InputHistory = ({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
@@ -206,6 +212,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					<WebView
 						source={currentProvider.source !== 'ALLOHA' && currentProvider.source !== 'KODIK' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
 						style={{ flex: 1 }}
+						ref={webViewRef}
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
 						onMessage={({ nativeEvent }) => {
@@ -232,7 +239,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					/>
 				) : (
 					<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-						<Text style={{ fontSize: 14, color: theme.colors.text100, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
+						<Text style={{ fontSize: 14, color: theme.colors.primary300, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
 					</View>
 				)}
 
