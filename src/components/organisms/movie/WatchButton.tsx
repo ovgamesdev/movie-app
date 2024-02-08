@@ -42,6 +42,8 @@ export const WatchButton: FC<Props> = ({ data }) => {
 		<Button
 			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'continue' ? 'Продолжить просмотр' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
 			style={{ minWidth: 54 }}
+			disabled={status === 'loading'}
+			paddingVertical={status === 'loading' ? 6.8 : undefined}
 			onPress={async () => {
 				const item: WatchHistory = watchHistory
 					? {
