@@ -15,7 +15,8 @@ const config: BackgroundFetchConfig = {
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
 }
 
-export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise<number | null> => {
+type NewEpisodesType = { [key: string]: string[] }
+export const fetchNewSeries = async ({ id, type, title, releasedEpisodes }: WatchHistory): Promise<{ total: number; data: NewEpisodesType } | null> => {
 	// ALLOHA
 	// TODO add for other providers
 
@@ -28,6 +29,7 @@ export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise
 
 		const seasons = res?.data?.seasons
 		let total = 0
+		const data: NewEpisodesType = {}
 
 		if (res?.status === 'error') return null
 
@@ -36,14 +38,23 @@ export const fetchNewSeries = async ({ id, type, title }: WatchHistory): Promise
 				const season = seasons[s]
 
 				for (const e in season.episodes) {
-					total++
+					const episode = season.episodes[e]
+					total = total + 1
+
+					if (releasedEpisodes && releasedEpisodes < total) {
+						if (`${season.season}` in data) {
+							data[`${season.season}`].push(episode.episode)
+						} else {
+							data[`${season.season}`] = [episode.episode]
+						}
+					}
 				}
 			}
 		}
 
-		console.log(`[fetchNewSeries] ${type} "${rusToLatin(title)}": ${total}`)
+		console.log(`[fetchNewSeries] ${type} "${rusToLatin(title)}": ${total}`, data)
 
-		return total
+		return { total, data }
 	} catch (e) {
 		console.log(`[fetchNewSeries] error ${type} "${rusToLatin(title)}":`, e)
 		return null
@@ -82,13 +93,22 @@ const displayNotificationNewFilm = (movie: WatchHistory) => {
 		}
 	})
 }
-const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: number }) => {
+const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: { total: number; data: NewEpisodesType } }) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+
+	const seasonTitle = Object.keys(newSeries.data)
+		.map(season => {
+			const episode = newSeries.data[season]
+			const episodeTitle = episode.length < 2 ? episode[0] : episode[0] + ' - ' + episode[episode.length - 1]
+
+			return `(эпизод ${episodeTitle}, сезон ${season})`
+		})
+		.join(', ')
 
 	notifee.displayNotification({
 		id: `${movie.type}:${movie.id}`,
 		title: 'Новый контент доступен!',
-		body: `Новый эпизод «${movie.title}»`, // (эпизод 0, сезон 0).
+		body: `Новый эпизод «${movie.title}» ${seasonTitle.length === 0 ? '' : seasonTitle + '.'}`,
 		data: validateDisplayNotificationData(movie),
 		android: {
 			channelId: 'content-release-channel',
@@ -148,9 +168,9 @@ export const backgroundTask = async (taskId: string) => {
 			if (movie.releasedEpisodes) {
 				const newSeries = await fetchNewSeries(movie)
 
-				if (newSeries && newSeries > movie.releasedEpisodes) {
+				if (newSeries && newSeries.total > movie.releasedEpisodes) {
 					displayNotificationNewEpisode(movie, { newSeries })
-					newWatchHistoryData.releasedEpisodes = newSeries
+					newWatchHistoryData.releasedEpisodes = newSeries.total
 
 					store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
 				}
@@ -159,7 +179,7 @@ export const backgroundTask = async (taskId: string) => {
 
 				if (isSeries(movie.type)) {
 					const newSeries = await fetchNewSeries(movie)
-					newWatchHistoryData.releasedEpisodes = newSeries ?? 1
+					newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
 				} else {
 					newWatchHistoryData.notify = false
 				}
