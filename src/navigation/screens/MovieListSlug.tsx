@@ -1,4 +1,4 @@
-import { Button, DropDown, FocusableFlashList, FocusableFlashListRenderItem, ImageBackground, Rating } from '@components/atoms'
+import { Button, DropDown, FocusableFlashList, FocusableFlashListRenderItem, FocusableFlashListType, ImageBackground, Rating } from '@components/atoms'
 import { Pagination } from '@components/molecules'
 import { useOrientation, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
@@ -7,7 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { Dispatch, FC, SetStateAction, useCallback, useMemo, useRef, useState } from 'react'
-import { Dimensions, FlatList, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
+import { Dimensions, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Defs as DefsSvg, LinearGradient as LinearGradientSvg, Stop as StopSvg, Svg, Text as TextSvg } from 'react-native-svg'
 import { useStyles } from 'react-native-unistyles'
@@ -82,7 +82,7 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const orientation = useOrientation()
 	const { theme } = useStyles()
-	const ref = useRef<FlatList>(null)
+	const ref = useRef<FocusableFlashListType>(null)
 
 	const [page, setPage] = useState(1)
 	const [order, setOrder] = useState('POSITION_ASC')
@@ -93,7 +93,6 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 
 	const onPageChange = (page: number) => {
 		setPage(page)
-		// TODO add ref
 		ref.current?.scrollToOffset({ animated: true, offset: 0 })
 	}
 
@@ -335,6 +334,7 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 		<TVFocusGuideView style={{ flex: 1, marginTop: 0, marginBottom: 0 }} autoFocus trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<FocusableFlashList
 				//
+				ref={ref}
 				keyExtractor={keyExtractor}
 				estimatedItemSize={146}
 				data={isError ? [] : !isSuccess ? skeletonData : data.docs}

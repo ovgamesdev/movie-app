@@ -11,7 +11,7 @@ type Props = {
 export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
 	const { styles } = useStyles(stylesheet)
 
-	const { data, isFetching } = useGetTvSeriesEpisodesQuery({ tvSeriesId })
+	const { data, isFetching, isError } = useGetTvSeriesEpisodesQuery({ tvSeriesId })
 
 	if (isFetching) {
 		return (

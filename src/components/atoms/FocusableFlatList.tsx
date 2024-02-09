@@ -1,5 +1,5 @@
 import { useNavigation } from '@hooks'
-import { ReactElement, useEffect, useRef, useState } from 'react'
+import { ForwardedRef, ReactElement, RefAttributes, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Animated, FlatList, FlatListProps, Platform } from 'react-native'
 
 interface FocusableListRenderItemInfo<ItemT> {
@@ -19,13 +19,21 @@ interface FocusableListRenderItemInfo<ItemT> {
 
 // TODO movie to types
 export type FocusableListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => ReactElement | null
+export type FocusableListType = {
+	scrollToOffset: (params: { animated?: boolean | null | undefined; offset: number }) => void
+}
 
-export const FocusableFlatList = <ItemT,>({ renderItem, animated, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: FocusableListRenderItem<ItemT> | null | undefined; animated?: boolean }) => {
+type Props<ItemT> = Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: FocusableListRenderItem<ItemT> | null | undefined; animated?: boolean }
+const FocusableFlatListBase = <ItemT,>({ renderItem, animated, ...props }: Props<ItemT>, forwardRef: ForwardedRef<FocusableListType>) => {
 	const navigation = useNavigation()
 
 	const ref = useRef<FlatList>(null)
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
 	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
+
+	useImperativeHandle(forwardRef, () => ({
+		scrollToOffset: params => ref.current?.scrollToOffset(params)
+	}))
 
 	useEffect(() => {
 		if (!Platform.isTV) return
@@ -72,3 +80,5 @@ export const FocusableFlatList = <ItemT,>({ renderItem, animated, ...props }: Om
 		/>
 	)
 }
+
+export const FocusableFlatList = forwardRef(FocusableFlatListBase) as <ItemT>(props: Props<ItemT> & RefAttributes<FocusableListType>) => JSX.Element

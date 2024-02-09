@@ -5,7 +5,7 @@ import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
 import { declineAge, declineChildren, getSpouseStatus, normalizeUrlWithNull } from '@utils'
-import type { FC } from 'react'
+import { useRef, type FC } from 'react'
 import { ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -18,7 +18,9 @@ export const Person: FC<Props> = ({ route }) => {
 	const { theme } = useStyles()
 	const orientation = useOrientation()
 
-	const { data, isFetching } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
+	const ref = useRef<ScrollView>(null)
+
+	const { data, isFetching, isError } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
 
 	if (isFetching) {
 		return (
@@ -52,7 +54,7 @@ export const Person: FC<Props> = ({ route }) => {
 
 	return (
 		<TVFocusGuideView style={{ flex: 1 }} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
-			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), paddingTop: 10 + insets.top }}>
+			<ScrollView ref={ref} contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), paddingTop: 10 + insets.top }}>
 				<View style={[{}, orientation.landscape && { flexDirection: 'row', padding: 10, paddingBottom: 5, paddingTop: 10 + insets.top, gap: 20 }]}>
 					{orientation.landscape && (
 						<View style={{ width: 300, gap: 20 }}>
@@ -209,7 +211,7 @@ export const Person: FC<Props> = ({ route }) => {
 								)}
 							</View>
 
-							<FilmographyItems id={data.id} />
+							<FilmographyItems id={data.id} scrollToTop={({ y }) => ref.current?.scrollTo({ animated: true, y: y + (10 + (isShowNetInfo ? 0 : insets.bottom)) + (10 + insets.top) })} />
 						</View>
 					</View>
 				</View>

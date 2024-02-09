@@ -11,6 +11,7 @@ import { Pagination } from '../molecules/Pagination'
 
 type Props = {
 	id: number
+	scrollToTop: ({ y }: { y: number }) => void
 }
 
 const generateYearIntervals = ({ start, end }: { start: number; end: number }, interval: number): { start: number; end: number }[] => {
@@ -23,11 +24,10 @@ const generateYearIntervals = ({ start, end }: { start: number; end: number }, i
 	return intervals
 }
 
-export const FilmographyItems: FC<Props> = ({ id: personId }) => {
+export const FilmographyItems: FC<Props> = ({ id: personId, scrollToTop }) => {
 	const { theme } = useStyles()
 	const orientation = useOrientation()
-
-	const ref = useRef<FlatList>(null)
+	const screenYPosition = useRef(0)
 
 	const [page, setPage] = useState(1)
 	const [roleSlugs, setRoleSlugs] = useState<string[]>([])
@@ -35,14 +35,15 @@ export const FilmographyItems: FC<Props> = ({ id: personId }) => {
 	const [genre, setGenre] = useState<null | number>(null)
 	const [orderBy, setOrderBy] = useState<string>('YEAR_DESC')
 
-	const { data: dataFilters, isFetching: isFetchingFilters } = useGetFilmographyFiltersQuery({ personId })
-	const { data, isFetching: isFetchingItems } = useGetFilmographyItemsQuery({ personId, roleSlugs: roleSlugs.length === 0 ? [dataFilters?.roles.roles.items[0]?.role.slug ?? 'ACTOR'] : roleSlugs, year, genre, orderBy, page }, { skip: dataFilters === undefined })
+	const { data: dataFilters, isFetching: isFetchingFilters, isError: isErrorFilters } = useGetFilmographyFiltersQuery({ personId })
+	const { data, isFetching: isFetchingItems, isError: isErrorItems } = useGetFilmographyItemsQuery({ personId, roleSlugs: roleSlugs.length === 0 ? [dataFilters?.roles.roles.items[0]?.role.slug ?? 'ACTOR'] : roleSlugs, year, genre, orderBy, page }, { skip: dataFilters === undefined })
 
 	const isFetching = isFetchingFilters || isFetchingItems
+	const isError = isErrorFilters || isErrorItems
 
 	const onPageChange = (page: number) => {
 		setPage(page)
-		ref.current?.scrollToOffset({ animated: true, offset: 0 })
+		scrollToTop({ y: screenYPosition.current })
 	}
 
 	if (isFetching) {
@@ -84,9 +85,8 @@ export const FilmographyItems: FC<Props> = ({ id: personId }) => {
 
 	return (
 		<View style={{ marginTop: 40 }}>
-			<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight>
+			<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight onLayout={e => (screenYPosition.current = e.nativeEvent.layout.y)}>
 				<FlatList
-					ref={ref}
 					horizontal
 					data={dataFilters.roles.roles.items}
 					renderItem={({ item: { role, movies }, index }) => {

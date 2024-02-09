@@ -1,6 +1,6 @@
 import { useNavigation } from '@hooks'
 import { AnimatedFlashList, FlashList, FlashListProps } from '@shopify/flash-list'
-import { ReactElement, useEffect, useRef, useState } from 'react'
+import { ForwardedRef, ReactElement, RefAttributes, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 
 interface FocusableListRenderItemInfo<ItemT> {
@@ -20,13 +20,21 @@ interface FocusableListRenderItemInfo<ItemT> {
 
 // TODO movie to types
 export type FocusableFlashListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => ReactElement | null
+export type FocusableFlashListType = {
+	scrollToOffset: (params: { animated?: boolean | null | undefined; offset: number }) => void
+}
 
-export const FocusableFlashList = <ItemT,>({ renderItem, animated, ...props }: Omit<FlashListProps<ItemT>, 'renderItem'> & { renderItem: FocusableFlashListRenderItem<ItemT> | null | undefined; animated?: boolean }) => {
+type Props<ItemT> = Omit<FlashListProps<ItemT>, 'renderItem'> & { renderItem: FocusableFlashListRenderItem<ItemT> | null | undefined; animated?: boolean }
+const FocusableFlashListBase = <ItemT,>({ renderItem, animated, ...props }: Props<ItemT>, forwardRef: ForwardedRef<FocusableFlashListType>) => {
 	const navigation = useNavigation()
 
 	const ref = useRef<FlashList<ItemT>>(null)
 	const focusedItem = useRef<{ index: number }>({ index: -1 })
 	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
+
+	useImperativeHandle(forwardRef, () => ({
+		scrollToOffset: params => ref.current?.scrollToOffset(params)
+	}))
 
 	useEffect(() => {
 		if (!Platform.isTV) return
@@ -73,3 +81,5 @@ export const FocusableFlashList = <ItemT,>({ renderItem, animated, ...props }: O
 		/>
 	)
 }
+
+export const FocusableFlashList = forwardRef(FocusableFlashListBase) as <ItemT>(props: Props<ItemT> & RefAttributes<FocusableFlashListType>) => JSX.Element
