@@ -11,7 +11,8 @@ const initialState: IInitialStateSettings = {
 		theme: null,
 		showDevOptions: false,
 		watchHistory: {},
-		searchHistory: {}
+		searchHistory: {},
+		bookmarks: {}
 	},
 	isLoading: true,
 	isLoaded: false,

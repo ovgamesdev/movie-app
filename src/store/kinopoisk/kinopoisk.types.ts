@@ -698,6 +698,7 @@ export interface IPersonBaseInfoResults {
 		slug: string
 		title: { russian: string }
 	} | null
+	__typename: 'Person'
 }
 
 interface PersonAwardNominee {

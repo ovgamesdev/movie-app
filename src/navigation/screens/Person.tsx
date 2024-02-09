@@ -1,5 +1,5 @@
 import { ActivityIndicator, Button, FocusableFlatList, ImageBackground, Rating } from '@components/atoms'
-import { FilmographyItems } from '@components/organisms'
+import { FavoritesButton, FilmographyItems } from '@components/organisms'
 import { useOrientation, useTypedSelector } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -75,7 +75,7 @@ export const Person: FC<Props> = ({ route }) => {
 						</View>
 						<View style={{}}>
 							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
-								<Button text='favorites' hasTVPreferredFocus />
+								<FavoritesButton data={data} />
 							</TVFocusGuideView>
 
 							<Text style={{ color: theme.colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О персоне</Text>

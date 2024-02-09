@@ -1,5 +1,6 @@
 export * from './BackgroundRestrictionModal'
 export * from './ContinueWatchItemList'
+export * from './FavoritesButton'
 export * from './FilmographyItems'
 export * from './ItemMenuModal'
 export * from './OttTop10Monthly'

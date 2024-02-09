@@ -7,9 +7,9 @@ export interface IInitialStateSettings {
 	lastSaveTime: number
 }
 
+// WatchHistory
 export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' // TODO await
 export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | 'HDVB' | 'VOIDBOOST'
-
 export type WatchHistory = {
 	id: number
 	provider: WatchHistoryProvider | null
@@ -29,6 +29,7 @@ export type WatchHistory = {
 	releasedEpisodes?: number
 }
 
+// SearchHistory
 export type SearchHistoryMovie = {
 	id: number
 	type: MovieType
@@ -52,7 +53,26 @@ export type SearchHistoryMovieList = {
 	timestamp: number
 }
 
+// Bookmarks
+export type BookmarksMovie = {
+	id: number
+	type: MovieType
+	title: string
+	poster: string | null
+	timestamp: number
+
+	year: number | null
+}
+export type BookmarksPerson = {
+	id: number
+	type: 'Person'
+	title: string
+	poster: string | null
+	timestamp: number
+}
+
 export type SearchHistory = SearchHistoryMovie | SearchHistoryPerson | SearchHistoryMovieList
+export type Bookmarks = BookmarksMovie | BookmarksPerson
 
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number; value?: number; testArray?: { id: number; value?: string }[] }
@@ -60,7 +80,10 @@ export interface ISettings {
 		[key: `${number}`]: WatchHistory
 	}
 	searchHistory: {
-		[key: `${SearchHistory['type']}${number}`]: SearchHistory
+		[key: `${SearchHistory['type']}:${number}`]: SearchHistory
+	}
+	bookmarks: {
+		[key: `${Bookmarks['type']}:${number}`]: Bookmarks
 	}
 	_settings_time: number
 	_settings_version: number

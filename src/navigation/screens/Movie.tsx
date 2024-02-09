@@ -1,5 +1,6 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
 import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
+import { FavoritesButton } from '@components/organisms'
 import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
 import { useTypedSelector } from '@hooks'
 import { RootStackParamList } from '@navigation'
@@ -105,6 +106,7 @@ export const Movie: FC<Props> = ({ route }) => {
 						<View>
 							<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
 								<WatchButton data={data} />
+								<FavoritesButton data={data} />
 							</TVFocusGuideView>
 
 							<Text style={styles.sectionTitleAbout}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
