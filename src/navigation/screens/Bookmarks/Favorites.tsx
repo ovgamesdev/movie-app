@@ -1,6 +1,5 @@
 import { Button, FocusableFlashList, FocusableFlashListRenderItem, ImageBackground } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { ItemMenuModal } from '@components/organisms'
 import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
@@ -12,8 +11,8 @@ import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-type FilterKeys = 'movie' | 'person' | 'film' | 'series'
-export const filters_bookmarks: Record<'all' | FilterKeys, string> = { all: 'Все', movie: 'Фильмы и сериалы', film: 'Фильмы', series: 'Сериалы', person: 'Персоны' }
+type FilterKeys = 'all' | 'movie' | 'person' | 'film' | 'series'
+export const filters_bookmarks: Record<FilterKeys, string> = { all: 'Все', movie: 'Фильмы и сериалы', person: 'Персоны', film: 'Фильмы', series: 'Сериалы' }
 
 export const Favorites: FC = () => {
 	const bookmarks = useTypedSelector(state => state.settings.settings.bookmarks)
@@ -22,7 +21,7 @@ export const Favorites: FC = () => {
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
-	const [activeFilter, setActiveFilter] = useState<'all' | FilterKeys>('all')
+	const [activeFilter, setActiveFilter] = useState<FilterKeys>('all')
 
 	const data = Object.values(bookmarks)
 		.sort((a, b) => b.timestamp - a.timestamp)
@@ -104,7 +103,7 @@ export const Favorites: FC = () => {
 			<Filters filters={filters_bookmarks} activeFilter={activeFilter} setActiveFilter={setActiveFilter} scrollY={scrollY} />
 			<FocusableFlashList data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
 
-			<ItemMenuModal />
+			{/* <ItemMenuModal /> */}
 		</TVFocusGuideView>
 	)
 }

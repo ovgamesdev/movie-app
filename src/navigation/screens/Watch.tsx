@@ -98,9 +98,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	}, [provider])
 
 	useEffect(() => {
-		const getKinoboxPlayers = async ({ id }: { id: number }): Promise<kinoboxPlayers> => {
+		const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
 			try {
-				const res = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
+				const res = await fetch(`https://kinobox.tv/api/players/main?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${id}&token=${Config.KINOBOX_TOKEN}`)
 				// X-Settings: {"Collaps":{"enable":true,"token":"{token}","position":0},"Bazon":{"enable":true,"token":"${Config.KINOBOX_BAZON_TOKEN}"},"Alloha":{"enable":true,"token":"{token}"},"Ashdi":{"enable":true,"token":"{token}"},"Cdnmovies":{"enable":true,"token":"{token}"},"Hdvb":{"enable":true,"token":"{token}"},"Iframe":{"enable":true,"token":"{token}"},"Kodik":{"enable":true,"token":"{token}"},"Videocdn":{"enable":true,"token":"{token}"},"Voidboost":{"enable":true,"token":"{token}"}}
 
 				if (!res.ok) {
@@ -159,6 +159,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			if (data && data.length > 0) {
 				setProviders(data)
 				setProvider(route.params.data.provider ?? data[0]?.source)
+				setError(null)
 			} else {
 				setIsLoading(false)
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })

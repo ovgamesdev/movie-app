@@ -3,6 +3,7 @@ import { authReducer } from '@store/auth'
 import { kinopoiskApi } from '@store/kinopoisk'
 import { safeAreaReducer } from '@store/safeArea'
 import { settingsReducer } from '@store/settings'
+import { themoviedbApi } from '@store/themoviedb'
 import { updateReducer } from '@store/update'
 import { reducer as network } from 'react-native-offline'
 import reactotron from '../../ReactotronConfig'
@@ -16,6 +17,7 @@ const reducers = combineReducers({
 	network,
 	update: updateReducer,
 	[kinopoiskApi.reducerPath]: kinopoiskApi.reducer,
+	[themoviedbApi.reducerPath]: themoviedbApi.reducer,
 	safeArea: safeAreaReducer,
 	backgroundRestriction: backgroundRestrictionReducer,
 	itemMenuModal: itemMenuModalReducer
@@ -24,7 +26,7 @@ const reducers = combineReducers({
 export const store = configureStore({
 	reducer: reducers,
 	devTools: __DEV__,
-	middleware: getDefaultMiddleware => getDefaultMiddleware().concat(listenerMiddleware.middleware, kinopoiskApi.middleware), // .prepend(listenerMiddleware.middleware).prepend(kinopoiskApi.middleware)
+	middleware: getDefaultMiddleware => getDefaultMiddleware().concat(listenerMiddleware.middleware, kinopoiskApi.middleware, themoviedbApi.middleware),
 	enhancers: __DEV__ ? [reactotron.createEnhancer()] : []
 })
 

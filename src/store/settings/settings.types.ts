@@ -11,7 +11,7 @@ export interface IInitialStateSettings {
 export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' // TODO await
 export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | 'HDVB' | 'VOIDBOOST'
 export type WatchHistory = {
-	id: number
+	id: number | `tt${number}`
 	provider: WatchHistoryProvider | null
 	type: MovieType
 	title: string
@@ -77,7 +77,7 @@ export type Bookmarks = BookmarksMovie | BookmarksPerson
 export interface ISettings {
 	[key: `test:${number}:${string}`]: { name: string; id: number; value?: number; testArray?: { id: number; value?: string }[] }
 	watchHistory: {
-		[key: `${number}`]: WatchHistory
+		[key: `${number}` | `tt${number}`]: WatchHistory
 	}
 	searchHistory: {
 		[key: `${SearchHistory['type']}:${number}`]: SearchHistory

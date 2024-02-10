@@ -1,11 +1,12 @@
 import { ActivityIndicator, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults } from '@components/organisms'
-import { useDebounce, useNavigation } from '@hooks'
+import { useDebounce, useNavigation, useTypedDispatch } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
+import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
 import { FC, useEffect, useRef, useState } from 'react'
-import { KeyboardAvoidingView, ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -17,6 +18,8 @@ export const Search: FC<Props> = ({ route }) => {
 	const navigation = useNavigation()
 	const { styles } = useStyles(stylesheet)
 
+	const dispatch = useTypedDispatch()
+
 	const [keyword, setKeyword] = useState('')
 	const deferredKeyword = useDebounce(keyword, 300)
 	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: deferredKeyword.length === 0 })
@@ -27,10 +30,45 @@ export const Search: FC<Props> = ({ route }) => {
 
 	useEffect(() => navigation.addListener('focus', () => setTimeout(() => keyword.length === 0 && ref.current?.focus(), 0)), [navigation, ref, keyword])
 
+	// isId: t => !(!t.match(/^(\d{3,9})$/) && !t.match(/^(tt\d{4,9})$/))
+
+	const onSubmitEditing = async ({ nativeEvent: { text } }: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
+		const isNotId = !/^(tt\d{4,9})$/.exec(text) // !/^(\d{3,9})$/.exec(text) &&
+		if (isNotId) return
+
+		if (text.startsWith('tt')) {
+			const { data } = await dispatch(themoviedbApi.endpoints.getMovieById.initiate({ id: text }))
+
+			if (data) {
+				navigation.navigate('Watch', {
+					data: {
+						id: text as `tt${number}`,
+						poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null,
+						provider: null,
+
+						...(data.media_type === 'tv'
+							? {
+									title: data.name,
+									type: 'TvSeries',
+									year: Number(data.first_air_date.slice(0, 4)) || null
+							  }
+							: {
+									title: data.title,
+									type: 'Film',
+									year: Number(data.release_date.slice(0, 4)) || null
+							  })
+					}
+				})
+			} else {
+				ToastAndroid.show('IMDB: Не удалось найти фильм', ToastAndroid.SHORT)
+			}
+		}
+	}
+
 	return (
 		<TVFocusGuideView style={[styles.container, { paddingTop: 10 + insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
 			<View style={styles.inputContainer}>
-				<Input ref={ref} value={keyword} onChangeText={setKeyword} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+				<Input ref={ref} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} onVoice={setKeyword} placeholder='Фильмы, сериалы, персоны' autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
 			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
