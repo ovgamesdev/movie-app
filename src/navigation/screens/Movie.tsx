@@ -7,8 +7,9 @@ import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
 import { isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
-import { FC } from 'react'
-import { Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import { FC, useEffect, useState } from 'react'
+import { Dimensions, Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -24,6 +25,38 @@ export const Movie: FC<Props> = ({ route }) => {
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
+
+	// TODO to store
+	const [backdropPath, setBackdropPath] = useState<null | string>(null)
+
+	useEffect(() => {
+		const init = () => {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+			const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&${String(route.params.data.id).startsWith('tt') ? 'imdb' : 'kp'}=${route.params.data.id}`
+
+			fetch(url)
+				.then(async response => response.json())
+				.then(res => {
+					if (res?.data) {
+						const isSeries = 'seasons' in res.data
+
+						console.log('id_tmdb:', res.data.id_tmdb, { isSeries })
+
+						fetch(`https://api.themoviedb.org/3/${isSeries ? 'tv' : 'movie'}/${res.data.id_tmdb}?api_key=${Config.THEMOVIEDB_TOKEN}`)
+							.then(async response => response.json())
+							.then(res => {
+								console.log('themoviedb data:', res.backdrop_path)
+
+								if ('backdrop_path' in res && typeof res.backdrop_path === 'string') {
+									setBackdropPath(res.backdrop_path)
+								}
+							})
+					}
+				})
+		}
+
+		init()
+	}, [])
 
 	if (isFetching) {
 		return (
@@ -65,15 +98,26 @@ export const Movie: FC<Props> = ({ route }) => {
 
 		return (
 			<View {...props}>
-				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 16 / 9, justifyContent: 'center', alignItems: 'center', gap: 10 }} />
+				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 16 / 9 }} />
 			</View>
 		)
+	}
+
+	const BackdropImage = ({ backdropPath }: { backdropPath: string }) => {
+		const window = Dimensions.get('window')
+		const itemWidth = window.width
+
+		const imageSize = itemWidth <= 500 ? 'w500' : itemWidth <= 780 ? 'w780' : itemWidth <= 1000 ? 'w1000' : itemWidth <= 1280 ? 'w1280' : 'original'
+
+		const backdrop = `https://image.tmdb.org/t/p/${imageSize}${backdropPath}`
+
+		return <ImageBackground source={{ uri: backdrop }} style={{ width: '100%', aspectRatio: 16 / 9 }} />
 	}
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				<View style={styles.portraitCover}>{data.cover ? <Cover /> : data.mainTrailer?.preview ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />}</View>
+				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />}</View>
 
 				<View style={styles.details}>
 					<View style={styles.landscapeCover}>

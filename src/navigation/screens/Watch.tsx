@@ -5,7 +5,7 @@ import { RootStackParamList } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
-import { isSeries } from '@utils'
+import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useEffect, useRef, useState } from 'react'
 import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
@@ -30,6 +30,7 @@ export interface kinoboxPlayersData {
 	translation: string | null
 	quality: string | null
 	iframeUrl: string | null
+	title?: string
 }
 
 interface kinoboxPlayers {
@@ -66,14 +67,14 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 		setTimeout(() => {
 			console.log('watchHistory loaded', { [`${data.id}`]: { lastTime, duration } })
-			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime, duration } } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime, duration, timestamp: Date.now() } } })
 		}, 10 * 1000)
 
 		const saveWatchStatus = () => {
 			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
 
 			console.log('watchHistory end', { [`${data.id}`]: { lastTime: newLastTime } })
-			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime: newLastTime } } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime: newLastTime, timestamp: Date.now() } } })
 		}
 
 		const subscription = AppState.addEventListener('change', nextAppState => {
@@ -149,6 +150,56 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			}
 		}
 
+		const getKodikPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
+			try {
+				const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`)
+
+				if (!res.ok) {
+					// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+					return { data: null, error: res.statusText, message: await res.text() }
+				}
+
+				let json = await res.json()
+
+				const resultsArray = json?.results
+				if (resultsArray && Array.isArray(resultsArray)) {
+					json = {
+						success: true,
+						data: resultsArray
+							.filter((value, index, self) => self.findIndex(it => it.last_season === value.last_season) === index)
+							.map(it => ({
+								source: `KODIK:${it.id}`,
+								title: 'last_season' in it ? `Сезон ${it.last_season}` : undefined,
+								translation: it.translation?.title ?? null,
+								quality: it.quality ?? null,
+								iframeUrl: it.link.startsWith('//') ? `https:${it.link}` : it.link
+							}))
+					}
+				} else {
+					json = {
+						success: false,
+						data: null,
+						error: {
+							code: 400,
+							message: 'Возникла неопознанная ошибка'
+						}
+					}
+				}
+
+				console.log('kodik json:', json)
+
+				if ('error' in json && typeof json.error === 'string') {
+					// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+					return { data: null, error: `code: ${json.error.code.toString()}`, message: json.error.message }
+				}
+
+				return { data: json.data, error: res.statusText, message: res.statusText }
+			} catch (e) {
+				// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
+				return { data: null, error: (e as Error).name, message: (e as Error).message }
+			}
+		}
+
 		getKinoboxPlayers(data).then(({ data, error, message }) => {
 			if (error) {
 				setIsLoading(false)
@@ -157,9 +208,15 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			}
 
 			if (data && data.length > 0) {
-				setProviders(data)
-				setProvider(route.params.data.provider ?? data[0]?.source)
-				setError(null)
+				getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
+					if (kodik_data && kodik_data.length > 0) {
+						setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
+					} else {
+						setProviders(data)
+					}
+					setProvider(route.params.data.provider ?? data[0]?.source)
+					setError(null)
+				})
 			} else {
 				setIsLoading(false)
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
@@ -211,7 +268,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			<View style={{ width: '100%', aspectRatio: 16 / 9 }}>
 				{currentProvider?.iframeUrl && !error ? (
 					<WebView
-						source={currentProvider.source !== 'ALLOHA' && currentProvider.source !== 'KODIK' ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
+						source={currentProvider.source !== 'ALLOHA' && !currentProvider.source.startsWith('KODIK') ? { uri: currentProvider.iframeUrl, headers: { referer: 'https://example.com' } } : { html }}
 						style={{ flex: 1 }}
 						ref={webViewRef}
 						containerStyle={{ backgroundColor: '#000' }}
@@ -247,18 +304,21 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				{isLoading && <Loading />}
 			</View>
 			<View style={{ flex: 1 }}>
-				<ScrollView contentContainerStyle={{ gap: 6, padding: 10 }}>
+				<ScrollView contentContainerStyle={{ gap: 6, padding: 10, paddingBottom: 10 + insets.bottom }}>
 					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 					<View style={{ gap: 6 }}>
 						{currentProvider && providers ? (
 							providers.map(it => {
 								const isActive = currentProvider.source === it.source
+								const isKodik = it.source === 'KODIK'
 
 								return (
-									<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
+									<Button key={it.source} disabled={isKodik} focusable={!isKodik} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
 										{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
 										<Text style={{ fontSize: 14, color: theme.colors.text100, flex: 1 }}>
-											{it.source} ({[it.translation, it.quality].filter(it => !!it).join(', ')})
+											{watchHistoryProviderToString(it.source)}
+
+											{isKodik ? ' Loading...' : `${it.title ? `: ${it.title} ` : ' '}(${[it.translation, it.quality].filter(it => !!it).join(', ')})`}
 										</Text>
 									</Button>
 								)

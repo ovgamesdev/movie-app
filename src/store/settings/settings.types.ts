@@ -9,7 +9,7 @@ export interface IInitialStateSettings {
 
 // WatchHistory
 export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' // TODO await
-export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | 'HDVB' | 'VOIDBOOST'
+export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | `KODIK:${string}` | 'HDVB' | 'VOIDBOOST'
 export type WatchHistory = {
 	id: number | `tt${number}`
 	provider: WatchHistoryProvider | null

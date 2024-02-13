@@ -238,3 +238,9 @@ export const restrictDisplayNotificationData = (obj: { [key: string]: string | n
 
 	return resObj
 }
+
+// Watch
+
+export const watchHistoryProviderToString = (provider: WatchHistoryProvider): string => {
+	return provider.startsWith('KODIK:') ? provider.slice(0, provider.indexOf(':')) : provider
+}

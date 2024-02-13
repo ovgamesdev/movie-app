@@ -3,7 +3,9 @@ import { SearchHistory, SearchResults } from '@components/organisms'
 import { useDebounce, useNavigation, useTypedDispatch } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { store } from '@store'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
+import { WatchHistory } from '@store/settings'
 import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
 import { FC, useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
@@ -44,27 +46,23 @@ export const Search: FC<Props> = ({ route }) => {
 
 	const watchImdb = async (id: string) => {
 		const { data } = await dispatch(themoviedbApi.endpoints.getMovieById.initiate({ id }))
+		const watchHistory = store.getState().settings.settings.watchHistory[id as `tt${number}`] as WatchHistory | undefined
 
 		if (data) {
-			navigation.navigate('Watch', {
-				data: {
-					id: id as `tt${number}`,
-					poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null,
-					provider: null,
+			const mutableItemData: Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster'> = data.media_type === 'tv' ? { title: data.name, type: 'TvSeries', year: Number(data.first_air_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null } : { title: data.title, type: 'Film', year: Number(data.release_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null }
 
-					...(data.media_type === 'tv'
-						? {
-								title: data.name,
-								type: 'TvSeries',
-								year: Number(data.first_air_date.slice(0, 4)) || null
-						  }
-						: {
-								title: data.title,
-								type: 'Film',
-								year: Number(data.release_date.slice(0, 4)) || null
-						  })
-				}
-			})
+			const item: WatchHistory = watchHistory
+				? { ...watchHistory, ...mutableItemData }
+				: {
+						...mutableItemData,
+						id: id as `tt${number}`,
+						provider: null,
+						startTimestamp: Date.now(),
+						timestamp: Date.now(),
+						status: 'pause'
+				  }
+
+			navigation.navigate('Watch', { data: item })
 		} else {
 			ToastAndroid.show('IMDB: Не удалось найти фильм', ToastAndroid.SHORT)
 		}
@@ -78,7 +76,7 @@ export const Search: FC<Props> = ({ route }) => {
 
 			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
 				{isImdbSearch ? (
-					<Button onPress={async () => watchImdb(deferredKeyword)} paddingHorizontal={16} paddingVertical={11} animation='scale' transparent alignItems='stretch' flexDirection='row'>
+					<Button onPress={async () => watchImdb(deferredKeyword)} paddingHorizontal={16} paddingVertical={11} animation='scale' transparent alignItems='stretch' flexDirection='row' style={{ marginTop: 10 }}>
 						<Text numberOfLines={2} style={styles.watch}>
 							Смотреть как IMDB
 						</Text>

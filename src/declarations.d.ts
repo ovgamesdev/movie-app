@@ -10,7 +10,9 @@ declare module 'react-native-config' {
 		UI_MODE?: string
 		KINOBOX_TOKEN: string
 		THEMOVIEDB_TOKEN: string
+		//
 		ALLOHA_TOKEN: string
+		KODIK_TOKEN: string
 	}
 
 	export const Config: NativeConfig

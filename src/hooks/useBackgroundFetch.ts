@@ -21,7 +21,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes }: Watc
 	// TODO add for other providers
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
-	const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&kp=${id}`
+	const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&${String(id).startsWith('tt') ? 'imdb' : 'kp'}=${id}`
 
 	try {
 		const response = await fetch(url)
@@ -135,7 +135,14 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 	})
 }
 
+let isFinishTask = true
 export const backgroundTask = async (taskId: string) => {
+	if (!isFinishTask) {
+		console.log('[BackgroundFetch] continue taskId', taskId)
+		await delay(1000 * 60 * 10)
+		return
+	}
+
 	console.log('[BackgroundFetch] taskId', taskId)
 
 	let unsubscribe: Unsubscribe | null = null
@@ -144,6 +151,8 @@ export const backgroundTask = async (taskId: string) => {
 		await store.dispatch(settingsExtraActions.getSettings())
 	}
 
+	isFinishTask = false
+
 	const data = Object.values(store.getState().settings.settings.watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
 		.filter(it => it.notify)
@@ -151,6 +160,7 @@ export const backgroundTask = async (taskId: string) => {
 	let i = 0
 	for (const movie of data) {
 		try {
+			await delay(250)
 			const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
 
 			i = i + 1
@@ -160,10 +170,7 @@ export const backgroundTask = async (taskId: string) => {
 			const json = await response.json()
 			if (!Array.isArray(json) || json.length === 0) continue
 
-			const newWatchHistoryData: Partial<WatchHistory> = {
-				status: 'new',
-				timestamp: Date.now()
-			}
+			const newWatchHistoryData: Partial<WatchHistory> = { status: 'new', timestamp: Date.now() }
 
 			if (movie.releasedEpisodes) {
 				const newSeries = await fetchNewSeries(movie)
@@ -189,11 +196,10 @@ export const backgroundTask = async (taskId: string) => {
 		} catch (e) {
 			console.error('BackgroundFetch error:', e)
 		}
-
-		await delay(250)
 	}
 
 	// Finish.
+	isFinishTask = true
 	unsubscribe?.()
 	BackgroundFetch.finish(taskId)
 }

@@ -2,8 +2,9 @@ import { Button } from '@components/atoms'
 import { fetchNewSeries, useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { WatchHistory } from '@store/settings'
+import { isSeries } from '@utils'
 import { memo } from 'react'
-import { Text, View } from 'react-native'
+import { Text, ToastAndroid, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -34,8 +35,12 @@ const ModalContent = memo<Props>(({ item }) => {
 					text='Детали'
 					onPress={() => {
 						onClose()
-
-						navigation.push('Movie', { data: item })
+						if (typeof item.id === 'number') {
+							navigation.push('Movie', { data: { id: item.id, type: item.type } })
+						} else {
+							ToastAndroid.show(`Детали ${isSeries(item.type) ? 'сериала' : 'фильма'} из IMDB недоступны`, ToastAndroid.SHORT)
+							return
+						}
 					}}
 				/>
 				<Button
@@ -49,7 +54,7 @@ const ModalContent = memo<Props>(({ item }) => {
 
 						if (newWatchHistoryData.notify) {
 							const newSeries = await fetchNewSeries(item)
-							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries
+							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries.total
 						}
 
 						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })

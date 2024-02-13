@@ -6,7 +6,7 @@ import { NotificationsIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
-import { isSeries, normalizeUrlWithNull } from '@utils'
+import { isSeries, normalizeUrlWithNull, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useMemo, useState } from 'react'
 import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -48,7 +48,7 @@ export const History: FC = () => {
 						</Text>
 
 						<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }} numberOfLines={1}>
-							{[item.provider ? `[${item.provider}]` : null, item.year].filter(it => it).join(' • ')}
+							{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year].filter(it => it).join(' • ')}
 						</Text>
 
 						{/* {item.duration && item.lastTime && (

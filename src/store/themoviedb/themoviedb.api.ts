@@ -25,9 +25,6 @@ type IMovieTMDBResults = IMovieTMDBMovie | IMovieTMDBTv
 export const getTMDBPosterImage = (image: string) => {
 	return `https://image.tmdb.org/t/p/w220_and_h330_face${image}`
 }
-export const getTMDBBackdropImage = (image: string) => {
-	return `https://image.tmdb.org/t/p/w1920_and_h800_multi_faces${image}`
-}
 
 export const themoviedbApi = createApi({
 	reducerPath: 'api/themoviedb',
