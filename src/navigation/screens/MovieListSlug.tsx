@@ -118,6 +118,13 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 			// 250 лучших фильмов
 			// США: Самые кассовые фильмы в первый уик-энд проката
 
+			const isOriginalTitle = !!(item.movie.title.russian && item.movie.title.original)
+
+			const secondaryInfo = [isOriginalTitle ? ' ' : null, isSeries(item.movie.__typename) ? releaseYearsToString(item.movie.releaseYears) : item.movie.productionYear, item.movie.duration ?? item.movie.totalDuration ? `${item.movie.duration ?? item.movie.totalDuration} мин.` : null]
+				.filter(it => !!it)
+				.map(it => (it === ' ' ? '' : it))
+				.join(', ')
+
 			return (
 				<>
 					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
@@ -144,19 +151,16 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 									{(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem') && orientation.portrait ? `${itemPosition}. ` : ''}
 									{item.movie.title.russian ?? item.movie.title.original}
 								</Text>
-								<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
-									{item.movie.title.russian && item.movie.title.original && (
-										<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
-											{item.movie.title.original}
-										</Text>
-									)}
-									<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>
-										{[item.movie.title.russian && item.movie.title.original ? ' ' : null, isSeries(item.movie.__typename) ? releaseYearsToString(item.movie.releaseYears) : item.movie.productionYear, item.movie.duration ?? item.movie.totalDuration ? `${item.movie.duration ?? item.movie.totalDuration} мин.` : null]
-											.filter(it => !!it)
-											.map(it => (it === ' ' ? '' : it))
-											.join(', ')}
-									</Text>
-								</View>
+								{isOriginalTitle || secondaryInfo.length > 0 ? (
+									<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
+										{isOriginalTitle && (
+											<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
+												{item.movie.title.original}
+											</Text>
+										)}
+										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>{secondaryInfo}</Text>
+									</View>
+								) : null}
 
 								<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, marginTop: 4, color: theme.colors.text200 }} numberOfLines={1}>
 									{[

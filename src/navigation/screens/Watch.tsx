@@ -208,15 +208,21 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			}
 
 			if (data && data.length > 0) {
-				getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
-					if (kodik_data && kodik_data.length > 0) {
-						setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
-					} else {
-						setProviders(data)
-					}
+				if (data.findIndex(it => it.source === 'KODIK') === -1) {
+					setProviders(data)
 					setProvider(route.params.data.provider ?? data[0]?.source)
 					setError(null)
-				})
+				} else {
+					getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
+						if (kodik_data && kodik_data.length > 0) {
+							setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
+						} else {
+							setProviders(data)
+						}
+						setProvider(route.params.data.provider ?? data[0]?.source)
+						setError(null)
+					})
+				}
 			} else {
 				setIsLoading(false)
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })

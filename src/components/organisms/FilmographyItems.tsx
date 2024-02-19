@@ -181,14 +181,16 @@ export const FilmographyItems: FC<Props> = ({ id: personId, scrollToTop }) => {
 										{title}
 									</Text>
 
-									<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
-										{isOriginalTitle && (
-											<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
-												{movie.title.original!.Capitalize()}
-											</Text>
-										)}
-										<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>{isOriginalTitle ? secondaryInfo : secondaryInfo.Capitalize()}</Text>
-									</View>
+									{isOriginalTitle || secondaryInfo.length > 0 ? (
+										<View style={{ paddingBottom: 4, flexDirection: 'row' }}>
+											{isOriginalTitle && (
+												<Text style={{ flexShrink: 1, fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }} numberOfLines={1}>
+													{movie.title.original!.Capitalize()}
+												</Text>
+											)}
+											<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text100 }}>{isOriginalTitle ? secondaryInfo : secondaryInfo.Capitalize()}</Text>
+										</View>
+									) : null}
 
 									{tertiaryInfo && (
 										<Text style={{ color: theme.colors.text200, fontSize: 13 }} numberOfLines={2}>
