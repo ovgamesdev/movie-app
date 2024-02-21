@@ -1,4 +1,4 @@
-import { Button, FocusableFlashList, FocusableFlashListRenderItem, ImageBackground } from '@components/atoms'
+import { Button, FocusableFlashList, ImageBackground, type FocusableFlashListRenderItem, type FocusableFlashListType } from '@components/atoms'
 import { Filters } from '@components/molecules'
 import { ItemMenuModal } from '@components/organisms'
 import { useActions, useTypedSelector } from '@hooks'
@@ -7,12 +7,13 @@ import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { isSeries, normalizeUrlWithNull, watchHistoryProviderToString } from '@utils'
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-export const filters: Record<'all' | WatchHistoryStatus, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
+type FilterKeys = 'all' | WatchHistoryStatus
+const filters: Record<FilterKeys, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
 
 export const History: FC = () => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
@@ -21,7 +22,9 @@ export const History: FC = () => {
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
-	const [activeFilter, setActiveFilter] = useState<'all' | WatchHistoryStatus>('all')
+	const [activeFilter, setActiveFilter] = useState<FilterKeys>('all')
+
+	const ref = useRef<FocusableFlashListType>(null)
 
 	const data = Object.values(watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
@@ -87,11 +90,17 @@ export const History: FC = () => {
 
 	const handleOnScroll = useMemo(() => Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true }), [scrollY])
 
+	const handleChangeActiveFilter = (value: FilterKeys) => {
+		setActiveFilter(value)
+		ref.current?.scrollToOffset({ offset: 0, animated: false })
+	}
+
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
-			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={setActiveFilter} scrollY={scrollY} />
-			<FocusableFlashList data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
+			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={handleChangeActiveFilter} scrollY={scrollY} />
+			<FocusableFlashList ref={ref} data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
 
+			{/* TODO modal to global */}
 			<ItemMenuModal />
 		</TVFocusGuideView>
 	)
