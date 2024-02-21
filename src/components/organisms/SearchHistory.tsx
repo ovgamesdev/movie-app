@@ -1,5 +1,6 @@
 import { Button, ImageBackground } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
+import { CloseIcon } from '@icons'
 import { navigation } from '@navigation'
 import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
 import { movieListUrlToFilters, normalizeUrlWithNull } from '@utils'
@@ -11,14 +12,19 @@ import { useStyles } from 'react-native-unistyles'
 type Props = {
 	item: SearchHistoryType
 	onPress: (item: SearchHistoryType) => void
+	onRemove: (item: SearchHistoryType) => void
 }
 
-const SearchHistoryItem: FC<Props> = ({ item, onPress }) => {
+const SearchHistoryItem: FC<Props> = ({ item, onPress, onRemove }) => {
 	const { theme } = useStyles()
 	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: item.type === 'MovieListMeta' ? '/64x64' : '/80x120' })
 
 	const handleOnPress = () => {
 		onPress(item)
+	}
+
+	const handleOnRemove = () => {
+		onRemove(item)
 	}
 
 	return (
@@ -32,6 +38,11 @@ const SearchHistoryItem: FC<Props> = ({ item, onPress }) => {
 				</Text>
 				<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{item.type === 'TvSeries' || item.type === 'MiniSeries' || item.type === 'TvShow' ? 'сериал' : null}</Text>
 			</View>
+			<View style={{ justifyContent: 'center' }}>
+				<Button onPress={handleOnRemove} style={{ height: 30, width: 30 }} transparent justifyContent='center' alignItems='center'>
+					<CloseIcon width={15} height={15} fill={theme.colors.text100} />
+				</Button>
+			</View>
 		</Button>
 	)
 }
@@ -41,10 +52,9 @@ export const SearchHistory = () => {
 	const { theme } = useStyles()
 
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
-	const { setItem } = useActions()
+	const { setItem, removeItemByPath } = useActions()
 
 	const data = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
-	// .filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
 
 	// TODO maybe move to action
 	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
@@ -59,6 +69,9 @@ export const SearchHistory = () => {
 		}, {})
 
 		setItem({ searchHistory: newSearchHistory })
+	}
+	const removeFromHistory = (item: SearchHistoryMovie | SearchHistoryPerson | SearchHistoryMovieList) => {
+		removeItemByPath(['searchHistory', `${item.type}:${item.id}`])
 	}
 
 	if (data.length === 0) {
@@ -98,7 +111,7 @@ export const SearchHistory = () => {
 		<ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 15 + insets.bottom }}>
 			<Text style={{ color: theme.colors.text200, fontSize: 13, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 }}>История поиска</Text>
 			{data.map(item => (
-				<SearchHistoryItem key={item.type + ':' + item.id} item={item} onPress={onPress} />
+				<SearchHistoryItem key={item.type + ':' + item.id} item={item} onPress={onPress} onRemove={removeFromHistory} />
 			))}
 		</ScrollView>
 	)
