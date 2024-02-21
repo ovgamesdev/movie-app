@@ -54,7 +54,7 @@ const ModalContent = memo<Props>(({ item }) => {
 
 						if (newWatchHistoryData.notify) {
 							const newSeries = await fetchNewSeries(item)
-							if (newSeries) newWatchHistoryData.releasedEpisodes = newSeries.total
+							newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
 						}
 
 						mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
