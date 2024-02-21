@@ -2,7 +2,7 @@ import { ActivityIndicator } from '@components/atoms'
 import { RootStackParamList } from '@navigation'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { AppState, Dimensions, StatusBar, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
@@ -12,6 +12,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MovieTrailer'>
 export const MovieTrailer: FC<Props> = ({ route }) => {
 	const { streamUrl, sourceVideoUrl } = route.params.data
 	const { styles } = useStyles(stylesheet)
+
+	const [isLoading, setIsLoading] = useState(true)
 
 	useFocusEffect(
 		useCallback(() => {
@@ -33,16 +35,21 @@ export const MovieTrailer: FC<Props> = ({ route }) => {
 	const window = Dimensions.get('window')
 
 	return (
-		<WebView
-			source={{ uri: (streamUrl || sourceVideoUrl) ?? `https://via.placeholder.com/${window.width}x${window.height}` }}
-			webviewDebuggingEnabled={__DEV__}
-			startInLoadingState
-			renderLoading={() => (
+		<>
+			<WebView
+				style={{ backgroundColor: 'rgba(0,0,0,0)' }}
+				containerStyle={{ backgroundColor: 'rgba(0,0,0,0)' }}
+				source={{ uri: (streamUrl || sourceVideoUrl) ?? `https://via.placeholder.com/${window.width}x${window.height}` }}
+				webviewDebuggingEnabled={__DEV__}
+				onLoadEnd={() => setIsLoading(false)}
+				//
+			/>
+			{isLoading ? (
 				<View style={styles.loading}>
 					<ActivityIndicator size='large' />
 				</View>
-			)}
-		/>
+			) : null}
+		</>
 	)
 }
 

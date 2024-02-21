@@ -1,6 +1,6 @@
 import { ActivityIndicator, Button, FocusableFlatList, ImageBackground, Rating } from '@components/atoms'
 import { FavoritesButton, FilmographyItems } from '@components/organisms'
-import { useOrientation, useTypedSelector } from '@hooks'
+import { useOrientation, useTypedSelector, useUpdateBookmarks } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
@@ -21,6 +21,8 @@ export const Person: FC<Props> = ({ route }) => {
 	const ref = useRef<ScrollView>(null)
 
 	const { data, isFetching, isError } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
+
+	useUpdateBookmarks(data)
 
 	if (isFetching) {
 		return (

@@ -1,4 +1,5 @@
 export * from './ActivityIndicator'
+export * from './BlurView'
 export * from './Button'
 export * from './DropDown'
 export * from './FocusableFlashList'

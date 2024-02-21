@@ -1,3 +1,4 @@
+export * from './CinematicBackdropImage'
 export * from './ProductionStatusText'
 export * from './Rating'
 export * from './RatingText'

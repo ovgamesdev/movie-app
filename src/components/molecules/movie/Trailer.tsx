@@ -9,28 +9,24 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 interface Props {
 	mainTrailer: IMainTrailer
-	showTime?: boolean
-	aspectRatio?: number
-	disabled?: boolean
-	showPlay?: boolean
+	borderRadius?: number
 }
 
-export const Trailer: FC<Props> = ({ mainTrailer, showTime, aspectRatio, disabled, showPlay = true }) => {
+export const Trailer: FC<Props> = ({ mainTrailer, borderRadius }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const poster = normalizeUrlWithNull(mainTrailer.preview?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
 
 	return (
-		<Button padding={0} transparent animation={disabled ? undefined : 'scale'} style={styles.container} onPress={() => !disabled && navigation.push('MovieTrailer', { data: mainTrailer })}>
-			<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: aspectRatio ?? 302 / 169.708 }}>
-				{showPlay && (
-					<View style={styles.playContainer}>
-						<View style={styles.play}>
-							<PlayIcon width={40} height={40} fill={theme.colors.primary300} />
-						</View>
+		<Button padding={0} transparent animation='scale' style={styles.container} onPress={() => navigation.push('MovieTrailer', { data: mainTrailer })}>
+			<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 302 / 169.708 }} borderRadius={borderRadius}>
+				<View style={styles.playContainer}>
+					<View style={styles.play}>
+						<PlayIcon width={40} height={40} fill={theme.colors.primary300} />
 					</View>
-				)}
-				{showTime && <Text style={styles.time}>{mainTrailer.duration < 60 ? `${mainTrailer.duration.toFixed()} сек` : `${(mainTrailer.duration / 60).toFixed()} мин`}</Text>}
+				</View>
+
+				<Text style={styles.time}>{mainTrailer.duration < 60 ? `${mainTrailer.duration.toFixed()} сек` : `${(mainTrailer.duration / 60).toFixed()} мин`}</Text>
 			</ImageBackground>
 		</Button>
 	)

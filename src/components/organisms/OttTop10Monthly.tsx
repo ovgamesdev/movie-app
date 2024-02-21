@@ -1,4 +1,4 @@
-import { Button, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
+import { BlurView, Button, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
 import { TopItemsAllItem } from '@components/molecules/TopItemsAllItem'
 import { navigation } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -102,16 +102,14 @@ export const OttTop10Monthly = () => {
 				)
 			} else {
 				return (
-					<View style={{}}>
-						<View style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, backgroundColor: theme.colors.bg300 }}>
-							<View style={{ position: 'absolute', top: 30 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
-								<Text style={{ fontSize: 16, color: theme.colors.primary300, fontWeight: '700' }}>
-									{index + 1}/{data.content.items.length}
-								</Text>
-							</View>
-							<View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
-								<Button text='Смотреть' />
-							</View>
+					<View style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, marginTop: insets.top, backgroundColor: theme.colors.bg300 }}>
+						<View style={{ position: 'absolute', top: 30, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
+							<Text style={{ fontSize: 16, color: theme.colors.primary300, fontWeight: '700' }}>
+								{index + 1}/{data.content.items.length}
+							</Text>
+						</View>
+						<View style={{ position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
+							<Button text='Смотреть' />
 						</View>
 					</View>
 				)
@@ -124,9 +122,15 @@ export const OttTop10Monthly = () => {
 			const poster = normalizeUrlWithNull(item.movie.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? item.movie.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: `/${imageSize}x` })
 
 			return (
-				<View style={{}}>
-					<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} borderBottomLeftRadius={20} borderBottomRightRadius={20}>
-						<View style={{ position: 'absolute', top: 30 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
+				<View>
+					{insets.top > 0 ? (
+						<View style={{ position: 'absolute', width: itemWidth, aspectRatio: 2 / 1 }}>
+							<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, marginTop: insets.top }} borderBottomLeftRadius={20} borderBottomRightRadius={20} />
+							<BlurView blurRadius={50} />
+						</View>
+					) : null}
+					<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, marginTop: insets.top }} borderBottomLeftRadius={20} borderBottomRightRadius={20}>
+						<View style={{ position: 'absolute', top: 30, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center' }}>
 							<Text style={{ fontSize: 16, color: theme.colors.primary300, fontWeight: '700' }}>
 								{index + 1}/{data.content.items.length}
 							</Text>

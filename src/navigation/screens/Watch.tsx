@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useEffect, useRef, useState } from 'react'
-import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
+import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -309,7 +309,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 				{isLoading && <Loading />}
 			</View>
-			<View style={{ flex: 1 }}>
+			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
 				<ScrollView contentContainerStyle={{ gap: 6, padding: 10, paddingBottom: 10 + insets.bottom }}>
 					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 					<View style={{ gap: 6 }}>
@@ -345,7 +345,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						</View>
 					)}
 				</ScrollView>
-			</View>
+			</KeyboardAvoidingView>
 		</TVFocusGuideView>
 	)
 }

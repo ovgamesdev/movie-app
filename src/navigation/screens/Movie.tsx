@@ -1,14 +1,14 @@
 import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
-import { ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
+import { CinematicBackdropImage, ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { FavoritesButton } from '@components/organisms'
 import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { useTypedSelector } from '@hooks'
+import { useTypedSelector, useUpdateBookmarks, useUpdateWatchHistory } from '@hooks'
 import { RootStackParamList } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
 import { isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { FC, useEffect, useState } from 'react'
-import { Dimensions, Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewProps, ViewStyle } from 'react-native'
+import { Dimensions, Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
@@ -58,6 +58,9 @@ export const Movie: FC<Props> = ({ route }) => {
 		init()
 	}, [])
 
+	useUpdateWatchHistory(data)
+	useUpdateBookmarks(data)
+
 	if (isFetching) {
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -89,18 +92,14 @@ export const Movie: FC<Props> = ({ route }) => {
 		)
 	}
 
-	const Cover = (props: ViewProps) => {
+	const Cover = () => {
 		if (!data.cover) {
 			return null
 		}
 
 		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/1344x756' })
 
-		return (
-			<View {...props}>
-				<ImageBackground source={{ uri: poster }} style={{ width: '100%', aspectRatio: 16 / 9 }} />
-			</View>
-		)
+		return <CinematicBackdropImage source={{ uri: poster }} />
 	}
 
 	const BackdropImage = ({ backdropPath }: { backdropPath: string }) => {
@@ -111,20 +110,20 @@ export const Movie: FC<Props> = ({ route }) => {
 
 		const backdrop = `https://image.tmdb.org/t/p/${imageSize}${backdropPath}`
 
-		return <ImageBackground source={{ uri: backdrop }} style={{ width: '100%', aspectRatio: 16 / 9 }} />
+		return <CinematicBackdropImage source={{ uri: backdrop }} />
 	}
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <Trailer mainTrailer={data.mainTrailer} aspectRatio={16 / 9} disabled showPlay={false} /> : <View style={{ paddingTop: 10 + insets.top }} />}</View>
+				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <CinematicBackdropImage source={{ uri: normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' }) }} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
 
 				<View style={styles.details}>
 					<View style={styles.landscapeCover}>
 						<PosterImage />
 						{data.mainTrailer?.preview && (
 							<View style={styles.landscapeMainTrailer}>
-								<Trailer mainTrailer={data.mainTrailer} showTime />
+								<Trailer mainTrailer={data.mainTrailer} />
 								<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
 								<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 							</View>
@@ -174,7 +173,7 @@ export const Movie: FC<Props> = ({ route }) => {
 								<View style={styles.portraitCover}>
 									<Text style={styles.sectionTitleTrailer}>Трейлер</Text>
 									<View style={styles.mainTrailerContainer}>
-										<Trailer mainTrailer={data.mainTrailer} showTime />
+										<Trailer mainTrailer={data.mainTrailer} borderRadius={6} />
 										<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
 										<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
 									</View>
@@ -239,7 +238,7 @@ const stylesheet = createStyleSheet(theme => ({
 			sm: undefined
 		},
 		marginTop: {
-			xs: -10,
+			xs: -50,
 			sm: 0
 		},
 		paddingHorizontal: {
