@@ -2,13 +2,14 @@ import { ActivityIndicator, Button, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults } from '@components/organisms'
 import { useDebounce, useNavigation, useTypedDispatch } from '@hooks'
 import { HomeTabParamList } from '@navigation'
+import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { store } from '@store'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
-import { FC, useEffect, useRef, useState } from 'react'
-import { KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { BackHandler, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -34,6 +35,23 @@ export const Search: FC<Props> = ({ route }) => {
 	const ref = useRef<InputType>(null)
 
 	useEffect(() => navigation.addListener('focus', () => setTimeout(() => keyword.length === 0 && ref.current?.focus(), 0)), [navigation, ref, keyword])
+
+	useFocusEffect(
+		useCallback(() => {
+			const onBackPress = () => {
+				if (keyword.length !== 0 && data) {
+					setKeyword('')
+					return true
+				} else {
+					return false
+				}
+			}
+
+			const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+			return () => subscription.remove()
+		}, [keyword, data])
+	)
 
 	const onSubmitEditing = async ({ nativeEvent: { text } }: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
 		const isNotId = !isImdbRegex.exec(text)
