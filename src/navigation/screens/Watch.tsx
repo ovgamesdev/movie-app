@@ -188,7 +188,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			}
 
 			if (data && data.length > 0) {
-				if (data.findIndex(it => it.source === 'KODIK') === -1) {
+				if (data.findIndex(it => it.source === 'KODIK') === -1 || !isSeries(route.params.data.type)) {
 					setProviders(data)
 					setProvider(route.params.data.provider ?? data[0]?.source)
 					setError(null)
