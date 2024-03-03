@@ -85,53 +85,53 @@ export const Person: FC<Props> = ({ route }) => {
 							<View style={{ gap: 5, marginTop: 5, marginBottom: 40 }}>
 								{data.roles.items.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Карьера</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Карьера</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.roles.items.map(({ role }) => role.title.russian).join(', ')} />
 									</View>
 								)}
 
 								{data.height && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Рост</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Рост</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={(data.height / 100).toString() + ' м'} />
 									</View>
 								)}
 
 								<View style={{ flexDirection: 'row' }}>
-									<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Дата рождения</Text>
+									<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Дата рождения</Text>
 									{/* DAY | MONTH | MONTH_DAY | YEAR */}
 									<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.dateOfBirth ? [data.dateOfBirth.accuracy === 'MONTH_DAY' ? new Date(data.dateOfBirth.date.replace('0000', '1900')).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }).replace(' г.', '') : new Date(data.dateOfBirth.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }).replace(' г.', '') + ', ' + new Date(data.dateOfBirth.date).toLocaleDateString(undefined, { year: 'numeric' }), data.zodiacSign ? data.zodiacSign.title.russian : null, data.dateOfDeath ? null : declineAge(data.age)].filter(it => !!it).join(' • ') : '—'} />
 								</View>
 
 								<View style={{ flexDirection: 'row' }}>
-									<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Место рождения</Text>
+									<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Место рождения</Text>
 									<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.birthPlace ?? '—'} />
 								</View>
 
 								{data.dateOfDeath && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Дата смерти</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Дата смерти</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={[new Date(data.dateOfDeath.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }).replace(' г.', '') + (data.dateOfBirth ? ', ' + new Date(data.dateOfBirth.date).toLocaleDateString(undefined, { year: 'numeric' }) : ''), declineAge(data.age)].join(' • ')} />
 									</View>
 								)}
 
 								{data.deathPlace && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Место смерти</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Место смерти</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.deathPlace} />
 									</View>
 								)}
 
 								{data.mainGenres.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Жанры</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Жанры</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.mainGenres.map((it, i) => (i === 0 ? it.name.Capitalize() : it.name)).join(', ')} />
 									</View>
 								)}
 
 								{data.marriages.length > 0 && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{data.gender === 'MALE' ? 'Супруга' : 'Супруг'}</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{data.gender === 'MALE' ? 'Супруга' : 'Супруг'}</Text>
 										<View style={{ flex: 1 }}>
 											{data.marriages.map((it, i) => {
 												const spouseStatus = getSpouseStatus(it.status, it.spouse.gender)
@@ -152,7 +152,7 @@ export const Person: FC<Props> = ({ route }) => {
 
 								{data.filmographyYears && (
 									<View style={{ flexDirection: 'row' }}>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Всего фильмов</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Всего фильмов</Text>
 										<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={data.movieCount.total + ', ' + data.filmographyYears.start + ' — ' + data.filmographyYears.end} />
 									</View>
 								)}
@@ -160,7 +160,7 @@ export const Person: FC<Props> = ({ route }) => {
 								{/* TODO (item ?? '') to item.title ? <Text>item.title</Text> : null */}
 								{data.bestFilms.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Лучшие фильмы</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Лучшие фильмы</Text>
 										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.bestFilms.items.map(({ movie }, i, { length }) => (movie.title.russian ? <Button padding={0} key={movie.id} transparent text={movie.title.russian + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} /> : null))}
@@ -170,7 +170,7 @@ export const Person: FC<Props> = ({ route }) => {
 
 								{data.bestSeries.items.length > 0 && (
 									<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-										<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>Лучшие сериалы</Text>
+										<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>Лучшие сериалы</Text>
 										{/* TODO to FocusableFlatList */}
 										<ScrollView horizontal style={{ flex: 1 }}>
 											{data.bestSeries.items.map(({ movie }, i, { length }) => (movie.title.russian ? <Button padding={0} key={movie.id} transparent text={movie.title.russian + (i !== length - 1 ? ', ' : '')} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} /> : null))}

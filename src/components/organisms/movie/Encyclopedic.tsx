@@ -15,7 +15,7 @@ const PersonItem = ({ title, data, isReq = false }: { title: string; data: { ite
 
 	return (
 		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			{data.items.length === 0 ? (
 				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
 			) : (
@@ -34,7 +34,7 @@ const YearItem = ({ title, productionYear, seasons, type }: { title: string; pro
 
 	return (
 		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flexDirection: 'row', flex: 1 }}>
 				{!productionYear ? (
 					<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text='—' />
@@ -71,7 +71,7 @@ const OriginalsItem = ({ title, items }: { title: string; items: Release[] }) =>
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<ScrollView horizontal style={{ flex: 1 }}>
 				{items
 					.map(it => it.companies)
@@ -100,7 +100,7 @@ const CountriesItem = ({ title, items, type }: { title: string; items: Country[]
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			{items.length === 0 ? (
 				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
 			) : (
@@ -133,7 +133,7 @@ const GenresItem = ({ title, items, type }: { title: string; items: Genre[]; typ
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 
 			{items.length === 0 ? (
 				<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={'—'} />
@@ -167,7 +167,7 @@ const TaglineItem = ({ title, tagline }: { title: string; tagline: string | null
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={tagline ? `«${tagline.replace(/(\s+\(season \d+\))/gi, '').replace(/\.$/g, '')}»` : '—'} />
 		</View>
 	)
@@ -180,7 +180,7 @@ const BudgetItem = ({ title, budget }: { title: string; budget: MoneyAmount | nu
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={budget.currency.symbol + budget.amount.toLocaleString()} />
 		</View>
 	)
@@ -195,7 +195,7 @@ const WorldBudgetItem = ({ title, usaBudget, worldBudget }: { title: string; usa
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={usaBudget ? `+ ${usaBudget.currency.symbol}${(worldBudget.amount - usaBudget.amount).toLocaleString()} = ${worldBudget.currency.symbol}${worldBudget.amount.toLocaleString()}` : `${worldBudget.currency.symbol}${worldBudget.amount.toLocaleString()}`} />
 		</View>
 	)
@@ -208,7 +208,7 @@ const AudienceItem = ({ title, audience }: { title: string; audience?: Audience 
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<ScrollView horizontal style={{ flex: 1, paddingLeft: 5 }}>
 				{audience.items.map((it, i) => (
 					<View key={it.country.id} style={{ flexDirection: 'row' }}>
@@ -231,7 +231,7 @@ const RusReleaseItem = ({ title, items, isImax, is3d }: { title: string; items: 
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flex: 1, flexDirection: 'row' }}>
 				<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 				{isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
@@ -248,7 +248,7 @@ const WorldPremiereItem = ({ title, date }: { title: string; date: string | null
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')} />
 		</View>
 	)
@@ -261,7 +261,7 @@ const DistributionReleaseItem = ({ title, items }: { title: string; items: Relea
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 		</View>
 	)
@@ -276,7 +276,7 @@ const ReleasesItem = ({ title, releases, type }: { title: string; releases: Rele
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + item.releasers.map(it => `, «${it.name}»`).join(' ')} />
 		</View>
 	)
@@ -289,7 +289,7 @@ const RestrictionItem = ({ title, value }: { title: string; value: string | null
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flex: 1, flexDirection: 'row', paddingLeft: 5 }}>
 				<View style={{ borderColor: theme.colors.text100 + 'cc', borderWidth: 1, paddingHorizontal: 4, paddingVertical: 3 }}>
 					<Text style={{ fontWeight: '600', fontSize: 13, lineHeight: 13, color: theme.colors.text100 + 'cc' }}>{value}</Text>
@@ -306,7 +306,7 @@ const DurationItem = ({ title, duration, seriesDuration, totalDuration }: { titl
 
 	return (
 		<View style={{ flexDirection: 'row' }}>
-			<Text style={{ width: 160, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
+			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={(durationValue === null ? (totalDuration === null ? '—' : `${totalDuration} мин. всего`) : `${durationValue} мин${durationValue > 60 ? '. / ' + formatDuration(durationValue) : ''}`) + (totalDuration && seriesDuration ? `${totalDuration && seriesDuration ? `. серия (${totalDuration} мин. всего)` : totalDuration ? '. всего' : ''}` : '')} />
 		</View>
 	)
