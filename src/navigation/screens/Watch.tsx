@@ -6,7 +6,7 @@ import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -78,7 +78,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		return subscription.remove
 	}, [provider])
 
-	useEffect(() => {
+	const loadPlayers = useCallback(() => {
+		setIsLoading(true)
+		setError(null)
+
 		const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
 			try {
 				const res = await fetch(`https://kinobox.tv/api/players/main?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${id}&token=${Config.KINOBOX_TOKEN}`)
@@ -190,7 +193,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			if (data && data.length > 0) {
 				if (data.findIndex(it => it.source === 'KODIK') === -1 || !isSeries(route.params.data.type)) {
 					setProviders(data)
-					setProvider(route.params.data.provider ?? data[0]?.source)
+					setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
 					setError(null)
 				} else {
 					getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
@@ -200,7 +203,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
 							setProviders(data.filter(it => it.source !== 'KODIK'))
 						}
-						setProvider(route.params.data.provider ?? data[0]?.source)
+						setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
 						setError(null)
 					})
 				}
@@ -209,10 +212,13 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
 			}
 		})
-	}, [])
+	}, [provider])
+
+	useEffect(loadPlayers, [])
 
 	const handleProviderChange = (it: kinoboxPlayersData) => {
 		setIsLoading(true)
+		setError(null)
 
 		if (provider === it.source) {
 			webViewRef.current?.reload()
@@ -402,73 +408,77 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
 						onMessage={({ nativeEvent }) => {
-							const nativeEventData = JSON.parse(nativeEvent.data)
+							try {
+								const nativeEventData = JSON.parse(nativeEvent.data)
 
-							if ('event' in nativeEventData) {
-								const playerData = nativeEventData as { event: 'new'; time: number; duration: number } | { event: 'ended'; time?: number } | { event: 'time'; time: number; duration: number } | { event: 'time'; time: number } | { event: 'time'; duration: number }
+								if ('event' in nativeEventData) {
+									const playerData = nativeEventData as { event: 'new'; time: number; duration: number } | { event: 'ended'; time?: number } | { event: 'time'; time: number; duration: number } | { event: 'time'; time: number } | { event: 'time'; duration: number }
 
-								switch (playerData.event) {
-									case 'new': {
-										// console.log('playerData:', playerData)
+									switch (playerData.event) {
+										case 'new': {
+											// console.log('playerData:', playerData)
 
-										const item: Partial<WatchHistory> = {
-											status: 'watch' as const,
-											timestamp: Date.now(),
-											lastTime: playerData.time,
-											duration: playerData.duration
+											const item: Partial<WatchHistory> = {
+												status: 'watch' as const,
+												timestamp: Date.now(),
+												lastTime: playerData.time,
+												duration: playerData.duration
+											}
+
+											mergeItem({ watchHistory: { [`${data.id}`]: item } })
+
+											break
 										}
+										case 'time': {
+											// console.log('playerData:', playerData)
 
-										mergeItem({ watchHistory: { [`${data.id}`]: item } })
+											const item: Partial<WatchHistory> = {
+												timestamp: Date.now()
+											}
 
-										break
+											if ('time' in playerData) {
+												item.lastTime = playerData.time
+											}
+											if ('duration' in playerData) {
+												item.duration = playerData.duration
+											}
+
+											mergeItem({ watchHistory: { [`${data.id}`]: item } })
+											break
+										}
+										case 'ended': {
+											// console.log('playerData:', playerData)
+
+											if (!isSeries(data.type)) {
+												mergeItem({ watchHistory: { [`${data.id}`]: { status: 'end' as const, timestamp: Date.now() } } })
+												// TODO test notify
+												// if (item.notify) newWatchHistoryData.notify = false
+											} else {
+												mergeItem({ watchHistory: { [`${data.id}`]: { timestamp: Date.now() } } })
+											}
+
+											break
+										}
 									}
-									case 'time': {
-										// console.log('playerData:', playerData)
 
-										const item: Partial<WatchHistory> = {
-											timestamp: Date.now()
-										}
+									//
+								} else if ('isFullscreen' in nativeEventData) {
+									const { isFullscreen, type } = nativeEventData as { isFullscreen: boolean; type: string }
 
-										if ('time' in playerData) {
-											item.lastTime = playerData.time
-										}
-										if ('duration' in playerData) {
-											item.duration = playerData.duration
-										}
+									if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
+										isWatchFullscreen.current = isFullscreen
 
-										mergeItem({ watchHistory: { [`${data.id}`]: item } })
-										break
-									}
-									case 'ended': {
-										// console.log('playerData:', playerData)
-
-										if (!isSeries(data.type)) {
-											mergeItem({ watchHistory: { [`${data.id}`]: { status: 'end' as const, timestamp: Date.now() } } })
-											// TODO test notify
-											// if (item.notify) newWatchHistoryData.notify = false
+										if (isFullscreen) {
+											navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
+											StatusBar.setHidden(true) // need
 										} else {
-											mergeItem({ watchHistory: { [`${data.id}`]: { timestamp: Date.now() } } })
+											navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
+											StatusBar.setHidden(false) // need
 										}
-
-										break
 									}
 								}
-
-								//
-							} else if ('isFullscreen' in nativeEventData) {
-								const { isFullscreen, type } = nativeEventData as { isFullscreen: boolean; type: string }
-
-								if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
-									isWatchFullscreen.current = isFullscreen
-
-									if (isFullscreen) {
-										navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
-										StatusBar.setHidden(true) // need
-									} else {
-										navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
-										StatusBar.setHidden(false) // need
-									}
-								}
+							} catch (e) {
+								console.error('[error] WebView onmessage:', e)
 							}
 
 							return true
@@ -477,10 +487,17 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						webviewDebuggingEnabled={__DEV__}
 						onLoadStart={() => setIsLoading(true)}
 						onLoadEnd={() => setIsLoading(false)}
+						onError={() => {
+							setIsLoading(false)
+							setError({ error: 'Ошибка', message: 'Не удалось открыть веб-страницу' })
+						}}
 					/>
 				) : (
-					<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-						<Text style={{ fontSize: 14, color: theme.colors.primary300, textAlign: 'center' }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
+					<View style={{ flex: 1, backgroundColor: '#000' }}>
+						<Button onPress={loadPlayers} hasTVPreferredFocus flex={1} style={{ flex: 1 }} transparent alignItems='center' justifyContent='center' paddingVertical={5} paddingHorizontal={20}>
+							<Text style={{ fontSize: 14, color: theme.colors.primary300, paddingBottom: 10 }}>{error ? error.message : 'Возникла неопознанная ошибка'}</Text>
+							<Text style={{ fontSize: 14, color: theme.colors.primary300 }}>Нажмите, чтобы обновить</Text>
+						</Button>
 					</View>
 				)}
 
