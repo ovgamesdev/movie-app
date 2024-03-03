@@ -148,9 +148,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						data: resultsArray
 							.filter((value, index, self) => self.findIndex(it => it.last_season === value.last_season) === index)
 							.map(it => ({
-								source: `KODIK:${it.id}`,
+								source: `KODIK:${'last_season' in it ? it.last_season : it.id}`,
 								title: 'last_season' in it ? `Сезон ${it.last_season}` : undefined,
-								translation: it.translation?.title ?? null,
+								translation: null, // it.translation?.title ?? null,
 								quality: it.quality ?? null,
 								iframeUrl: it.link.startsWith('//') ? `https:${it.link}` : it.link
 							}))
@@ -192,14 +192,13 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					setProviders(data)
 					setProvider(route.params.data.provider ?? data[0]?.source)
 					setError(null)
-
-					// FIXME kodik error
 				} else {
 					getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
 						if (kodik_data && kodik_data.length > 0) {
 							setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
 						} else {
-							setProviders(data)
+							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
+							setProviders(data.filter(it => it.source !== 'KODIK'))
 						}
 						setProvider(route.params.data.provider ?? data[0]?.source)
 						setError(null)
@@ -494,15 +493,14 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						{currentProvider && providers ? (
 							providers.map(it => {
 								const isActive = currentProvider.source === it.source
-								const isKodik = it.source === 'KODIK'
 
 								return (
-									<Button key={it.source} disabled={isKodik} focusable={!isKodik} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
+									<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
 										{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
 										<Text style={{ fontSize: 14, color: theme.colors.text100, flex: 1 }}>
 											{watchHistoryProviderToString(it.source)}
 
-											{isKodik ? ' Loading...' : `${it.title ? `: ${it.title} ` : ' '}(${[it.translation, it.quality].filter(it => !!it).join(', ')})`}
+											{`${it.title ? `: ${it.title} ` : ' '}(${[it.translation, it.quality].filter(it => !!it).join(', ')})`}
 										</Text>
 									</Button>
 								)
