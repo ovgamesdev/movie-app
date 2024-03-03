@@ -13,7 +13,7 @@ import { BackHandler, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TV
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-const isImdbRegex = /^(tt\d{4,9})/
+const isImdbRegex = /(tt\d{4,9})/
 
 type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
 
@@ -54,15 +54,16 @@ export const Search: FC<Props> = ({ route }) => {
 	)
 
 	const onSubmitEditing = async ({ nativeEvent: { text } }: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
-		const isNotId = !isImdbRegex.exec(text)
-		if (isNotId) return
-
-		if (text.startsWith('tt')) {
+		const isImdbSearch = !!isImdbRegex.exec(text)
+		if (isImdbSearch) {
 			watchImdb(text)
 		}
 	}
 
-	const watchImdb = async (id: string) => {
+	const watchImdb = async (text: string) => {
+		const id = isImdbRegex.exec(text)?.[0]
+		if (!id) return
+
 		const { data } = await dispatch(themoviedbApi.endpoints.getMovieById.initiate({ id }))
 		const watchHistory = store.getState().settings.settings.watchHistory[id as `tt${number}`] as WatchHistory | undefined
 
