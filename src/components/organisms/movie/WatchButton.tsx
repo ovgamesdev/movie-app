@@ -20,7 +20,7 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 	}
 }
 
-type Status = 'loading' | 'watch' | 'continue' | 'off-notify' | 'on-notify'
+type Status = 'loading' | 'watch' | 'continue' | 'end' | 'off-notify' | 'on-notify'
 
 interface Props {
 	data: IFilmBaseInfo | ITvSeriesBaseInfo
@@ -32,7 +32,7 @@ export const WatchButton: FC<Props> = ({ data }) => {
 
 	const [providers, setProviders] = useState<unknown[] | null | 'loading'>('loading')
 
-	const status: Status = providers === 'loading' ? 'loading' : providers ? (watchHistory ? 'continue' : 'watch') : watchHistory?.notify ? 'on-notify' : 'off-notify'
+	const status: Status = providers === 'loading' ? 'loading' : providers ? (watchHistory ? (watchHistory.status === 'end' ? 'end' : 'continue') : 'watch') : watchHistory?.notify ? 'on-notify' : 'off-notify'
 
 	useEffect(() => {
 		getProviders(data).then(it => setProviders(it))
@@ -40,14 +40,16 @@ export const WatchButton: FC<Props> = ({ data }) => {
 
 	return (
 		<Button
-			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'continue' ? 'Продолжить просмотр' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
-			style={{ minWidth: watchHistory ? 170.66 : 84, minHeight: 39.33 }}
+			text={status === 'loading' ? undefined : status === 'watch' ? 'Смотреть' : status === 'continue' ? 'Продолжить просмотр' : status === 'end' ? 'Просмотрено' : status === 'off-notify' ? 'Сообщить когда выйдет' : 'Не сообщать когда выйдет'}
+			style={{ minWidth: watchHistory ? (watchHistory.status === 'end' ? 110.36 : 170.66) : 84, minHeight: 39.33 }}
 			disabled={status === 'loading'}
 			paddingVertical={status === 'loading' ? 6.8 : undefined}
 			onPress={async () => {
 				const item: WatchHistory = watchHistory
 					? {
 							...watchHistory,
+							id: data.id,
+							type: data.__typename,
 							title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
 							// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 							year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
@@ -71,6 +73,7 @@ export const WatchButton: FC<Props> = ({ data }) => {
 						break
 					case 'watch':
 					case 'continue':
+					case 'end':
 						navigation.navigate('Watch', { data: item })
 						break
 					case 'off-notify':

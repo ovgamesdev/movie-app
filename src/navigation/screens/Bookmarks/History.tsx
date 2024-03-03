@@ -1,4 +1,4 @@
-import { Button, FocusableFlashList, ImageBackground, type FocusableFlashListRenderItem, type FocusableFlashListType } from '@components/atoms'
+import { Button, FocusableFlashList, ImageBackground, Progress, type FocusableFlashListRenderItem, type FocusableFlashListType } from '@components/atoms'
 import { Filters } from '@components/molecules'
 import { ItemMenuModal } from '@components/organisms'
 import { useActions, useTypedSelector } from '@hooks'
@@ -6,7 +6,7 @@ import { NotificationsIcon } from '@icons'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
-import { isSeries, normalizeUrlWithNull, watchHistoryProviderToString } from '@utils'
+import { getNoun, isSeries, normalizeUrlWithNull, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { Animated, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -54,16 +54,9 @@ export const History: FC = () => {
 							{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year].filter(it => it).join(' • ')}
 						</Text>
 
-						{/* {item.duration && item.lastTime && (
-										<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
-											<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : `Осталось ${item.duration - item.lastTime} ${getNoun(item.duration - item.lastTime, 'минута', 'минуты', 'минут')}`}</Text>
-											<Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} />
-										</View>
-										)} */}
-
 						<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
-							<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? 'Смотрю' : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
-							{/* <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> */}
+							<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? (item.duration && item.lastTime ? `Осталось ${Math.floor((item.duration - item.lastTime) / 60)} ${getNoun(Math.floor((item.duration - item.lastTime) / 60), 'минута', 'минуты', 'минут')}` : 'Смотрю') : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
+							{(item.status === 'end' || item.status === 'watch') && item.duration && item.lastTime ? <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> : null}
 						</View>
 					</View>
 					{item.notify && (

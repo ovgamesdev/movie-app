@@ -21,11 +21,11 @@ export const ContinueWatchItem: FC<Props> = ({ data, index, hasTVPreferredFocus,
 	return (
 		<Button onFocus={() => onFocus({ index })} onBlur={() => onBlur({ index })} onPress={() => onPress(data)} hasTVPreferredFocus={hasTVPreferredFocus} animation='scale' flex={0} padding={5} transparent style={styles.container}>
 			<ImageBackground source={{ uri: poster }} style={styles.image} borderRadius={6}>
-				{data.duration && data.lastTime && (
+				{data.duration && data.lastTime ? (
 					<View style={styles.progressContainer}>
 						<Progress duration={data.status === 'end' ? data.lastTime : data.duration} lastTime={data.lastTime} />
 					</View>
-				)}
+				) : null}
 			</ImageBackground>
 
 			<View style={styles.detail}>

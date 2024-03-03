@@ -49,13 +49,12 @@ export const Search: FC<Props> = ({ route }) => {
 		const watchHistory = store.getState().settings.settings.watchHistory[id as `tt${number}`] as WatchHistory | undefined
 
 		if (data) {
-			const mutableItemData: Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster'> = data.media_type === 'tv' ? { title: data.name, type: 'TvSeries', year: Number(data.first_air_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null } : { title: data.title, type: 'Film', year: Number(data.release_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null }
+			const mutableItemData: Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'> = data.media_type === 'tv' ? { title: data.name, id: id as `tt${number}`, type: 'TvSeries', year: Number(data.first_air_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null } : { title: data.title, id: id as `tt${number}`, type: 'Film', year: Number(data.release_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null }
 
 			const item: WatchHistory = watchHistory
 				? { ...watchHistory, ...mutableItemData }
 				: {
 						...mutableItemData,
-						id: id as `tt${number}`,
 						provider: null,
 						startTimestamp: Date.now(),
 						timestamp: Date.now(),

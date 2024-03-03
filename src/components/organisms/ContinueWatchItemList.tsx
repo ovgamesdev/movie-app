@@ -21,6 +21,7 @@ export const ContinueWatchItemList: FC<Props> = ({ status, title }) => {
 	const data = Object.values(watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
 		.filter(it => (status === 'all' ? it : it.status === status))
+		.slice(0, 20)
 
 	const isEmpty = data.length === 0
 

@@ -4,7 +4,7 @@ import { CheckIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { WatchHistoryProvider } from '@store/settings'
+import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useEffect, useRef, useState } from 'react'
 import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
@@ -62,27 +62,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		console.log('watchHistory init', { [`${data.id}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
 		mergeItem({ watchHistory: { [`${data.id}`]: { ...data, provider, status: 'watch' as const, timestamp: Date.now() } } })
 
-		const lastTime = Math.floor(Math.random() * 200) + 1
-		const duration = Math.floor(Math.random() * 500) + lastTime
-
-		setTimeout(() => {
-			console.log('watchHistory loaded', { [`${data.id}`]: { lastTime, duration } })
-			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime, duration, timestamp: Date.now() } } })
-		}, 10 * 1000)
-
-		const saveWatchStatus = () => {
-			const newLastTime = Math.floor(Math.random() * (duration - lastTime)) + lastTime
-
-			console.log('watchHistory end', { [`${data.id}`]: { lastTime: newLastTime } })
-			mergeItem({ watchHistory: { [`${data.id}`]: { lastTime: newLastTime, timestamp: Date.now() } } })
-		}
-
 		const subscription = AppState.addEventListener('change', nextAppState => {
 			console.log('nextAppState:', nextAppState)
 
-			if (nextAppState === 'background') {
-				saveWatchStatus()
-			} else if (nextAppState === 'active') {
+			if (nextAppState === 'active') {
 				if (isWatchFullscreen.current) {
 					navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
 					StatusBar.setHidden(true) // need
@@ -92,10 +75,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				}
 			}
 		})
-		return () => {
-			subscription.remove()
-			saveWatchStatus()
-		}
+		return subscription.remove
 	}, [provider])
 
 	useEffect(() => {
@@ -212,6 +192,8 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					setProviders(data)
 					setProvider(route.params.data.provider ?? data[0]?.source)
 					setError(null)
+
+					// FIXME kodik error
 				} else {
 					getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
 						if (kodik_data && kodik_data.length > 0) {
@@ -257,17 +239,158 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		)
 	}
 
-	const run = `
-		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
-		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(JSON.stringify({isFullscreen:document.fullscreenElement!=null,type:e.type})), false) );
+	const WatchHistory = () => {
+		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]) as WatchHistory | undefined
 
-		true;
-	`
+		if (!value) return null
+
+		return (
+			<View style={{ paddingVertical: 10, gap: 5 }}>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>duration:</Text>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{value.duration}</Text>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>lastTime:</Text>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{value.lastTime}</Text>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>status:</Text>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{value.status}</Text>
+				</View>
+				<View style={{ flexDirection: 'row' }}>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>timestamp:</Text>
+					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{new Date(value.timestamp).toLocaleString()}</Text>
+				</View>
+			</View>
+		)
+	}
 
 	const currentProvider = providers && providers.length > 0 ? providers.find(it => it.source === provider) ?? providers[0] : null
 	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider?.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
 
 	console.log('currentProvider', currentProvider?.source, provider)
+
+	const run = `
+		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+		["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "msfullscreenchange"].forEach(eventType => document.addEventListener(eventType, e => window.ReactNativeWebView.postMessage(JSON.stringify({isFullscreen:document.fullscreenElement!=null,type:e.type})), false) );
+
+		let SENT_TIME = 15000;
+		let lastSentTime = 0;
+		let timer = null;
+
+		function ReactNativeWebViewPostMessage(data) {
+			window.ReactNativeWebView.postMessage(data);
+
+			lastSentTime = Date.now();
+			clearTimeout(timer);
+		}
+
+		function ReactNativeWebViewPostMessageTimer(data) {
+			const elapsedTime = Date.now() - lastSentTime;
+			if (elapsedTime > SENT_TIME) {
+				ReactNativeWebViewPostMessage(data);
+			} else {
+				const remainingTime = SENT_TIME - elapsedTime;
+				if (timer) {
+					clearTimeout(timer);
+				}
+				timer = setTimeout(() => ReactNativeWebViewPostMessage(data), remainingTime);
+			}
+		}
+
+		window.addEventListener("message", (event) => {
+			const eventTitle = event.data.event ?? event.data.key;
+			const eventData = event.data;
+			
+			switch (true) {
+				case ${currentProvider?.source.startsWith('ALLOHA')}:
+					if (eventTitle === 'inited') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
+					}
+
+					if ((eventTitle === 'time' || eventTitle === 'duration') && eventData.duration !== 0) {
+						ReactNativeWebViewPostMessageTimer(JSON.stringify({ event: 'time', time: Math.round(eventData.time), duration: Math.round(eventData.duration) }));
+					}
+
+					if (eventTitle === 'ended') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended', time: Math.round(eventData.time) }));
+					}
+
+					break;
+
+				case ${currentProvider?.source.startsWith('COLLAPS')}:
+					if (eventTitle === 'startWatching') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
+					}
+
+					if (eventTitle === 'viewProgress') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'time', time: Math.round(eventData.time), duration: Math.round(eventData.duration) }));
+					}
+
+					if (eventTitle === 'ended') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended' }));
+					}
+
+					break;
+
+				case ${currentProvider?.source.startsWith('KODIK')}:
+					if (eventTitle === 'inited') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
+					}
+
+					if (eventTitle === 'kodik_player_duration_update') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'time', time: 0, duration: Math.round(eventData.value) }));
+					}
+					if (eventTitle === 'kodik_player_time_update') {
+						ReactNativeWebViewPostMessageTimer(JSON.stringify({ event: 'time', time: Math.round(eventData.value) }));
+					}
+
+					if (eventTitle === 'ended') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({event: 'ended', time: Math.round(eventData.time) }));
+					}
+
+					break;
+
+				case ${currentProvider?.source.startsWith('VIDEOCDN')}:
+					if (eventTitle === 'new') {
+						setTimeout(() => window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 })), 250);
+					}
+
+					if (eventTitle === 'time' || eventTitle === 'duration') {
+						ReactNativeWebViewPostMessageTimer(JSON.stringify({ event: 'time', time: Math.round(eventData.time), duration: Math.round(eventData.duration) }));
+					}
+
+					if (eventTitle === 'ended') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended', time: Math.round(eventData.time) }));
+					}
+
+					break;
+
+				case ${currentProvider?.source.startsWith('HDVB')}:
+					if (eventTitle === 'new') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
+					}
+
+					if ((eventTitle === 'time' || eventTitle === 'duration') && eventData.duration !== 0) {
+						ReactNativeWebViewPostMessageTimer(JSON.stringify({ event: 'time', time: Math.round(eventData.time), duration: Math.round(eventData.duration) }));
+					}
+
+					if (eventTitle === 'ended') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended', time: Math.round(eventData.time) }));
+					}
+
+					break;
+
+				// TODO 
+				case ${currentProvider?.source.startsWith('VOIDBOOST')}:
+					break;
+			}
+
+		});
+
+		true;
+	`
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: insets.top }} trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>
@@ -280,17 +403,72 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
 						onMessage={({ nativeEvent }) => {
-							const { isFullscreen, type } = JSON.parse(nativeEvent.data) as { isFullscreen: boolean; type: string }
+							const nativeEventData = JSON.parse(nativeEvent.data)
 
-							if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
-								isWatchFullscreen.current = isFullscreen
+							if ('event' in nativeEventData) {
+								const playerData = nativeEventData as { event: 'new'; time: number; duration: number } | { event: 'ended'; time?: number } | { event: 'time'; time: number; duration: number } | { event: 'time'; time: number } | { event: 'time'; duration: number }
 
-								if (isFullscreen) {
-									navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
-									StatusBar.setHidden(true) // need
-								} else {
-									navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
-									StatusBar.setHidden(false) // need
+								switch (playerData.event) {
+									case 'new': {
+										// console.log('playerData:', playerData)
+
+										const item: Partial<WatchHistory> = {
+											status: 'watch' as const,
+											timestamp: Date.now(),
+											lastTime: playerData.time,
+											duration: playerData.duration
+										}
+
+										mergeItem({ watchHistory: { [`${data.id}`]: item } })
+
+										break
+									}
+									case 'time': {
+										// console.log('playerData:', playerData)
+
+										const item: Partial<WatchHistory> = {
+											timestamp: Date.now()
+										}
+
+										if ('time' in playerData) {
+											item.lastTime = playerData.time
+										}
+										if ('duration' in playerData) {
+											item.duration = playerData.duration
+										}
+
+										mergeItem({ watchHistory: { [`${data.id}`]: item } })
+										break
+									}
+									case 'ended': {
+										// console.log('playerData:', playerData)
+
+										if (!isSeries(data.type)) {
+											mergeItem({ watchHistory: { [`${data.id}`]: { status: 'end' as const, timestamp: Date.now() } } })
+											// TODO test notify
+											// if (item.notify) newWatchHistoryData.notify = false
+										} else {
+											mergeItem({ watchHistory: { [`${data.id}`]: { timestamp: Date.now() } } })
+										}
+
+										break
+									}
+								}
+
+								//
+							} else if ('isFullscreen' in nativeEventData) {
+								const { isFullscreen, type } = nativeEventData as { isFullscreen: boolean; type: string }
+
+								if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
+									isWatchFullscreen.current = isFullscreen
+
+									if (isFullscreen) {
+										navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
+										StatusBar.setHidden(true) // need
+									} else {
+										navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
+										StatusBar.setHidden(false) // need
+									}
 								}
 							}
 
@@ -340,6 +518,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					</View>
 					{showDevOptions && (
 						<View>
+							<WatchHistory />
 							<InputHistory field='fileIndex' title='fileIndex' />
 							<InputHistory field='releasedEpisodes' title='releasedEpisodes' />
 						</View>
