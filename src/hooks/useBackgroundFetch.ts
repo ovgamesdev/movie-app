@@ -1,4 +1,4 @@
-import notifee, { AndroidImportance } from '@notifee/react-native'
+import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
 import { WatchHistory, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
@@ -15,48 +15,142 @@ const config: BackgroundFetchConfig = {
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
 }
 
+type KodikItemType = { last_season: number; last_episode: number }
+const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { seasons: KodikItemType[]; releasedEpisodes: number; total: number }): NewEpisodesType => {
+	let remainingEpisodes = total - releasedEpisodes
+	const res: NewEpisodesType = {}
+
+	for (let i = seasons.length - 1; i >= 0; i--) {
+		const { last_season } = seasons[i]
+		let { last_episode } = seasons[i]
+
+		const episodes: string[] = []
+		while (remainingEpisodes > 0 && last_episode > 0) {
+			episodes.unshift(String(last_episode))
+			remainingEpisodes--
+			last_episode--
+		}
+		if (episodes.length > 0) {
+			res[`${last_season}`] = episodes
+		}
+	}
+
+	return res
+}
+
 type NewEpisodesType = { [key: string]: string[] }
-export const fetchNewSeries = async ({ id, type, title, releasedEpisodes }: WatchHistory): Promise<{ total: number; data: NewEpisodesType } | null> => {
-	// ALLOHA
+export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider }: WatchHistory): Promise<{ total: number; data: NewEpisodesType } | null> => {
 	// TODO add for other providers
 
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
-	const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&${String(id).startsWith('tt') ? 'imdb' : 'kp'}=${id}`
-
 	try {
-		const response = await fetch(url)
-		const res = await response.json()
+		switch (true) {
+			// case provider?.startsWith('HDVB'):
+			// case provider?.startsWith('VIDEOCDN'):
+			// case provider?.startsWith('VOIDBOOST'):
+			case provider?.startsWith('KODIK'): {
+				const url = `https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`
 
-		const seasons = res?.data?.seasons
-		let total = 0
-		const data: NewEpisodesType = {}
+				const response = await fetch(url)
+				const res = await response.json()
 
-		if (res?.status === 'error') return null
+				const resultsArray = res?.results
+				let total = 0
+				let data: NewEpisodesType = {}
 
-		if (typeof seasons === 'object') {
-			for (const s in seasons) {
-				const season = seasons[s]
+				if (resultsArray && Array.isArray(resultsArray)) {
+					const seasons = resultsArray
+						.reduce((acc, current) => {
+							const existing = acc.find((item: KodikItemType) => item.last_season === current.last_season)
+							if (!existing || current.last_episode > existing.last_episode) {
+								return [...acc.filter((item: KodikItemType) => item.last_season !== current.last_season), current]
+							} else {
+								return acc
+							}
+						}, [])
+						.sort((a: KodikItemType, b: KodikItemType) => a.last_season - b.last_season)
 
-				for (const e in season.episodes) {
-					const episode = season.episodes[e]
-					total = total + 1
+					total = seasons.reduce((total: number, { last_episode }: KodikItemType) => total + last_episode, 0)
 
 					if (releasedEpisodes && releasedEpisodes < total) {
-						if (`${season.season}` in data) {
-							data[`${season.season}`].push(episode.episode)
-						} else {
-							data[`${season.season}`] = [episode.episode]
+						data = calculateReleasedEpisodesKodik({ seasons, releasedEpisodes, total })
+					}
+				}
+
+				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+
+				return { total, data }
+			}
+			case provider?.startsWith('COLLAPS'): {
+				const url = `https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`
+
+				const response = await fetch(url)
+				const res = await response.json()
+
+				const seasons = res?.seasons
+				let total = 0
+				const data: NewEpisodesType = {}
+
+				if (typeof seasons === 'object' && Array.isArray(seasons)) {
+					for (const season of seasons) {
+						for (const episode of season.episodes) {
+							total = total + 1
+
+							if (releasedEpisodes && releasedEpisodes < total) {
+								if (`${season.season}` in data) {
+									data[`${season.season}`].push(episode.episode)
+								} else {
+									data[`${season.season}`] = [episode.episode]
+								}
+							}
 						}
 					}
 				}
+
+				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+
+				return { total, data }
+			}
+
+			default:
+			case provider?.startsWith('ALLOHA'): {
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+				const url = `${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&${String(id).startsWith('tt') ? 'imdb' : 'kp'}=${id}`
+
+				const response = await fetch(url)
+				const res = await response.json()
+
+				const seasons = res?.data?.seasons
+				let total = 0
+				const data: NewEpisodesType = {}
+
+				if (res?.status === 'error') return null
+
+				if (typeof seasons === 'object') {
+					for (const s in seasons) {
+						const season = seasons[s]
+
+						for (const e in season.episodes) {
+							const episode = season.episodes[e]
+							total = total + 1
+
+							if (releasedEpisodes && releasedEpisodes < total) {
+								if (`${season.season}` in data) {
+									data[`${season.season}`].push(episode.episode)
+								} else {
+									data[`${season.season}`] = [episode.episode]
+								}
+							}
+						}
+					}
+				}
+
+				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+
+				return { total, data }
 			}
 		}
-
-		console.log(`[fetchNewSeries] ${type} "${rusToLatin(title)}": ${total}`, data)
-
-		return { total, data }
 	} catch (e) {
-		console.log(`[fetchNewSeries] error ${type} "${rusToLatin(title)}":`, e)
+		console.log(`[fetchNewSeries] error ${provider}:${type} "${rusToLatin(title)}":`, e)
 		return null
 	}
 }
@@ -71,6 +165,10 @@ const displayNotificationNewFilm = (movie: WatchHistory) => {
 		data: validateDisplayNotificationData(movie),
 		android: {
 			channelId: 'content-release-channel',
+			style: {
+				type: AndroidStyle.BIGTEXT,
+				text: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`
+			},
 			largeIcon: poster,
 			pressAction: {
 				id: 'movie',
@@ -112,6 +210,10 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 		data: validateDisplayNotificationData(movie),
 		android: {
 			channelId: 'content-release-channel',
+			style: {
+				type: AndroidStyle.BIGTEXT,
+				text: `Новый эпизод «${movie.title}» ${seasonTitle.length === 0 ? '' : seasonTitle + '.'}`
+			},
 			largeIcon: poster,
 			pressAction: {
 				id: 'movie',

@@ -12,6 +12,7 @@ declare module 'react-native-config' {
 		THEMOVIEDB_TOKEN: string
 		//
 		ALLOHA_TOKEN: string
+		COLLAPS_TOKEN: string
 		KODIK_TOKEN: string
 	}
 
