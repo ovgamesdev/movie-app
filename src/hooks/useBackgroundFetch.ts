@@ -263,7 +263,7 @@ export const backgroundTask = async (taskId: string) => {
 	for (const movie of data) {
 		try {
 			await delay(250)
-			const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
+			const response = await fetch(`https://kinobox.tv/api/players/main?${String(movie.id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
 
 			i = i + 1
 			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${rusToLatin(movie.type)} "${rusToLatin(movie.title)}"`)

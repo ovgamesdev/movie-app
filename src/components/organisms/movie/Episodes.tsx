@@ -1,15 +1,19 @@
+import { Button } from '@components/atoms'
+import { NavigateNextIcon } from '@icons'
 import { useGetTvSeriesEpisodesQuery } from '@store/kinopoisk'
 import { getNoun } from '@utils'
 import type { FC } from 'react'
-import { Text, View } from 'react-native'
+import { Platform, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = {
 	id: number
+	onPress: () => void
+	disabled: boolean
 }
 
-export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
-	const { styles } = useStyles(stylesheet)
+export const Episodes: FC<Props> = ({ id: tvSeriesId, onPress, disabled }) => {
+	const { styles, theme } = useStyles(stylesheet)
 
 	const { data, isFetching, isError } = useGetTvSeriesEpisodesQuery({ tvSeriesId })
 
@@ -23,7 +27,7 @@ export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
 		)
 	}
 
-	if (!data) return null
+	if (!data?.releasedEpisodes) return null
 
 	const episodeNumber = data.releasedEpisodes.items[0]?.number
 	const seasonNumber = data.releasedEpisodes.items[0]?.season?.number
@@ -34,7 +38,11 @@ export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Список эпизодов</Text>
+			<Button focusable={!disabled} disabled={disabled} animation='scale' transparent flexDirection='row' padding={0} onPress={onPress}>
+				<Text style={styles.title}>Список эпизодов</Text>
+				{!Platform.isTV && !disabled && <NavigateNextIcon width={32} height={32} fill={theme.colors.text100} style={styles.buttonIcon} />}
+			</Button>
+
 			{data.releasedEpisodes.items.length > 0 && (
 				<Text style={styles.details1}>
 					{getNoun(episodeNumber, releasedEpisodes[0], releasedEpisodes[1], releasedEpisodes[2]).replace('%d', episodeNumber.toString())} {(seasonNumber === 2 ? inSeason[1] : inSeason[0]).replace('%d', seasonNumber.toString())}.
@@ -46,6 +54,17 @@ export const Episodes: FC<Props> = ({ id: tvSeriesId }) => {
 }
 
 const stylesheet = createStyleSheet(theme => ({
+	button: {
+		color: theme.colors.text100,
+		fontSize: 22,
+		fontWeight: '600',
+		marginBottom: 9
+	},
+	buttonIcon: {
+		marginLeft: 3,
+		transform: [{ translateY: -3 }]
+	},
+	//
 	loading: {
 		marginTop: 40,
 		marginBottom: 2
@@ -75,7 +94,8 @@ const stylesheet = createStyleSheet(theme => ({
 		color: theme.colors.text100,
 		fontSize: 22,
 		fontWeight: '600',
-		marginBottom: 9
+		margin: -3,
+		marginBottom: 6
 	},
 	details1: {
 		fontSize: 15,

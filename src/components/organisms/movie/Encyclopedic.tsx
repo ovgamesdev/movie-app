@@ -2,7 +2,7 @@ import { Button, ImageBackground } from '@components/atoms'
 import { Kp3dIcon, KpImaxIcon } from '@icons'
 import { navigation } from '@navigation'
 import { Audience, Country, Genre, IFilmBaseInfo, ITvSeriesBaseInfo, MoneyAmount, MovieType, Person, Release, Releases } from '@store/kinopoisk'
-import { declineSeasons, formatDuration, isSeries, ratingMPAA } from '@utils'
+import { declineSeasons, formatDate, formatDuration, isSeries, ratingMPAA } from '@utils'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
@@ -29,8 +29,10 @@ const PersonItem = ({ title, data, isReq = false }: { title: string; data: { ite
 	)
 }
 
-const YearItem = ({ title, productionYear, seasons, type }: { title: string; productionYear: number | null; seasons?: { total: number }; type: MovieType }) => {
+const YearItem = ({ id, title, productionYear, seasons, type, tmdbId }: { id: number; title: string; productionYear: number | null; seasons?: { total: number }; type: MovieType; tmdbId: number | null }) => {
 	const { theme } = useStyles()
+
+	const episodesDisabled = tmdbId === null
 
 	return (
 		<TVFocusGuideView style={{ flexDirection: 'row' }} autoFocus>
@@ -55,8 +57,8 @@ const YearItem = ({ title, productionYear, seasons, type }: { title: string; pro
 					/>
 				)}
 				{seasons && seasons.total > 0 && (
-					<Button padding={0} transparent focusable={false}>
-						<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{'(' + declineSeasons(seasons.total) + ')'}</Text>
+					<Button padding={0} transparent focusable={!episodesDisabled} disabled={episodesDisabled} onPress={() => tmdbId !== null && navigation.push('Episodes', { data: { id, tmdb_id: tmdbId, type } })}>
+						<Text style={{ color: episodesDisabled ? theme.colors.text200 : theme.colors.text100, fontSize: 13 }}>{'(' + declineSeasons(seasons.total) + ')'}</Text>
 					</Button>
 				)}
 			</View>
@@ -189,8 +191,6 @@ const BudgetItem = ({ title, budget }: { title: string; budget: MoneyAmount | nu
 const WorldBudgetItem = ({ title, usaBudget, worldBudget }: { title: string; usaBudget: MoneyAmount | null; worldBudget: MoneyAmount | null }) => {
 	const { theme } = useStyles()
 
-	console.log({ worldBudget, usaBudget })
-
 	if (!(worldBudget && worldBudget.amount !== usaBudget?.amount)) return null
 
 	return (
@@ -233,7 +233,7 @@ const RusReleaseItem = ({ title, items, isImax, is3d }: { title: string; items: 
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flex: 1, flexDirection: 'row' }}>
-				<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
+				<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? formatDate(it.date.date) : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 				{isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
 				{is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
 			</View>
@@ -249,7 +249,7 @@ const WorldPremiereItem = ({ title, date }: { title: string; date: string | null
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')} />
+			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={formatDate(date)} />
 		</View>
 	)
 }
@@ -262,7 +262,7 @@ const DistributionReleaseItem = ({ title, items }: { title: string; items: Relea
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? new Date(it.date.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
+			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? formatDate(it.date.date) : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
 		</View>
 	)
 }
@@ -277,7 +277,7 @@ const ReleasesItem = ({ title, releases, type }: { title: string; releases: Rele
 	return (
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
-			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={new Date(item.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '') + item.releasers.map(it => `, «${it.name}»`).join(' ')} />
+			<Button padding={0} flex={1} transparent focusable={false} textColor={theme.colors.text200} text={formatDate(item.date) + item.releasers.map(it => `, «${it.name}»`).join(' ')} />
 		</View>
 	)
 }
@@ -312,10 +312,10 @@ const DurationItem = ({ title, duration, seriesDuration, totalDuration }: { titl
 	)
 }
 
-export const Encyclopedic = ({ data }: { data: IFilmBaseInfo | ITvSeriesBaseInfo }) => {
+export const Encyclopedic = ({ data, tmdbId }: { data: IFilmBaseInfo | ITvSeriesBaseInfo; tmdbId: number | null }) => {
 	return (
 		<>
-			<YearItem productionYear={data.productionYear} title='Год производства' type={data.__typename} seasons={'seasons' in data ? data.seasons : undefined} />
+			<YearItem productionYear={data.productionYear} title='Год производства' type={data.__typename} seasons={'seasons' in data ? data.seasons : undefined} id={data.id} tmdbId={tmdbId} />
 			<OriginalsItem items={data.distribution.originals.items} title='Платформа' />
 
 			<CountriesItem items={data.countries} title='Страна' type={data.__typename} />

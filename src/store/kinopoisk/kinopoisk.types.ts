@@ -737,11 +737,11 @@ interface PersonBestMovie extends Pick<IGraphqlMovie, '__typename' | 'id'> {
 
 export interface ITvSeriesEpisodesResults {
 	episodesCount: number
-	futureEpisodes: {
+	futureEpisodes: null | {
 		items: Episode[]
 	}
 	id: number
-	releasedEpisodes: {
+	releasedEpisodes: null | {
 		items: Episode[]
 	}
 }

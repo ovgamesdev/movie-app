@@ -1,4 +1,5 @@
 export * from './Bookmarks'
+export * from './Episodes'
 export * from './Home'
 export * from './Movie'
 export * from './MovieListSlug'

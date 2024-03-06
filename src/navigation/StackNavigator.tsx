@@ -6,7 +6,7 @@ import { restrictDisplayNotificationData } from '@utils'
 import { FC, useEffect } from 'react'
 import { ColorTypes } from 'src/theme/themes'
 import { TabNavigator } from './TabNavigator'
-import { Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
+import { Episodes, Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -49,11 +49,12 @@ export const StackNavigator: FC<Props> = ({ colors }) => {
 		<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
 			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
 			{/* TODO: to portrait_up */}
-			<Stack.Screen name='Movie' component={Movie} options={{ orientation: 'all', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+			<Stack.Screen name='Movie' component={Movie} options={{ orientation: __DEV__ ? 'all' : 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
 			<Stack.Screen name='MovieTrailer' component={MovieTrailer} options={{ orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true }} />
 			<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
 			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
 			<Stack.Screen name='MovieListSlug' component={MovieListSlug} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+			<Stack.Screen name='Episodes' component={Episodes} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
 		</Stack.Navigator>
 	)
 }

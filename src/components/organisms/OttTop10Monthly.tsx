@@ -1,4 +1,4 @@
-import { BlurView, Button, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
+import { AutoScrollFlatList, BlurView, Button, FocusableFlatList, FocusableListRenderItem, ImageBackground } from '@components/atoms'
 import { TopItemsAllItem } from '@components/molecules/TopItemsAllItem'
 import { navigation } from '@navigation'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -36,11 +36,11 @@ export const OttTop10Monthly = () => {
 			try {
 				const as_item: SavedDataType | null = JSON.parse((await AsyncStorage.getItem('top_10_monthly')) ?? 'null')
 
-				console.log({ as_item, time: as_item?.lastUpdate ? Date.now() - as_item.lastUpdate : null, oneHourInMillis, is: as_item?.lastUpdate && Date.now() - as_item.lastUpdate < oneHourInMillis })
+				// console.log({ as_item, time: as_item?.lastUpdate ? Date.now() - as_item.lastUpdate : null, oneHourInMillis, is: as_item?.lastUpdate && Date.now() - as_item.lastUpdate < oneHourInMillis })
 
 				if (as_item?.lastUpdate && Date.now() - as_item.lastUpdate < oneHourInMillis) {
 					setSavedState({ status: null, data: as_item })
-					console.log('loading data from AsyncStorage')
+					// console.log('loading data from AsyncStorage')
 					return
 				} else {
 					dateNow.current = Date.now()
@@ -65,7 +65,7 @@ export const OttTop10Monthly = () => {
 
 			try {
 				if (_dta_.data && typeof dateNow.current === 'number') {
-					console.log('set new data to AsyncStorage')
+					// console.log('set new data to AsyncStorage')
 					AsyncStorage.setItem('top_10_monthly', JSON.stringify({ ..._dta_.data, lastUpdate: Date.now() }))
 					dateNow.current = true
 				}
@@ -77,8 +77,6 @@ export const OttTop10Monthly = () => {
 		},
 		skip: savedState.status !== 'await_from_api'
 	})
-
-	console.log('data:', { data: _data, savedState })
 
 	const data: SavedDataType = _data ?? savedState.data ?? { content: { items: [] }, id: 'loading', title: 'Loading' }
 	const isSuccess: boolean = _isSuccess || data.id !== 'loading'
@@ -124,8 +122,8 @@ export const OttTop10Monthly = () => {
 			return (
 				<View>
 					{insets.top > 0 ? (
-						<View style={{ position: 'absolute', width: itemWidth, aspectRatio: 2 / 1 }}>
-							<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, marginTop: insets.top }} borderBottomLeftRadius={20} borderBottomRightRadius={20} />
+						<View style={{ position: 'absolute', width: itemWidth, aspectRatio: 2 / 1, overflow: 'hidden' }}>
+							<ImageBackground source={{ uri: poster }} style={{ width: itemWidth, aspectRatio: 667 / (1000 - 100), borderBottomLeftRadius: 20, borderBottomRightRadius: 20, marginTop: insets.top, transform: [{ scale: 1.1 }] }} borderBottomLeftRadius={20} borderBottomRightRadius={20} />
 							<BlurView blurRadius={50} />
 						</View>
 					) : null}
@@ -149,29 +147,46 @@ export const OttTop10Monthly = () => {
 			<View style={{ position: 'absolute', top: 10 + insets.top, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', zIndex: 5 }}>
 				<Text style={{ fontSize: 20, color: theme.colors.primary300, fontWeight: '700' }}>{data.title}</Text>
 			</View>
-			<FocusableFlatList
-				keyExtractor={it => `list_${data.id}_item_${it.movie.id}`}
-				data={isError ? [] : !isSuccess ? skeletonData : data.content.items}
-				// data={skeletonData}
-				horizontal
-				showsHorizontalScrollIndicator={false}
-				contentContainerStyle={{ flexGrow: 1 }}
-				renderItem={renderItem}
-				snapToAlignment='center'
-				decelerationRate={0.5}
-				snapToInterval={itemWidth}
-				ListFooterComponent={
-					<>
-						{!isError ? null : (
-							<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={styles.footerErrorContainer}>
-								<Text style={styles.footerErrorText}>Произошла ошибка</Text>
-								<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
-							</Button>
-						)}
-					</>
-				}
-				ListFooterComponentStyle={styles.footerContainer}
-			/>
+
+			{!Platform.isTV ? (
+				<AutoScrollFlatList
+					keyExtractor={it => `list_${data.id}_item_${it.movie.id}`}
+					data={isError ? [] : !isSuccess ? skeletonData : data.content.items}
+					//
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					contentContainerStyle={{ flexGrow: 1 }}
+					renderItem={renderItem}
+					snapToAlignment='center'
+					decelerationRate={0.5}
+					snapToInterval={itemWidth}
+					autoScroll={8000}
+				/>
+			) : (
+				<FocusableFlatList
+					keyExtractor={it => `list_${data.id}_item_${it.movie.id}`}
+					data={isError ? [] : !isSuccess ? skeletonData : data.content.items}
+					// data={skeletonData}
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					contentContainerStyle={{ flexGrow: 1 }}
+					renderItem={renderItem}
+					snapToAlignment='center'
+					decelerationRate={0.5}
+					snapToInterval={itemWidth}
+					ListFooterComponent={
+						<>
+							{!isError ? null : (
+								<Button onPress={refetch} animation='scale' flex={1} padding={5} transparent alignItems='center' justifyContent='center' style={styles.footerErrorContainer}>
+									<Text style={styles.footerErrorText}>Произошла ошибка</Text>
+									<Text style={styles.footerErrorDescription}>Повторите попытку</Text>
+								</Button>
+							)}
+						</>
+					}
+					ListFooterComponentStyle={styles.footerContainer}
+				/>
+			)}
 		</TVFocusGuideView>
 	)
 }

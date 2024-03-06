@@ -1,4 +1,5 @@
 import { ProductionStatus } from '@store/kinopoisk'
+import { formatDate } from '@utils'
 import { FC } from 'react'
 import { Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
@@ -42,7 +43,7 @@ export const ProductionStatusText: FC<Props> = ({ productionStatus, productionSt
 				<View style={{}}>
 					<Text style={styles.message}>{` ${statusMessage} `}</Text>
 				</View>
-				{` – обновлено ${new Date(productionStatusUpdateDate).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}`}
+				{` – обновлено ${formatDate(productionStatusUpdateDate)}`}
 			</Text>
 		</View>
 	)

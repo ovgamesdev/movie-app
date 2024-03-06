@@ -33,41 +33,44 @@ export const History: FC = () => {
 
 	const [scrollY] = useState(new Animated.Value(0))
 
-	console.log('History data:', data)
+	console.log('History data:', data.length)
 
 	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item })
 
-	const renderItem: FocusableFlashListRenderItem<WatchHistory> = useCallback(({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
-		const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const renderItem: FocusableFlashListRenderItem<WatchHistory> = useCallback(
+		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
+			const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
-		return (
-			<>
-				{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
-				<Button onLayout={e => console.log(e.nativeEvent.layout)} animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.navigate('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
-					<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
-					<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
-						<Text style={[{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: theme.colors.text100, marginBottom: 4 }, item.notify && { marginRight: 25 }]} numberOfLines={2}>
-							{item.title}
-						</Text>
+			return (
+				<>
+					{index !== 0 && <View style={{ borderTopWidth: 1, borderColor: theme.colors.bg300 }} />}
+					<Button animation='scale' transparent flexDirection='row' paddingHorizontal={0} paddingVertical={10} onFocus={onFocus} onBlur={onBlur} onLongPress={() => handleOnLongPress(item)} onPress={() => navigation.navigate('Watch', { data: item })} hasTVPreferredFocus={hasTVPreferredFocus}>
+						<ImageBackground source={{ uri: poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
+						<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
+							<Text style={[{ fontSize: 18, fontWeight: '500', lineHeight: 22, color: theme.colors.text100, marginBottom: 4 }, item.notify && { marginRight: 25 }]} numberOfLines={2}>
+								{item.title}
+							</Text>
 
-						<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }} numberOfLines={1}>
-							{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year].filter(it => it).join(' • ')}
-						</Text>
+							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }} numberOfLines={1}>
+								{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year].filter(it => it).join(' • ')}
+							</Text>
 
-						<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
-							<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? (item.duration && item.lastTime ? `Осталось ${Math.floor((item.duration - item.lastTime) / 60)} ${getNoun(Math.floor((item.duration - item.lastTime) / 60), 'минута', 'минуты', 'минут')}` : 'Смотрю') : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
-							{(item.status === 'end' || item.status === 'watch') && item.duration && item.lastTime ? <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> : null}
+							<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
+								<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? (item.duration && item.lastTime ? `Осталось ${Math.floor((item.duration - item.lastTime) / 60)} ${getNoun(Math.floor((item.duration - item.lastTime) / 60), 'минута', 'минуты', 'минут')}` : 'Смотрю') : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
+								{(item.status === 'end' || item.status === 'watch') && item.duration && item.lastTime ? <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> : null}
+							</View>
 						</View>
-					</View>
-					{item.notify && (
-						<View style={{ position: 'absolute', right: 0, top: 10 }}>
-							<NotificationsIcon width={20} height={20} fill={theme.colors.text100} />
-						</View>
-					)}
-				</Button>
-			</>
-		)
-	}, []) // TODO theme
+						{item.notify && (
+							<View style={{ position: 'absolute', right: 0, top: 10 }}>
+								<NotificationsIcon width={20} height={20} fill={theme.colors.text100} />
+							</View>
+						)}
+					</Button>
+				</>
+			)
+		},
+		[theme]
+	)
 
 	const keyExtractor = useCallback((item: WatchHistory) => `${item.id}`, [])
 

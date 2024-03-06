@@ -1,12 +1,12 @@
-import { ActivityIndicator, Button, ImageBackground } from '@components/atoms'
+import { ActivityIndicator, Button, ExpandText, ImageBackground } from '@components/atoms'
 import { CinematicBackdropImage, ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { FavoritesButton } from '@components/organisms'
 import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
 import { useTypedSelector, useUpdateBookmarks, useUpdateWatchHistory } from '@hooks'
-import { RootStackParamList } from '@navigation'
+import { RootStackParamList, navigation } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
-import { isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
+import { formatDate, isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { FC, useEffect, useState } from 'react'
 import { Dimensions, Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import Config from 'react-native-config'
@@ -28,6 +28,7 @@ export const Movie: FC<Props> = ({ route }) => {
 
 	// TODO to store
 	const [backdropPath, setBackdropPath] = useState<null | string>(null)
+	const [tmdbId, setTmdbId] = useState<null | number>(null)
 
 	useEffect(() => {
 		const init = () => {
@@ -41,6 +42,8 @@ export const Movie: FC<Props> = ({ route }) => {
 						const isSeries = 'seasons' in res.data
 
 						console.log('id_tmdb:', res.data.id_tmdb, { isSeries })
+
+						setTmdbId(res.data.id_tmdb)
 
 						fetch(`https://api.themoviedb.org/3/${isSeries ? 'tv' : 'movie'}/${res.data.id_tmdb}?api_key=${Config.THEMOVIEDB_TOKEN}`)
 							.then(async response => response.json())
@@ -78,7 +81,7 @@ export const Movie: FC<Props> = ({ route }) => {
 		)
 	}
 
-	console.log('data:', data)
+	// console.log('data:', data)
 
 	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
 		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
@@ -125,7 +128,7 @@ export const Movie: FC<Props> = ({ route }) => {
 							<View style={styles.landscapeMainTrailer}>
 								<Trailer mainTrailer={data.mainTrailer} />
 								<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
-								<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+								<Text style={styles.mainTrailerCreatedAt}>{formatDate(data.mainTrailer.createdAt)}</Text>
 							</View>
 						)}
 					</View>
@@ -155,9 +158,9 @@ export const Movie: FC<Props> = ({ route }) => {
 							<Text style={styles.sectionTitleAbout}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
 
 							<View style={styles.encyclopedicWrapper}>
-								<Encyclopedic data={data} />
+								<Encyclopedic data={data} tmdbId={tmdbId} />
 
-								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} />}
+								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} disabled={tmdbId === null} onPress={() => tmdbId !== null && navigation.push('Episodes', { data: { id: data.id, tmdb_id: tmdbId, type: data.__typename } })} />}
 
 								<SequelsPrequels sequelsPrequels={data.sequelsPrequels} />
 							</View>
@@ -165,7 +168,11 @@ export const Movie: FC<Props> = ({ route }) => {
 							<View style={styles.tabsSection}>
 								<Button transparent text='Обзор' />
 							</View>
-							{data.synopsis && <Text style={styles.synopsis}>{data.synopsis}</Text>}
+							{data.synopsis && (
+								<ExpandText style={styles.synopsis} containerStyle={styles.containerSynopsis} numberOfLines={7}>
+									{data.synopsis}
+								</ExpandText>
+							)}
 
 							<Rating __typename={data.__typename} rating={data.rating} top250={data.top250} />
 
@@ -175,7 +182,7 @@ export const Movie: FC<Props> = ({ route }) => {
 									<View style={styles.mainTrailerContainer}>
 										<Trailer mainTrailer={data.mainTrailer} borderRadius={6} />
 										<Text style={styles.mainTrailerTitle}>{data.mainTrailer.title}</Text>
-										<Text style={styles.mainTrailerCreatedAt}>{new Date(data.mainTrailer.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')}</Text>
+										<Text style={styles.mainTrailerCreatedAt}>{formatDate(data.mainTrailer.createdAt)}</Text>
 									</View>
 								</View>
 							)}
@@ -336,7 +343,9 @@ const stylesheet = createStyleSheet(theme => ({
 	},
 	synopsis: {
 		color: theme.colors.text100,
-		fontSize: 16,
+		fontSize: 16
+	},
+	containerSynopsis: {
 		marginBottom: 40
 	}
 }))

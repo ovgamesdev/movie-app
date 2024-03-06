@@ -4,7 +4,7 @@ import { useOrientation, useTypedSelector } from '@hooks'
 import { KpTop250LIcon, KpTop250RIcon } from '@icons'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
+import { BooleanFilter, IAvailableFilters, IListBySlugResultsDocs, IListSlugFilter, SingleSelectFilter, useGetListBySlugQuery } from '@store/kinopoisk'
 import { getRatingColor, isSeries, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { Dispatch, FC, SetStateAction, useCallback, useMemo, useRef, useState } from 'react'
 import { Dimensions, ScrollView, TVFocusGuideView, Text, TextProps, View, ViewProps } from 'react-native'
@@ -47,32 +47,59 @@ interface FiltersProps {
 }
 
 export const Filter: FC<{ id: string } & FiltersProps> = ({ id, onResetPage, filters, setFilters, availableFilters }) => {
-	const filter = availableFilters.items.find(it => it.id === id && it.__typename === 'SingleSelectFilter') as SingleSelectFilter | undefined
+	const { theme } = useStyles()
 
-	// TODO add Boolean
+	const filter = availableFilters.items.find(it => it.id === id) as SingleSelectFilter | BooleanFilter | undefined
 
 	if (!filter) {
 		return null
 	}
 
-	const filterOptions = filter.values.items.filter(it => it.selectable).map(it => ({ label: it.name.russian, value: it.value }))
+	if (filter.__typename === 'SingleSelectFilter') {
+		const filterOptions = filter.values.items.filter(it => it.selectable).map(it => ({ label: it.name.russian, value: it.value }))
 
-	return (
-		<DropDown
-			items={[{ label: filter.hint.russian, value: null }, ...filterOptions]}
-			onChange={value => {
-				if (value === null) {
-					setFilters(it => ({ ...it, singleSelectFilterValues: it.singleSelectFilterValues.filter(it => it.filterId !== id) }))
-				} else {
-					setFilters(it => ({ ...it, singleSelectFilterValues: [...it.singleSelectFilterValues.filter(it => it.filterId !== id), { filterId: id, value }] }))
-				}
+		return (
+			<DropDown
+				items={[{ label: filter.hint.russian, value: null }, ...filterOptions]}
+				onChange={value => {
+					if (value === null) {
+						setFilters(it => ({ ...it, singleSelectFilterValues: it.singleSelectFilterValues.filter(it => it.filterId !== id) }))
+					} else {
+						setFilters(it => ({ ...it, singleSelectFilterValues: [...it.singleSelectFilterValues.filter(it => it.filterId !== id), { filterId: id, value }] }))
+					}
 
-				onResetPage(1)
-			}}
-			value={filters.singleSelectFilterValues.find(it => it.filterId === id)?.value ?? null}
-			type='fullWidthToBottom'
-		/>
-	)
+					onResetPage(1)
+				}}
+				value={filters.singleSelectFilterValues.find(it => it.filterId === id)?.value ?? null}
+				type='fullWidthToBottom'
+			/>
+		)
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	} else if (filter.__typename === 'BooleanFilter') {
+		const isDisabled = !filter.enabled
+		const isActive = (filters.booleanFilterValues.find(it => it.filterId === id)?.value ?? null) !== null
+
+		return (
+			<Button
+				isActive={isActive}
+				buttonColor={isDisabled ? theme.colors.bg200 + '66' : undefined}
+				textColor={isDisabled ? theme.colors.text100 + '66' : undefined}
+				disabled={isDisabled}
+				activeButtonColor={theme.colors.primary100}
+				activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })}
+				text={filter.name.russian}
+				onPress={() => {
+					if (isActive) {
+						setFilters(it => ({ ...it, booleanFilterValues: it.booleanFilterValues.filter(it => it.filterId !== id) }))
+					} else {
+						setFilters(it => ({ ...it, booleanFilterValues: [...it.booleanFilterValues.filter(it => it.filterId !== id), { filterId: id, value: true }] }))
+					}
+
+					onResetPage(1)
+				}}
+			/>
+		)
+	}
 }
 
 export const MovieListSlug: FC<Props> = ({ route }) => {
@@ -207,7 +234,7 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 	)
 
 	const keyExtractor = useCallback((item: Skeleton | IListBySlugResultsDocs) => `list_${slug}_item_${item.movie.id}`, [slug])
-	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), flexGrow: 1 }), [isShowNetInfo, insets.bottom])
+	const contentContainerStyle = useMemo(() => ({ padding: 10, paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }), [isShowNetInfo, insets.bottom])
 
 	const ListEmptyComponent = useCallback(() => {
 		if (!isSuccess) return null
@@ -262,6 +289,8 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 				<ScrollView horizontal>
 					{data.availableFilters ? (
 						<TVFocusGuideView style={{ justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, gap: 5, flexDirection: 'row' }} autoFocus trapFocusLeft trapFocusRight>
+							<Filter id='films' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
+							<Filter id='series' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='country' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='genre' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />
 							<Filter id='year' onResetPage={setPage} filters={newFilters} setFilters={setNewFilters} availableFilters={data.availableFilters} />

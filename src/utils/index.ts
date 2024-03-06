@@ -163,6 +163,10 @@ export const rusToLatin = (str: string): string =>
 		})
 		.join('')
 
+export const formatDate = (date: string | number | Date) => {
+	return new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')
+}
+
 // Search
 
 export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: string; filters: IListSlugFilter } => {

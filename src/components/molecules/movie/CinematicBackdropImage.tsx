@@ -10,7 +10,7 @@ export const CinematicBackdropImage: FC<Pick<ImageBackgroundProps, 'source' | 'c
 		<View>
 			{insets.top > 0 ? (
 				<View style={{ position: 'absolute' }}>
-					<ImageBackground source={source} resizeMode='cover' style={{ width: '100%', aspectRatio: 16 / 9, marginTop: insets.top, marginBottom: 50 }} />
+					<ImageBackground source={source} resizeMode='cover' style={{ width: '100%', aspectRatio: 16 / 9, marginTop: insets.top, marginBottom: 50, transform: [{ scale: 1.15 }] }} />
 					<BlurView blurRadius={50} />
 				</View>
 			) : null}

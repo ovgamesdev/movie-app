@@ -80,9 +80,6 @@ export const FilmographyItems: FC<Props> = ({ id: personId, scrollToTop }) => {
 
 	if (!data || !dataFilters) return null
 
-	console.log('filmography data:', data)
-	console.log('dataFilters data:', dataFilters)
-
 	return (
 		<View style={{ marginTop: 40 }}>
 			<TVFocusGuideView autoFocus trapFocusLeft trapFocusRight onLayout={e => (screenYPosition.current = e.nativeEvent.layout.y)}>

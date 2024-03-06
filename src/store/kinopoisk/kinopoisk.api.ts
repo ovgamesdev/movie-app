@@ -93,7 +93,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const top = (response as any)?.data?.suggest?.top
 
 				return top
@@ -128,7 +127,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.film
@@ -163,7 +161,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.tvSeries
@@ -193,7 +190,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.tvSeries?.userRecommendations
@@ -223,7 +219,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.film?.userRecommendations
@@ -255,7 +250,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.person
@@ -266,14 +260,14 @@ export const kinopoiskApi = createApi({
 				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
 			}
 		}),
-		getTvSeriesEpisodes: build.query<ITvSeriesEpisodesResults, { tvSeriesId: number }>({
-			query: ({ tvSeriesId }) => ({
+		getTvSeriesEpisodes: build.query<ITvSeriesEpisodesResults, { tvSeriesId: number; episodesLimit?: number }>({
+			query: ({ episodesLimit = 5, tvSeriesId }) => ({
 				url: '?operationName=TvSeriesEpisodes',
 				method: 'post',
 				body: {
 					operationName: 'TvSeriesEpisodes',
 					variables: {
-						episodesLimit: 5,
+						episodesLimit, // max: 30
 						tvSeriesId
 					},
 					query: 'query TvSeriesEpisodes($tvSeriesId: Long!, $episodesLimit: Int = 10) { tvSeries(id: $tvSeriesId) { id episodesCount futureEpisodes: episodes(released: false, limit: $episodesLimit, orderBy: SEASON_NUMBER_EPISODE_NUMBER_ASC) { items { id number releaseDate { accuracy date __typename } season { number __typename } title { russian original __typename } __typename } __typename } releasedEpisodes: episodes(released: true, limit: $episodesLimit, orderBy: SEASON_NUMBER_EPISODE_NUMBER_DESC) { items { id number releaseDate { accuracy date __typename } season { number __typename } title { russian original __typename } __typename } __typename } __typename } } '
@@ -283,7 +277,6 @@ export const kinopoiskApi = createApi({
 				}
 			}),
 			transformResponse: (response, meta, arg) => {
-				console.log('response', response)
 				const data = (response as any)?.data
 
 				return data?.tvSeries
