@@ -15,7 +15,7 @@ const config: BackgroundFetchConfig = {
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
 }
 
-type KodikItemType = { last_season: number; last_episode: number }
+type KodikItemType = { last_season: number; last_episode: number; translation: { title: string; type: string } }
 const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { seasons: KodikItemType[]; releasedEpisodes: number; total: number }): NewEpisodesType => {
 	let remainingEpisodes = total - releasedEpisodes
 	const res: NewEpisodesType = {}
@@ -39,7 +39,7 @@ const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { 
 }
 
 type NewEpisodesType = { [key: string]: string[] }
-export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider }: WatchHistory): Promise<{ total: number; data: NewEpisodesType } | null> => {
+export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[] } | null> => {
 	// TODO add for other providers
 
 	try {
@@ -56,9 +56,19 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 				const resultsArray = res?.results
 				let total = 0
 				let data: NewEpisodesType = {}
+				const translations: string[] = []
 
 				if (resultsArray && Array.isArray(resultsArray)) {
-					const seasons = resultsArray
+					for (const serial of resultsArray) {
+						if (serial.translation.type === 'voice') {
+							const title: string = serial.translation.title
+							if (!translations.includes(title)) {
+								translations.push(title)
+							}
+						}
+					}
+
+					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title === notifyTranslation))
 						.reduce((acc, current) => {
 							const existing = acc.find((item: KodikItemType) => item.last_season === current.last_season)
 							if (!existing || current.last_episode > existing.last_episode) {
@@ -78,7 +88,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data }
+				return { total, data, translations }
 			}
 			case provider?.startsWith('COLLAPS'): {
 				const url = `https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`
@@ -89,10 +99,15 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 				const seasons = res?.seasons
 				let total = 0
 				const data: NewEpisodesType = {}
+				const translations: string[] = typeof res?.voiceActing === 'object' && Array.isArray(res.voiceActing) ? res.voiceActing : []
 
 				if (typeof seasons === 'object' && Array.isArray(seasons)) {
 					for (const season of seasons) {
 						for (const episode of season.episodes) {
+							if ((notifyTranslation && !episode.voiceActing.includes(notifyTranslation)) ?? episode.iframe_url === null) {
+								continue
+							}
+
 							total = total + 1
 
 							if (releasedEpisodes && releasedEpisodes < total) {
@@ -108,7 +123,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data }
+				return { total, data, translations }
 			}
 
 			default:
@@ -122,6 +137,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 				const seasons = res?.data?.seasons
 				let total = 0
 				const data: NewEpisodesType = {}
+				const translations: string[] = []
 
 				if (res?.status === 'error') return null
 
@@ -131,6 +147,18 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 						for (const e in season.episodes) {
 							const episode = season.episodes[e]
+							const episodeTranslations: string[] = typeof episode.translation === 'object' ? Object.values<{ translation: string }>(episode.translation).map(translation => translation.translation) : []
+
+							for (const title of episodeTranslations) {
+								if (!translations.includes(title)) {
+									translations.push(title)
+								}
+							}
+
+							if (notifyTranslation && !episodeTranslations.includes(notifyTranslation)) {
+								continue
+							}
+
 							total = total + 1
 
 							if (releasedEpisodes && releasedEpisodes < total) {
@@ -146,7 +174,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data }
+				return { total, data, translations }
 			}
 		}
 	} catch (e) {
@@ -270,7 +298,9 @@ export const backgroundTask = async (taskId: string) => {
 
 			if (!response.ok) continue
 			const json = await response.json()
-			if (!Array.isArray(json) || json.length === 0) continue
+			if (!Array.isArray(json)) continue
+			// NOTE remove 'movie/50862' from results
+			if (json.map(it => (it.iframeUrl.endsWith('movie/50862') ? null : it)).filter(it => !!it).length === 0) continue
 
 			const newWatchHistoryData: Partial<WatchHistory> = { status: 'new', timestamp: Date.now() }
 

@@ -178,7 +178,7 @@ const TaglineItem = ({ title, tagline }: { title: string; tagline: string | null
 const BudgetItem = ({ title, budget }: { title: string; budget: MoneyAmount | null }) => {
 	const { theme } = useStyles()
 
-	if (!budget) return null
+	if (!budget || budget.amount === 0) return null
 
 	return (
 		<View style={{ flexDirection: 'row' }}>

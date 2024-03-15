@@ -25,6 +25,7 @@ export type WatchHistory = {
 	lastTime?: number
 	//
 	notify?: boolean
+	notifyTranslation?: string | null
 	fileIndex?: number
 	releasedEpisodes?: number
 }

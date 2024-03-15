@@ -119,10 +119,15 @@ const Season: FC<{ tmdbId: number; season: Pick<IMovieTMDBDataResults, 'seasons'
 						{data.name || `Сезон ${data.season_number}`}
 						{data.air_date && <Text style={{ color: theme.colors.text200, fontWeight: '400' }}> ({data.air_date.slice(0, 4)})</Text>}
 					</Text>
-					<Text style={{ color: theme.colors.text100, fontSize: 14, fontWeight: '700' }}>
-						Эпизоды
-						{season.episode_count && <Text style={{ color: theme.colors.text200, fontWeight: '400' }}> {season.episode_count}</Text>}
-					</Text>
+					{typeof season.episode_count === 'number' && (
+						<>
+							<Text style={{ color: theme.colors.text100, fontSize: 14, fontWeight: '700' }}>
+								Эпизоды
+								<Text style={{ color: theme.colors.text200, fontWeight: '400' }}> {season.episode_count}</Text>
+							</Text>
+							{season.episode_count === 0 && <Text style={{ color: theme.colors.text200, fontSize: 14 }}>В этом сезоне не добавлено ни одного эпизода.</Text>}
+						</>
+					)}
 					{data.overview && (
 						<ExpandText style={{ color: theme.colors.text200, fontSize: 14 }} numberOfLines={4}>
 							{data.overview}

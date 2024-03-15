@@ -26,7 +26,7 @@ const reducers = combineReducers({
 export const store = configureStore({
 	reducer: reducers,
 	devTools: __DEV__,
-	middleware: getDefaultMiddleware => getDefaultMiddleware().concat(listenerMiddleware.middleware, kinopoiskApi.middleware, themoviedbApi.middleware),
+	middleware: getDefaultMiddleware => getDefaultMiddleware({ serializableCheck: false }).concat(listenerMiddleware.middleware, kinopoiskApi.middleware, themoviedbApi.middleware),
 	enhancers: __DEV__ ? [reactotron.createEnhancer()] : []
 })
 

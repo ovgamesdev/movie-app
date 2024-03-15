@@ -5,7 +5,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { Keyboard, TVFocusGuideView, TextInput, TextInputProps, ToastAndroid } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
-interface Props extends TextInputProps {
+export interface InputProps extends TextInputProps {
 	transparent?: boolean
 	icon?: 'search'
 	clearable?: boolean
@@ -22,7 +22,7 @@ export type InputType = {
 	focus: () => void
 }
 
-export const Input = forwardRef<InputType, Props>(({ transparent, icon, clearable, onClear, voice, onVoice, flex, placeholder, ...props }, forwardRef) => {
+export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, clearable, onClear, voice, onVoice, flex, placeholder, ...props }, forwardRef) => {
 	const { theme } = useStyles()
 	const [voicePlaceholder, setVoicePlaceholder] = useState<string | null>(null)
 

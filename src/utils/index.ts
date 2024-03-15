@@ -123,15 +123,18 @@ export const mapValue = (value: number, fromMin: number, fromMax: number, toMin:
 }
 
 export const normalizeUrlWithNull = (url: string | null | undefined, other: { isNull: string; append?: string }): string => {
+	const isKP = typeof url === 'string' ? url.includes('/get-') : true
+	const appendText: string = isKP ? (other.append ? other.append : '') : ''
+
 	if (!url) {
-		return other.isNull + (other.append ? other.append : '')
+		return other.isNull + appendText
 	} else if (url.startsWith('//')) {
-		return `https:${url}` + (other.append ? other.append : '')
+		return `https:${url}` + appendText
 	} else if (url.startsWith('http://')) {
-		return url.replace('http://', 'https://') + (other.append ? other.append : '')
+		return url.replace('http://', 'https://') + appendText
 	}
 
-	return url + (other.append ? other.append : '')
+	return url + appendText
 }
 
 export const delay = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

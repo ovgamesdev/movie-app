@@ -11,9 +11,11 @@ const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> =
 	try {
 		const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
 		if (!response.ok) return null
-		const json = await response.json()
-		if (!Array.isArray(json) || json.length === 0) return null
-		return json
+		let json = await response.json()
+		if (!Array.isArray(json)) return null
+		// NOTE remove 'movie/50862' from results
+		json = json.map(it => (it.iframeUrl.endsWith('movie/50862') ? null : it)).filter(it => !!it)
+		return json.length === 0 ? null : json
 	} catch (e) {
 		console.error('getProviders error:', e)
 		return null

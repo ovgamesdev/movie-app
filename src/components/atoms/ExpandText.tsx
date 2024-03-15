@@ -98,15 +98,17 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 
 			<View style={isLoadedLines ? undefined : { position: 'absolute' }}>
 				{isLoadedLines && lineHeight
-					? (isExpand ? expandLines : expandLines.slice(0, numberOfLines)).map((expandLine, index) =>
-							expandLine.text == '\n' ? null : !isExpand && expandLines.length > numberOfLines! && index === numberOfLines! - 1 ? (
+					? (isExpand ? expandLines : expandLines.slice(0, numberOfLines)).map((expandLine, index) => {
+							const expandLineWidth = expandLine.width < 40 ? 40 : expandLine.width
+
+							return !isExpand && expandLines.length > numberOfLines! && index === numberOfLines! - 1 ? (
 								<>
 									{/* <Text key={index} style={[textStyle, { lineHeight: lineHeight }]}>
 										{expandLine.text.substring(0, expandLine.text.length - 7)}
 										<Text style={[textStyle, { lineHeight: lineHeight, color: theme.colors.text100 }, textMoreStyle]}>{' …ещё'}</Text>
 									</Text> */}
 
-									{/* <View key={index + '_shadow'} style={{ width: 65, height: lineHeight, top: expandLine.y, left: expandLine.width, position: 'absolute', transform: [{ translateX: -65 }] }}>
+									{/* <View key={index + '_shadow'} style={{ width: 65, height: lineHeight, top: expandLine.y, left: expandLineWidth, position: 'absolute', transform: [{ translateX: -65 }] }}>
 										<Svg height='100%' width='100%'>
 											<Defs>
 												<LinearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='0%'>
@@ -118,15 +120,15 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 										</Svg>
 									</View> */}
 
-									<View key={index} style={{ width: expandLine.width, height: lineHeight }}>
-										<Svg width='100%' height='100%' viewBox={`0 0 ${expandLine.width} ${lineHeight}`}>
+									<View key={index} style={{ width: expandLineWidth, height: lineHeight }}>
+										<Svg width='100%' height='100%' viewBox={`0 0 ${expandLineWidth} ${lineHeight}`}>
 											<Defs>
-												<LinearGradient id='Gradient' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2={expandLine.width} y2='0'>
-													<Stop offset={`${findX(expandLine.width, pxValues, x1Values)}%`} stopColor='white' stopOpacity='1' />
-													<Stop offset={`${findX(expandLine.width, pxValues, x0Values)}%`} stopColor='white' stopOpacity='0' />
+												<LinearGradient id='Gradient' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2={expandLineWidth} y2='0'>
+													<Stop offset={`${findX(expandLineWidth, pxValues, x1Values)}%`} stopColor='white' stopOpacity='1' />
+													<Stop offset={`${findX(expandLineWidth, pxValues, x0Values)}%`} stopColor='white' stopOpacity='0' />
 												</LinearGradient>
-												<Mask id='Mask' maskUnits='userSpaceOnUse' x='0' y='0' width={expandLine.width} height={lineHeight}>
-													<Rect x='0' y='0' width={expandLine.width} height={lineHeight} fill='url(#Gradient)' />
+												<Mask id='Mask' maskUnits='userSpaceOnUse' x='0' y='0' width={expandLineWidth} height={lineHeight}>
+													<Rect x='0' y='0' width={expandLineWidth} height={lineHeight} fill='url(#Gradient)' />
 												</Mask>
 												<TextSvg
 													//
@@ -141,7 +143,7 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 													//
 													alignmentBaseline='text-top'
 													id='TextMore'
-													x={expandLine.width - (fontSizeMore === 14 ? 40 : fontSizeMore === 16 ? 45 : 40)}
+													x={expandLineWidth - (fontSizeMore === 14 ? 40 : fontSizeMore === 16 ? 45 : 40)}
 													y='0'
 													fontSize={fontSizeMore * dimensionsWindow.fontScale}>
 													{' …ещё'}
@@ -172,7 +174,7 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 									</Svg>
 								</View>
 							)
-					  )
+					  })
 					: null}
 			</View>
 		</Button>

@@ -57,6 +57,8 @@ export const Filter: FC<{ id: string } & FiltersProps> = ({ id, onResetPage, fil
 
 	if (filter.__typename === 'SingleSelectFilter') {
 		const filterOptions = filter.values.items.filter(it => it.selectable).map(it => ({ label: it.name.russian, value: it.value }))
+		const value = filters.singleSelectFilterValues.find(it => it.filterId === id)?.value ?? null
+		const selectedValue = filterOptions.find(it => it.value === value) ?? null
 
 		return (
 			<DropDown
@@ -70,7 +72,7 @@ export const Filter: FC<{ id: string } & FiltersProps> = ({ id, onResetPage, fil
 
 					onResetPage(1)
 				}}
-				value={filters.singleSelectFilterValues.find(it => it.filterId === id)?.value ?? null}
+				value={selectedValue?.value ?? null}
 				type='fullWidthToBottom'
 			/>
 		)

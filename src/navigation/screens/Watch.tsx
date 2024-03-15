@@ -97,7 +97,27 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				if (Array.isArray(json)) {
 					json = {
 						success: true,
-						data: json.map(it => ({ ...it, source: it.source.toUpperCase() }))
+						data: (
+							await Promise.all(
+								json.map(async (it): Promise<kinoboxPlayersData | null> => {
+									// NOTE remove 'movie/50862' from results
+									const isLoadingCollaps: boolean = it.iframeUrl.endsWith('movie/50862')
+
+									if (isLoadingCollaps) {
+										const response = await fetch(`https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`)
+										const json = await response.json()
+
+										if (response.ok && !('status' in json) && 'id' in json) {
+											return { ...it, source: it.source.toUpperCase(), translation: json.voiceActing[0] ?? null, quality: json.quality ?? null, iframeUrl: json.iframe_url }
+										} else {
+											return null
+										}
+									}
+
+									return { ...it, source: it.source.toUpperCase() }
+								})
+							)
+						).filter(it => !!it)
 					}
 				} else if (typeof json.statusCode === 'number') {
 					json = {
