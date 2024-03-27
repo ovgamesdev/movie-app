@@ -4,11 +4,11 @@ import { CheckIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { KinoboxPlayersData, getKinoboxPlayers, getKodikPlayers } from '@store'
 import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
-import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
@@ -23,22 +23,6 @@ const Loading: FC = () => {
 	)
 }
 
-const ERROR_MESSAGE = 'Произошла непредвиденная ошибка, пожалуйста, попробуйте снова позже.'
-
-export interface kinoboxPlayersData {
-	source: WatchHistoryProvider
-	translation: string | null
-	quality: string | null
-	iframeUrl: string | null
-	title?: string
-}
-
-interface kinoboxPlayers {
-	data: kinoboxPlayersData[] | null
-	error: string
-	message: string
-}
-
 export const Watch: FC<Props> = ({ navigation, route }) => {
 	const { data } = route.params
 
@@ -48,7 +32,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const insets = useSafeAreaInsets()
 	const { theme } = useStyles()
 	const { mergeItem } = useActions()
-	const [providers, setProviders] = useState<kinoboxPlayersData[] | null>(null)
+	const [providers, setProviders] = useState<KinoboxPlayersData[] | null>(null)
 	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
 	const [error, setError] = useState<{ error: string; message: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
@@ -81,127 +65,6 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const loadPlayers = useCallback(() => {
 		setIsLoading(true)
 		setError(null)
-
-		const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
-			try {
-				const res = await fetch(`https://kinobox.tv/api/players/main?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${id}&token=${Config.KINOBOX_TOKEN}`)
-				// X-Settings: {"Collaps":{"enable":true,"token":"{token}","position":0},"Bazon":{"enable":true,"token":"${Config.KINOBOX_BAZON_TOKEN}"},"Alloha":{"enable":true,"token":"{token}"},"Ashdi":{"enable":true,"token":"{token}"},"Cdnmovies":{"enable":true,"token":"{token}"},"Hdvb":{"enable":true,"token":"{token}"},"Iframe":{"enable":true,"token":"{token}"},"Kodik":{"enable":true,"token":"{token}"},"Videocdn":{"enable":true,"token":"{token}"},"Voidboost":{"enable":true,"token":"{token}"}}
-
-				if (!res.ok) {
-					ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-					return { data: null, error: res.statusText, message: await res.text() }
-				}
-
-				let json = await res.json()
-
-				if (Array.isArray(json)) {
-					json = {
-						success: true,
-						data: (
-							await Promise.all(
-								json.map(async (it): Promise<kinoboxPlayersData | null> => {
-									// NOTE remove 'movie/50862' from results
-									const isLoadingCollaps: boolean = it.iframeUrl.endsWith('movie/50862')
-
-									if (isLoadingCollaps) {
-										const response = await fetch(`https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`)
-										const json = await response.json()
-
-										if (response.ok && !('status' in json) && 'id' in json) {
-											return { ...it, source: it.source.toUpperCase(), translation: json.voiceActing[0] ?? null, quality: json.quality ?? null, iframeUrl: json.iframe_url }
-										} else {
-											return null
-										}
-									}
-
-									return { ...it, source: it.source.toUpperCase() }
-								})
-							)
-						).filter(it => !!it)
-					}
-				} else if (typeof json.statusCode === 'number') {
-					json = {
-						success: false,
-						data: null,
-						error: {
-							code: json.statusCode,
-							message: json.message
-						}
-					}
-				} else {
-					json = {
-						success: false,
-						data: null,
-						error: {
-							code: 400,
-							message: 'Возникла неопознанная ошибка'
-						}
-					}
-				}
-
-				console.log('json', json)
-
-				if (json.success === false) {
-					ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-					return { data: null, error: `code: ${json.error.code.toString()}`, message: json.error.message }
-				}
-
-				return { data: json.data, error: res.statusText, message: res.statusText }
-			} catch (e) {
-				ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-				return { data: null, error: (e as Error).name, message: (e as Error).message }
-			}
-		}
-
-		const getKodikPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
-			try {
-				const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`)
-
-				if (!res.ok) {
-					// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-					return { data: null, error: res.statusText, message: await res.text() }
-				}
-
-				let json = await res.json()
-
-				const resultsArray = json?.results
-				if (resultsArray && Array.isArray(resultsArray)) {
-					json = {
-						success: true,
-						data: resultsArray
-							.filter((value, index, self) => self.findIndex(it => it.last_season === value.last_season) === index)
-							.map(it => ({
-								source: `KODIK:${'last_season' in it ? it.last_season : it.id}`,
-								title: 'last_season' in it ? `Сезон ${it.last_season}` : undefined,
-								translation: null, // it.translation?.title ?? null,
-								quality: it.quality ?? null,
-								iframeUrl: it.link.startsWith('//') ? `https:${it.link}` : it.link
-							}))
-					}
-				} else {
-					json = {
-						success: false,
-						data: null,
-						error: {
-							code: 400,
-							message: 'Возникла неопознанная ошибка'
-						}
-					}
-				}
-
-				console.log('kodik json:', json)
-
-				if ('error' in json && typeof json.error === 'string') {
-					// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-					return { data: null, error: `code: ${json.error.code.toString()}`, message: json.error.message }
-				}
-
-				return { data: json.data, error: res.statusText, message: res.statusText }
-			} catch (e) {
-				// ToastAndroid.show(ERROR_MESSAGE, ToastAndroid.SHORT)
-				return { data: null, error: (e as Error).name, message: (e as Error).message }
-			}
-		}
 
 		getKinoboxPlayers(data).then(({ data, error, message }) => {
 			if (error) {
@@ -236,7 +99,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 	useEffect(loadPlayers, [])
 
-	const handleProviderChange = (it: kinoboxPlayersData) => {
+	// console.log('providers:', providers)
+
+	const handleProviderChange = (it: KinoboxPlayersData) => {
 		setIsLoading(true)
 		setError(null)
 
@@ -537,7 +402,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 										<Text style={{ fontSize: 14, color: theme.colors.text100, flex: 1 }}>
 											{watchHistoryProviderToString(it.source)}
 
-											{`${it.title ? `: ${it.title} ` : ' '}(${[it.translation, it.quality].filter(it => !!it).join(', ')})`}
+											{`${it.title ? `: ${it.title} ` : ' '}(${[it.translations[0]?.name, it.translations[0]?.quality].filter(it => !!it).join(', ')})`}
 										</Text>
 									</Button>
 								)

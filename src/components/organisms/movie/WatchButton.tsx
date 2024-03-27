@@ -1,26 +1,10 @@
 import { ActivityIndicator, Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
+import { getKinoboxPlayers } from '@store'
 import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { FC, useEffect, useState } from 'react'
-import Config from 'react-native-config'
-
-// TODO move to api
-const getProviders = async ({ id }: { id: number }): Promise<unknown[] | null> => {
-	try {
-		const response = await fetch(`https://kinobox.tv/api/players/main?kinopoisk=${id}&token=${Config.KINOBOX_TOKEN}`)
-		if (!response.ok) return null
-		let json = await response.json()
-		if (!Array.isArray(json)) return null
-		// NOTE remove 'movie/50862' from results
-		json = json.map(it => (it.iframeUrl.endsWith('movie/50862') ? null : it)).filter(it => !!it)
-		return json.length === 0 ? null : json
-	} catch (e) {
-		console.error('getProviders error:', e)
-		return null
-	}
-}
 
 type Status = 'loading' | 'watch' | 'continue' | 'end' | 'off-notify' | 'on-notify'
 
@@ -37,7 +21,7 @@ export const WatchButton: FC<Props> = ({ data }) => {
 	const status: Status = providers === 'loading' ? 'loading' : providers ? (watchHistory ? (watchHistory.status === 'end' ? 'end' : 'continue') : 'watch') : watchHistory?.notify ? 'on-notify' : 'off-notify'
 
 	useEffect(() => {
-		getProviders(data).then(it => setProviders(it))
+		getKinoboxPlayers(data).then(it => setProviders(it.data && it.data.length > 0 ? it.data : null))
 	}, [])
 
 	return (

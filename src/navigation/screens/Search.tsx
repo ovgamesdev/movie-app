@@ -4,9 +4,9 @@ import { useDebounce, useNavigation, useTypedDispatch } from '@hooks'
 import { HomeTabParamList } from '@navigation'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { store } from '@store'
+import { getKinoboxPlayers, store } from '@store'
 import { useGetSuggestSearchQuery } from '@store/kinopoisk'
-import { WatchHistory, WatchHistoryProvider } from '@store/settings'
+import { WatchHistory } from '@store/settings'
 import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { BackHandler, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
@@ -62,21 +62,18 @@ export const Search: FC<Props> = ({ route }) => {
 	}
 
 	const watchImdb = async (text: string) => {
-		const id = isImdbRegex.exec(text)?.[0]
+		const id = isImdbRegex.exec(text)?.[0] as `tt${number}` | undefined
 		if (!id) return
 
-		const watchHistory = store.getState().settings.settings.watchHistory[id as `tt${number}`] as WatchHistory | undefined
+		const watchHistory = store.getState().settings.settings.watchHistory[id] as WatchHistory | undefined
 
-		const getTitleByProviders = async ({ id }: { id: string }): Promise<null | Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'>> => {
+		const getTitleByProviders = async ({ id }: { id: `tt${number}` }): Promise<null | Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'>> => {
 			try {
-				const response = await fetch(`https://kinobox.tv/api/players/main?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${id}&token=${Config.KINOBOX_TOKEN}`)
-
-				if (!response.ok) return null
-				const json = await response.json()
-				if (!Array.isArray(json) || json.length === 0) return null
+				const { data } = await getKinoboxPlayers({ id: id })
+				if (data === null || data.length === 0) return null
 
 				// COLLAPS
-				if (json.find(it => (it.source.toUpperCase() as WatchHistoryProvider) === 'COLLAPS')) {
+				if (data.find(it => it.source === 'COLLAPS')) {
 					const response = await fetch(`https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`)
 
 					if (response.ok) {
@@ -84,7 +81,7 @@ export const Search: FC<Props> = ({ route }) => {
 						if (!('status' in json) && 'id' in json) {
 							return {
 								title: json.name ?? json.name_eng,
-								id: id as `tt${number}`,
+								id,
 								poster: json.poster ?? null,
 								type: 'seasons' in json ? 'TvSeries' : 'Film',
 								year: json.year ?? null
@@ -94,7 +91,7 @@ export const Search: FC<Props> = ({ route }) => {
 				}
 
 				// ALLOHA
-				if (json.find(it => (it.source.toUpperCase() as WatchHistoryProvider) === 'ALLOHA')) {
+				if (data.find(it => it.source === 'ALLOHA')) {
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
 					const response = await fetch(`${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&${String(id).startsWith('tt') ? 'imdb' : 'kp'}=${id}`)
 
@@ -103,7 +100,7 @@ export const Search: FC<Props> = ({ route }) => {
 						if (json?.data && json?.status === 'success') {
 							return {
 								title: json.data.name ?? json.data.original_name,
-								id: id as `tt${number}`,
+								id,
 								poster: json.data.poster,
 								type: 'seasons' in json.data ? 'TvSeries' : 'Film',
 								year: json.data.year ?? null
@@ -113,7 +110,7 @@ export const Search: FC<Props> = ({ route }) => {
 				}
 
 				// KODIK
-				if (json.find(it => (it.source.toUpperCase() as WatchHistoryProvider) === 'KODIK')) {
+				if (data.find(it => it.source === 'KODIK')) {
 					const response = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`)
 
 					if (response.ok) {
@@ -121,7 +118,7 @@ export const Search: FC<Props> = ({ route }) => {
 						if ('results' in json && Array.isArray(json.results) && json.results.length > 0) {
 							return {
 								title: json.results[0].title ?? json.results[0].title_orig,
-								id: id as `tt${number}`,
+								id,
 								poster: typeof json.results[0].kinopoisk_id === 'string' ? `https://st.kp.yandex.net/images/film_big/${json.results[0].kinopoisk_id}.jpg` : null,
 								type: 'last_season' in json.results[0] ? 'TvSeries' : 'Film',
 								year: json.results[0].year ?? null
@@ -156,7 +153,7 @@ export const Search: FC<Props> = ({ route }) => {
 		const { data } = await dispatch(themoviedbApi.endpoints.getMovieById.initiate({ id }))
 
 		if (data) {
-			const mutableItemData: Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'> = data.media_type === 'tv' ? { title: data.name, id: id as `tt${number}`, type: 'TvSeries', year: Number(data.first_air_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null } : { title: data.title, id: id as `tt${number}`, type: 'Film', year: Number(data.release_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null }
+			const mutableItemData: Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'> = data.media_type === 'tv' ? { title: data.name, id: id, type: 'TvSeries', year: Number(data.first_air_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null } : { title: data.title, id, type: 'Film', year: Number(data.release_date.slice(0, 4)) || null, poster: data.poster_path ? getTMDBPosterImage(data.poster_path) : null }
 
 			const item: WatchHistory = watchHistory
 				? { ...watchHistory, ...mutableItemData }

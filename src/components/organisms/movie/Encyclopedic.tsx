@@ -233,9 +233,12 @@ const RusReleaseItem = ({ title, items, isImax, is3d }: { title: string; items: 
 		<View style={{ flexDirection: 'row' }}>
 			<Text style={{ width: 130, color: theme.colors.text200, fontSize: 13 }}>{title}</Text>
 			<View style={{ flex: 1, flexDirection: 'row' }}>
-				<Button padding={0} transparent focusable={false} textColor={theme.colors.text200} text={[items.map(it => (it.date ? formatDate(it.date.date) : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} />
-				{isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 40 16' />}
-				{is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox='0 0 26 16' />}
+				<Button padding={0} transparent focusable={false}>
+					<Text style={{ color: theme.colors.text200 }}>
+						{[items.map(it => (it.date ? formatDate(it.date.date) : '')).join(' '), items.map(it => it.companies.map(it => `«${it.displayName}»`).join(', ')).join(' ')].filter(it => !!it).join(', ')} {isImax && <KpImaxIcon width={40} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox={`${0 - 4} 0 ${40 + 4 * 2} 16`} />}
+						{is3d && <Kp3dIcon width={26} height={16} style={{ marginLeft: 4, transform: [{ translateY: 3 }] }} viewBox={`${0 - 4} 0 ${26 + 4 * 2} 16`} />}
+					</Text>
+				</Button>
 			</View>
 		</View>
 	)

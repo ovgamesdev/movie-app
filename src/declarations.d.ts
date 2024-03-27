@@ -8,7 +8,6 @@ declare module '*.svg' {
 declare module 'react-native-config' {
 	export interface NativeConfig {
 		UI_MODE?: string
-		KINOBOX_TOKEN: string
 		THEMOVIEDB_TOKEN: string
 		//
 		ALLOHA_TOKEN: string

@@ -1,7 +1,7 @@
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native'
 import { Unsubscribe } from '@reduxjs/toolkit'
-import { startAppListening, store } from '@store'
-import { WatchHistory, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
+import { getKinoboxPlayers, startAppListening, store } from '@store'
+import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
 import { delay, isSeries, normalizeUrlWithNull, rusToLatin, validateDisplayNotificationData } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
@@ -39,7 +39,7 @@ const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { 
 }
 
 type NewEpisodesType = { [key: string]: string[] }
-export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[] } | null> => {
+export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null> => {
 	// TODO add for other providers
 
 	try {
@@ -69,15 +69,28 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 					}
 
 					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title === notifyTranslation))
-						.reduce((acc, current) => {
-							const existing = acc.find((item: KodikItemType) => item.last_season === current.last_season)
-							if (!existing || current.last_episode > existing.last_episode) {
-								return [...acc.filter((item: KodikItemType) => item.last_season !== current.last_season), current]
-							} else {
-								return acc
+						.reduce((acc, cur) => {
+							const part_match = cur.title.match(/(?<=часть\s)\d+/)
+							const part_number = part_match ? parseInt(part_match[0]) : 0
+
+							const season_match = cur.title.match(/(?<=ТВ-)\d+/)
+							const season_number = season_match ? parseInt(season_match[0]) : cur.last_season ?? 0
+
+							const existingItem = acc.find((item: { season_number: number; part_number: number }) => item.season_number === season_number && item.part_number === part_number)
+
+							if (!existingItem) {
+								acc.push({ season_number, part_number, ...cur })
 							}
+
+							return acc
 						}, [])
-						.sort((a: KodikItemType, b: KodikItemType) => a.last_season - b.last_season)
+						.sort((a: { season_number: number; part_number: number }, b: { season_number: number; part_number: number }) => {
+							if (a.season_number !== b.season_number) {
+								return a.season_number - b.season_number
+							} else {
+								return a.part_number - b.part_number
+							}
+						})
 
 					total = seasons.reduce((total: number, { last_episode }: KodikItemType) => total + last_episode, 0)
 
@@ -88,7 +101,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data, translations }
+				return { total, data, translations, provider: provider! }
 			}
 			case provider?.startsWith('COLLAPS'): {
 				const url = `https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&${String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).startsWith('tt') ? String(id).replace('tt', '') : id}`
@@ -123,7 +136,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data, translations }
+				return { total, data, translations, provider: provider! }
 			}
 
 			default:
@@ -174,7 +187,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
 
-				return { total, data, translations }
+				return { total, data, translations, provider: provider ?? 'ALLOHA' }
 			}
 		}
 	} catch (e) {
@@ -290,26 +303,26 @@ export const backgroundTask = async (taskId: string) => {
 	let i = 0
 	for (const movie of data) {
 		try {
-			await delay(250)
-			const response = await fetch(`https://kinobox.tv/api/players/main?${String(movie.id).startsWith('tt') ? 'imdb' : 'kinopoisk'}=${movie.id}&token=${Config.KINOBOX_TOKEN}`)
-
 			i = i + 1
 			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${rusToLatin(movie.type)} "${rusToLatin(movie.title)}"`)
 
-			if (!response.ok) continue
-			const json = await response.json()
-			if (!Array.isArray(json)) continue
-			// NOTE remove 'movie/50862' from results
-			if (json.map(it => (it.iframeUrl.endsWith('movie/50862') ? null : it)).filter(it => !!it).length === 0) continue
+			if (movie.provider === null || movie.provider.startsWith('provider')) {
+				await delay(500)
+				console.log(`[BackgroundFetch] search provider id:${movie.id}`)
+
+				const { data } = await getKinoboxPlayers(movie)
+				if (data === null || data.length === 0) continue
+			}
 
 			const newWatchHistoryData: Partial<WatchHistory> = { status: 'new', timestamp: Date.now() }
 
-			if (movie.releasedEpisodes) {
+			if (movie.releasedEpisodes !== undefined) {
 				const newSeries = await fetchNewSeries(movie)
 
 				if (newSeries && newSeries.total > movie.releasedEpisodes) {
 					displayNotificationNewEpisode(movie, { newSeries })
 					newWatchHistoryData.releasedEpisodes = newSeries.total
+					newWatchHistoryData.provider = newSeries.provider
 
 					store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
 				}
@@ -318,9 +331,13 @@ export const backgroundTask = async (taskId: string) => {
 
 				if (isSeries(movie.type)) {
 					const newSeries = await fetchNewSeries(movie)
-					newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
+					if (newSeries && newSeries.total > 0) {
+						newWatchHistoryData.releasedEpisodes = newSeries.total
+						newWatchHistoryData.provider = newSeries.provider
+					}
 				} else {
 					newWatchHistoryData.notify = false
+					if (movie.notifyTranslation) newWatchHistoryData.notifyTranslation = null
 				}
 
 				store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))

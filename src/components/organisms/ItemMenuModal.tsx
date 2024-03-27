@@ -42,7 +42,11 @@ const ModalContent = memo<Props>(({ item }) => {
 			}
 
 			if (newWatchHistoryData.notify) {
-				newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
+				if (newSeries && newSeries.total > 0) {
+					newWatchHistoryData.releasedEpisodes = newSeries.total
+				}
+			} else {
+				newWatchHistoryData.notifyTranslation = null
 			}
 
 			onClose()
@@ -61,8 +65,12 @@ const ModalContent = memo<Props>(({ item }) => {
 
 		if (newWatchHistoryData.notify) {
 			const newSeries = await fetchNewSeries({ ...item, notifyTranslation: translation })
-			newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
-			newWatchHistoryData.notifyTranslation = translation
+			if (newSeries && newSeries.total > 0) {
+				newWatchHistoryData.releasedEpisodes = newSeries.total
+				newWatchHistoryData.notifyTranslation = translation
+			}
+		} else {
+			newWatchHistoryData.notifyTranslation = null
 		}
 
 		onClose()
@@ -185,7 +193,11 @@ const ModalContent = memo<Props>(({ item }) => {
 
 										if (newWatchHistoryData.notify) {
 											const newSeries = await fetchNewSeries(item)
-											newWatchHistoryData.releasedEpisodes = newSeries?.total ?? 1
+											if (newSeries && newSeries.total > 0) {
+												newWatchHistoryData.releasedEpisodes = newSeries.total
+											}
+										} else {
+											newWatchHistoryData.notifyTranslation = null
 										}
 
 										mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
@@ -215,7 +227,10 @@ const ModalContent = memo<Props>(({ item }) => {
 								status: 'end'
 							}
 
-							if (item.notify) newWatchHistoryData.notify = false
+							if (item.notify) {
+								newWatchHistoryData.notify = false
+								newWatchHistoryData.notifyTranslation = null
+							}
 
 							mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
 						}}
