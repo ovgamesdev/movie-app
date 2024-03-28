@@ -39,7 +39,7 @@ export const BackgroundRestrictionModal = () => {
 						source={{ uri }}
 						style={styles.webView}
 						cacheEnabled={false}
-						onShouldStartLoadWithRequest={request => request.url.startsWith('https://dontkillmyapp')}
+						onShouldStartLoadWithRequest={({ url }: { url: string }) => url.startsWith('https://dontkillmyapp')}
 						injectedJavaScript={`
 							document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
 							// document.querySelector('iframe[id*="gt"]').remove()

@@ -292,7 +292,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						ref={webViewRef}
 						containerStyle={{ backgroundColor: '#000' }}
 						injectedJavaScript={run}
-						onMessage={({ nativeEvent }) => {
+						onMessage={({ nativeEvent }: { nativeEvent: { data: string } }) => {
 							try {
 								const nativeEventData = JSON.parse(nativeEvent.data)
 
