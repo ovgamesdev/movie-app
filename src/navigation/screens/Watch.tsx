@@ -4,7 +4,7 @@ import { CheckIcon } from '@icons'
 import { RootStackParamList } from '@navigation'
 import notifee from '@notifee/react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { KinoboxPlayersData, getKinoboxPlayers, getKodikPlayers } from '@store'
+import { KinoboxPlayersData, getKinoboxPlayers, getKodikPlayers, store } from '@store'
 import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -24,7 +24,7 @@ const Loading: FC = () => {
 }
 
 export const Watch: FC<Props> = ({ navigation, route }) => {
-	const { data } = route.params
+	const data = store.getState().settings.settings.watchHistory[`${route.params.data.id}`] ?? route.params.data
 
 	const isWatchFullscreen = useRef(false)
 	const webViewRef = useRef<WebView>(null)
@@ -38,25 +38,45 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const [isLoading, setIsLoading] = useState(true)
 	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
 
+	const toggleScreenOrientation = (isFullscreen: boolean) => {
+		if (isFullscreen) {
+			navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
+			StatusBar.setHidden(true) // need
+		} else {
+			navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
+			StatusBar.setHidden(false) // need
+		}
+	}
+
 	useEffect(() => {
 		if (provider === null) return
 
 		notifee.cancelNotification(`${data.type}:${data.id}`)
 
-		console.log('watchHistory init', { [`${data.id}`]: { ...data, provider, status: 'watch', timestamp: Date.now() } })
-		mergeItem({ watchHistory: { [`${data.id}`]: { ...data, provider, status: 'watch' as const, timestamp: Date.now() } } })
+		const item: Partial<WatchHistory> = {
+			...data,
+			provider,
+			status: 'watch' as const,
+			timestamp: Date.now()
+		}
+
+		if (data.provider !== provider && isSeries(data.type)) {
+			item.episode = null
+			item.season = null
+			item.translation = null
+			// TODO: reset history with episode and season
+			// item.releasedEpisodes = null
+			// item.notifyTranslation = null
+		}
+
+		console.log('watchHistory init', item)
+		mergeItem({ watchHistory: { [`${data.id}`]: item } })
 
 		const subscription = AppState.addEventListener('change', nextAppState => {
-			console.log('nextAppState:', nextAppState)
+			// console.log(`nextAppState: ${nextAppState}`)
 
 			if (nextAppState === 'active') {
-				if (isWatchFullscreen.current) {
-					navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
-					StatusBar.setHidden(true) // need
-				} else {
-					navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
-					StatusBar.setHidden(false) // need
-				}
+				toggleScreenOrientation(isWatchFullscreen.current)
 			}
 		})
 		return subscription.remove
@@ -70,6 +90,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			if (error) {
 				setIsLoading(false)
 				setError({ error, message })
+				console.error('getKinoboxPlayers', { movie: route.params.data, data, error, message })
 				return
 			}
 
@@ -79,7 +100,13 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
 					setError(null)
 				} else {
-					getKodikPlayers(route.params.data).then(({ data: kodik_data, error, message }) => {
+					const watchHistory = store.getState().settings.settings.watchHistory[`${route.params.data.id}`] as WatchHistory | undefined
+					console.log('watchHistory:', watchHistory)
+
+					getKodikPlayers(route.params.data, watchHistory).then(({ data: kodik_data, error, message }) => {
+						if (error) {
+							console.error('getKodikPlayers:', { movie: route.params.data, error, message })
+						}
 						if (kodik_data && kodik_data.length > 0) {
 							setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
 						} else {
@@ -159,7 +186,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const currentProvider = providers && providers.length > 0 ? providers.find(it => it.source === provider) ?? providers[0] : null
 	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider?.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
 
-	console.log('currentProvider', currentProvider?.source, provider)
+	// console.log(`currentProvider ${currentProvider?.source} ${provider}`)
 
 	const run = `
 		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
@@ -193,7 +220,14 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			const eventTitle = event.data.event ?? event.data.key;
 			const eventData = event.data;
 			
+			if (${currentProvider?.source.startsWith('COLLAPS')}) {
+				document.body.onclick = (e) => window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'click' }));
+			}
+
+			// console.log('message:', eventTitle, eventData)
+			
 			switch (true) {
+				// NOTE current_episode === null
 				case ${currentProvider?.source.startsWith('ALLOHA')}:
 					if (eventTitle === 'inited') {
 						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
@@ -205,6 +239,13 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 					if (eventTitle === 'ended') {
 						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended', time: Math.round(eventData.time) }));
+					}
+
+					if (eventTitle === 'play') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'play' }));
+					}
+					if (eventTitle === 'pause') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'pause' }));
 					}
 
 					break;
@@ -220,6 +261,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 					if (eventTitle === 'ended') {
 						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ended' }));
+					}
+
+					if (eventTitle === 'changeEpisode') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'current_episode', episode: eventData.episode, season: eventData.season  }));
 					}
 
 					break;
@@ -240,9 +285,21 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						window.ReactNativeWebView.postMessage(JSON.stringify({event: 'ended', time: Math.round(eventData.time) }));
 					}
 
+					if (eventTitle === 'kodik_player_current_episode') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'current_episode', episode: eventData.value.episode+'', season: eventData.value.season, translation: eventData.value.translation }));
+					}
+
+					if (eventTitle === 'kodik_player_play') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'play' }));
+					}
+					if (eventTitle === 'kodik_player_pause') {
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'pause' }));
+					}
+
 					break;
 
 				case ${currentProvider?.source.startsWith('VIDEOCDN')}:
+						// TODO current_episode play|pause
 					if (eventTitle === 'new') {
 						setTimeout(() => window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 })), 250);
 					}
@@ -258,6 +315,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					break;
 
 				case ${currentProvider?.source.startsWith('HDVB')}:
+					// TODO current_episode play|pause
 					if (eventTitle === 'new') {
 						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'new', time: 0, duration: 100 }));
 					}
@@ -297,7 +355,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 								const nativeEventData = JSON.parse(nativeEvent.data)
 
 								if ('event' in nativeEventData) {
-									const playerData = nativeEventData as { event: 'new'; time: number; duration: number } | { event: 'ended'; time?: number } | { event: 'time'; time: number; duration: number } | { event: 'time'; time: number } | { event: 'time'; duration: number }
+									const playerData = nativeEventData as { event: 'new'; time: number; duration: number } | { event: 'ended'; time?: number } | { event: 'time'; time: number; duration: number } | { event: 'time'; time: number } | { event: 'time'; duration: number } | { event: 'current_episode'; episode: string; season: number; translation?: { id: number; title: string } } | { event: 'click' | 'play' | 'pause' }
 
 									switch (playerData.event) {
 										case 'new': {
@@ -344,6 +402,27 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 											break
 										}
+										case 'current_episode': {
+											// console.log('playerData:', playerData)
+
+											const item: Partial<WatchHistory> = {
+												timestamp: Date.now(),
+												episode: playerData.episode,
+												season: playerData.season
+											}
+
+											if ('translation' in playerData) {
+												item.translation = playerData.translation
+											}
+
+											mergeItem({ watchHistory: { [`${data.id}`]: item } })
+											break
+										}
+										case 'click':
+										case 'play':
+										case 'pause':
+											toggleScreenOrientation(isWatchFullscreen.current)
+											break
 									}
 
 									//
@@ -353,17 +432,11 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 									if (['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'].includes(type)) {
 										isWatchFullscreen.current = isFullscreen
 
-										if (isFullscreen) {
-											navigation.setOptions({ orientation: 'landscape', navigationBarHidden: true, statusBarHidden: true })
-											StatusBar.setHidden(true) // need
-										} else {
-											navigation.setOptions({ orientation: 'portrait_up', navigationBarHidden: false, statusBarHidden: false })
-											StatusBar.setHidden(false) // need
-										}
+										toggleScreenOrientation(isFullscreen)
 									}
 								}
 							} catch (e) {
-								console.error('[error] WebView onmessage:', e)
+								console.error('WebView onmessage:', e)
 							}
 
 							return true

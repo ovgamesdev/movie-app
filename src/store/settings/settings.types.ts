@@ -23,6 +23,9 @@ export type WatchHistory = {
 	//
 	duration?: number
 	lastTime?: number
+	episode?: string | null
+	season?: number | null
+	translation?: { id: number; title: string } | null
 	//
 	notify?: boolean
 	notifyTranslation?: string | null

@@ -82,7 +82,7 @@ export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, cle
 										break
 									default:
 										ToastAndroid.show('Неизвестная ошибка, попробуйте еще раз', ToastAndroid.SHORT)
-										console.warn('VoiceComponent error:', e)
+										console.error('VoiceComponent', e)
 										break
 								}
 							}}

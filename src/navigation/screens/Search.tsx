@@ -29,7 +29,7 @@ export const Search: FC<Props> = ({ route }) => {
 	const [keyword, setKeyword] = useState('')
 	const isImdbSearch = !!isImdbRegex.exec(keyword)
 	const deferredKeyword = useDebounce(keyword, 300)
-	const { isFetching, data } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: isImdbSearch || deferredKeyword.length === 0 })
+	const { isError, isFetching, data, refetch } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: isImdbSearch || deferredKeyword.length === 0 })
 	const isEmpty = isImdbSearch ? false : !data?.topResult?.global && !(data?.movies && data.movies.length > 0) && !(data?.movieLists && data.movieLists.length > 0) && !(data?.persons && data.persons.length > 0)
 	const isLoading = isImdbSearch || deferredKeyword.length === 0 ? false : isFetching || keyword !== deferredKeyword
 
@@ -190,6 +190,13 @@ export const Search: FC<Props> = ({ route }) => {
 					<View style={styles.emptyContainer}>
 						<ActivityIndicator size='small' />
 					</View>
+				) : isError ? (
+					<View style={styles.errorContainer}>
+						<Text style={styles.errorText}>Произошла ошибка</Text>
+						<Button onPress={refetch} animation='scale' paddingVertical={5}>
+							<Text style={styles.errorDescription}>Повторите попытку</Text>
+						</Button>
+					</View>
 				) : isEmpty ? (
 					<View style={styles.emptyContainer}>
 						<Text style={styles.emptyText}>По вашему запросу ничего не найдено</Text>
@@ -224,6 +231,23 @@ const stylesheet = createStyleSheet(theme => ({
 		fontSize: 15,
 		paddingHorizontal: 30,
 		textAlign: 'center'
+	},
+	errorContainer: {
+		height: 160,
+		padding: 50,
+		paddingHorizontal: 30,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	errorText: {
+		color: theme.colors.text100,
+		fontSize: 16,
+		paddingHorizontal: 10,
+		paddingBottom: 5
+	},
+	errorDescription: {
+		color: theme.colors.text200,
+		fontSize: 12
 	},
 	watch: {
 		color: theme.colors.text100,

@@ -69,7 +69,7 @@ const updateSlice = createSlice({
 					// 	options.notNeedUpdateApp()
 				}
 			} catch (error) {
-				console.error('RNUpdateAPK::getApkVersionSuccess - Unknown error:', error)
+				console.error('RNUpdateAPK::getApkVersionSuccess - Unknown error', error)
 				Alert.alert('Произошла ошибка', 'Unknown error')
 			}
 		}

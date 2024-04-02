@@ -45,7 +45,7 @@ export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, .
 	const totalIndex = props.data ? props.data.length - 1 : 1
 
 	useEffect(() => {
-		if (!props.data || !autoScroll) return
+		if (!props.data || props.data.length <= 1 || !autoScroll) return
 
 		scrollInterval.current = setInterval(() => {
 			scrollIndex.current++

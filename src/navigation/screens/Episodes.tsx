@@ -19,7 +19,7 @@ export const Episodes: FC<Props> = ({ route }) => {
 
 	const [selectedSeason, setSelectedSeason] = useState(0)
 
-	const { data, isFetching, isError } = useGetMovieDataByIdQuery({ id: String(tmdb_id) })
+	const { data, isFetching, isError, refetch } = useGetMovieDataByIdQuery({ id: String(tmdb_id) })
 
 	// TODO skeleton
 	if (isFetching) {
@@ -32,16 +32,27 @@ export const Episodes: FC<Props> = ({ route }) => {
 		)
 	}
 
-	// TODO error
-	if (!data) {
+	if (isError) {
 		return (
-			<View>
-				<Text>error</Text>
+			<View style={{ flex: 1, padding: 50, paddingHorizontal: 30, alignItems: 'center', justifyContent: 'center' }}>
+				<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10, paddingBottom: 5 }}>Произошла ошибка</Text>
+				<Button onPress={refetch} animation='scale' paddingVertical={5}>
+					<Text style={{ color: theme.colors.text200, fontSize: 12 }}>Повторите попытку</Text>
+				</Button>
 			</View>
 		)
 	}
 
-	console.log('useGetMovieDataByIdQuery:', data)
+	if (!data) {
+		// TODO add Not found
+		return (
+			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+				<Text>Not found</Text>
+			</View>
+		)
+	}
+
+	// console.log('data:', data)
 
 	return (
 		<View style={{ paddingBottom: isShowNetInfo ? 0 : insets.bottom, paddingTop: insets.top, flex: 1 }}>

@@ -51,13 +51,13 @@ export const VoiceComponent: FC<VoiceComponentProps> = ({ onSpeechResult, onSpee
 				await Voice.destroy()
 				setRecognizing(false)
 			} catch (e) {
-				console.error(`error: <VoiceComponent /> Voice.destroy()`, e)
+				console.error(`<VoiceComponent /> Voice.destroy()`, e)
 			}
 		} else {
 			try {
 				await Voice.start('ru-RU') // 'en-US'
 			} catch (e) {
-				console.error(`error: <VoiceComponent /> Voice.start()`, e)
+				console.error(`<VoiceComponent /> Voice.start()`, e)
 			}
 		}
 	}

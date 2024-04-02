@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { IFilmBaseInfo, IFilmographyFiltersResults, IFilmographyItemsResults, IHdShowcaseResults, IListBySlugResults, IListSlugFilter, IOriginalMoviesResults, IPersonBaseInfoResults, ISimilarMovieResults, ISuggestSearchResults, ITvSeriesBaseInfo, ITvSeriesEpisodesResults } from '@store/kinopoisk'
-import { ToastAndroid } from 'react-native'
 
 export const kinopoiskApi = createApi({
 	reducerPath: 'api/kinopoisk',
@@ -69,9 +68,7 @@ export const kinopoiskApi = createApi({
 				return { docs: movies.items, total, limit, page, pages, name: data.name ?? '', availableFilters: data.availableFilters ?? [], cover: data.cover, description: data.description }
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getListBySlug:', { response, arg })
 			}
 		}),
 		getSuggestSearch: build.query<ISuggestSearchResults, { keyword: string }>({
@@ -98,9 +95,7 @@ export const kinopoiskApi = createApi({
 				return top
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getSuggestSearch:', { response, arg })
 			}
 		}),
 		getFilmBaseInfo: build.query<IFilmBaseInfo, { filmId: number }>({
@@ -132,9 +127,7 @@ export const kinopoiskApi = createApi({
 				return data?.film
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getFilmBaseInfo:', { response, arg })
 			}
 		}),
 		getTvSeriesBaseInfo: build.query<ITvSeriesBaseInfo, { tvSeriesId: number }>({
@@ -166,9 +159,7 @@ export const kinopoiskApi = createApi({
 				return data?.tvSeries
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getTvSeriesBaseInfo:', { response, arg })
 			}
 		}),
 		getTvSeriesSimilarMovies: build.query<ISimilarMovieResults, { tvSeriesId: number }>({
@@ -195,9 +186,7 @@ export const kinopoiskApi = createApi({
 				return data?.tvSeries?.userRecommendations
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getTvSeriesSimilarMovies:', { response, arg })
 			}
 		}),
 		getFilmSimilarMovies: build.query<ISimilarMovieResults, { filmId: number }>({
@@ -224,9 +213,7 @@ export const kinopoiskApi = createApi({
 				return data?.film?.userRecommendations
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getFilmSimilarMovies:', { response, arg })
 			}
 		}),
 		getPersonBaseInfo: build.query<IPersonBaseInfoResults, { personId: number }>({
@@ -255,9 +242,7 @@ export const kinopoiskApi = createApi({
 				return data?.person
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getPersonBaseInfo:', { response, arg })
 			}
 		}),
 		getTvSeriesEpisodes: build.query<ITvSeriesEpisodesResults, { tvSeriesId: number; episodesLimit?: number }>({
@@ -282,9 +267,7 @@ export const kinopoiskApi = createApi({
 				return data?.tvSeries
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getTvSeriesEpisodes:', { response, arg })
 			}
 		}),
 		getFilmographyItems: build.query<IFilmographyItemsResults, { personId: number; orderBy?: string; page?: number; limit?: number; roleSlugs?: string[]; genre?: null | number; year?: null | { start: number; end: number } }>({
@@ -324,9 +307,7 @@ export const kinopoiskApi = createApi({
 				return { docs: movies.items, total, limit, page, pages }
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getFilmographyItems:', { response, arg })
 			}
 		}),
 		getFilmographyFilters: build.query<IFilmographyFiltersResults, { personId: number }>({
@@ -353,9 +334,7 @@ export const kinopoiskApi = createApi({
 				return data
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getFilmographyFilters:', { response, arg })
 			}
 		}),
 		getOriginalMovies: build.query<IOriginalMoviesResults, { movieId: number }>({
@@ -382,9 +361,7 @@ export const kinopoiskApi = createApi({
 				return data
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getOriginalMovies:', { response, arg })
 			}
 		}),
 		getHdShowcase: build.query<IHdShowcaseResults, undefined>({
@@ -411,9 +388,7 @@ export const kinopoiskApi = createApi({
 				return data
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('KP: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/kinopoisk getHdShowcase:', { response, arg })
 			}
 		})
 	})

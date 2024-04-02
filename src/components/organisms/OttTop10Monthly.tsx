@@ -47,7 +47,7 @@ export const OttTop10Monthly = () => {
 					setSavedState({ status: 'await_from_api', data: as_item })
 				}
 			} catch (e) {
-				console.error('[OttTop10Monthly] error:', e)
+				console.error('[OttTop10Monthly]', e)
 			}
 		}
 
@@ -151,7 +151,7 @@ export const OttTop10Monthly = () => {
 			{!Platform.isTV ? (
 				<AutoScrollFlatList
 					keyExtractor={it => `list_${data.id}_item_${it.movie.id}`}
-					data={isError ? [] : !isSuccess ? skeletonData : data.content.items}
+					data={isError ? (data.content.items.length > 0 ? data.content.items : []) : !isSuccess ? skeletonData : data.content.items}
 					//
 					horizontal
 					showsHorizontalScrollIndicator={false}

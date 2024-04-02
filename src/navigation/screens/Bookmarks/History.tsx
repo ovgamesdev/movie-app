@@ -33,7 +33,7 @@ export const History: FC = () => {
 
 	const [scrollY] = useState(new Animated.Value(0))
 
-	console.log('History data:', data.length)
+	console.log(`History data: ${data.length}`)
 
 	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item })
 
@@ -52,7 +52,7 @@ export const History: FC = () => {
 							</Text>
 
 							<Text style={{ fontSize: 13, fontWeight: '400', lineHeight: 16, color: theme.colors.text200 }} numberOfLines={1}>
-								{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year].filter(it => it).join(' • ')}
+								{[item.provider ? `[${watchHistoryProviderToString(item.provider)}]` : null, item.year, [typeof item.season === 'number' ? `${item.season} сезон` : null, typeof item.episode === 'string' ? `${item.episode} серия` : null].filter(it => it).join(', '), item.translation?.title].filter(it => it).join(' • ')}
 							</Text>
 
 							<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>

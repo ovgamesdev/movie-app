@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { ToastAndroid } from 'react-native'
 import Config from 'react-native-config'
 
 interface IMovieTMDBBase {
@@ -98,9 +97,7 @@ export const themoviedbApi = createApi({
 				return data ?? null
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('TMDB: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/themoviedb getMovieById:', { response, meta, arg })
 			}
 		}),
 		getMovieDataById: build.query<IMovieTMDBDataResults, { id: string; season?: number }>({
@@ -114,9 +111,7 @@ export const themoviedbApi = createApi({
 				return (response as any) ?? null
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('TMDB: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/themoviedb getMovieDataById:', { response, meta, arg })
 			}
 		}),
 		getMovieSeasonById: build.query<IMovieTMDBSeasonResults, { id: string; season: number }>({
@@ -130,9 +125,7 @@ export const themoviedbApi = createApi({
 				return (response as any) ?? null
 			},
 			transformErrorResponse: (response, meta, arg) => {
-				console.log('transformErrorResponse', { response, meta, arg })
-
-				ToastAndroid.show('TMDB: Неизвестная ошибка', ToastAndroid.LONG)
+				console.log('api/themoviedb getMovieSeasonById:', { response, meta, arg })
 			}
 		})
 	})

@@ -20,7 +20,7 @@ export const Person: FC<Props> = ({ route }) => {
 
 	const ref = useRef<ScrollView>(null)
 
-	const { data, isFetching, isError } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
+	const { data, isFetching, isError, refetch } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
 
 	useUpdateBookmarks(data)
 
@@ -28,6 +28,17 @@ export const Person: FC<Props> = ({ route }) => {
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 				<ActivityIndicator size='large' />
+			</View>
+		)
+	}
+
+	if (isError) {
+		return (
+			<View style={{ flex: 1, padding: 50, paddingHorizontal: 30, alignItems: 'center', justifyContent: 'center' }}>
+				<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10, paddingBottom: 5 }}>Произошла ошибка</Text>
+				<Button onPress={refetch} animation='scale' paddingVertical={5}>
+					<Text style={{ color: theme.colors.text200, fontSize: 12 }}>Повторите попытку</Text>
+				</Button>
 			</View>
 		)
 	}

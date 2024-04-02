@@ -26,6 +26,11 @@ export const ContinueWatchItem: FC<Props> = ({ data, index, hasTVPreferredFocus,
 						<Progress duration={data.status === 'end' ? data.lastTime : data.duration} lastTime={data.lastTime} />
 					</View>
 				) : null}
+				{typeof data.episode === 'string' && typeof data.season === 'number' ? (
+					<Text style={styles.currentSE}>
+						s{data.season}:e{data.episode}
+					</Text>
+				) : null}
 			</ImageBackground>
 
 			<View style={styles.detail}>
@@ -60,6 +65,18 @@ const stylesheet = createStyleSheet(theme => ({
 	detailDescription: {
 		color: theme.colors.text200,
 		fontSize: 14
+	},
+	currentSE: {
+		position: 'absolute',
+		top: 10,
+		fontSize: 12,
+		right: 0,
+		color: theme.colors.primary300,
+		backgroundColor: theme.colors.primary100,
+		paddingVertical: 2,
+		paddingHorizontal: 8,
+		borderTopLeftRadius: 16,
+		borderBottomLeftRadius: 16
 	},
 	progressContainer: {
 		position: 'absolute',

@@ -63,21 +63,22 @@ const settingsSlice = createSlice({
 			.addCase(settingsExtraActions.getSettings.fulfilled, (state, { payload }) => {
 				state.isLoading = false
 
-				console.log('getSettings', payload)
-
 				if (payload.local !== null && payload.server !== null) {
 					let settings: ISettings
 
 					// NOTE: Если при слиянии данных возникнут конфликты, вам нужно будет разработать логику разрешения конфликтов и уведомления пользователей о них. Например, вы можете предоставить пользователю возможность выбора, какую версию настроек сохранить.
 					if (payload.local._settings_time === payload.server._settings_time) {
 						settings = payload.server // Настройки равны
+						console.log('getSettings (local === server) use server')
 					} else if (payload.local._settings_time > payload.server._settings_time) {
 						// TODO: window confirm settings actual
 						settings = payload.local // Локальные настройки более актуальные
+						console.log('getSettings (local > server) use local')
 						// TODO: save actual settings
 					} else {
 						// TODO: window confirm settings actual
 						settings = payload.server // Серверные настройки более актуальные
+						console.log('getSettings (local < server) use server')
 						// TODO: save actual settings
 					}
 

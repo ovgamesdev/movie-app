@@ -99,7 +99,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 					}
 				}
 
-				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+				console.log(`[fetchNewSeries] ${provider}:${id} total ${total} new episodes: ${JSON.stringify(data)}`)
 
 				return { total, data, translations, provider: provider! }
 			}
@@ -134,7 +134,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 					}
 				}
 
-				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+				console.log(`[fetchNewSeries] ${provider}:${id} total ${total} new episodes: ${JSON.stringify(data)}`)
 
 				return { total, data, translations, provider: provider! }
 			}
@@ -185,13 +185,13 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 					}
 				}
 
-				console.log(`[fetchNewSeries] ${provider}:${type} "${rusToLatin(title)}": ${total}`, data)
+				console.log(`[fetchNewSeries] ${provider}:${id} total ${total} new episodes: ${JSON.stringify(data)}`)
 
 				return { total, data, translations, provider: provider ?? 'ALLOHA' }
 			}
 		}
 	} catch (e) {
-		console.log(`[fetchNewSeries] error ${provider}:${type} "${rusToLatin(title)}":`, e)
+		console.error(`[fetchNewSeries] ${provider}:${id}:`, e)
 		return null
 	}
 }
@@ -304,7 +304,7 @@ export const backgroundTask = async (taskId: string) => {
 	for (const movie of data) {
 		try {
 			i = i + 1
-			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${rusToLatin(movie.type)} "${rusToLatin(movie.title)}"`)
+			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${movie.type} "${rusToLatin(movie.title)}"`)
 
 			if (movie.provider === null || movie.provider.startsWith('provider')) {
 				await delay(500)
@@ -343,7 +343,7 @@ export const backgroundTask = async (taskId: string) => {
 				store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
 			}
 		} catch (e) {
-			console.error('BackgroundFetch error:', e)
+			console.error('[BackgroundFetch]:', e)
 		}
 	}
 
@@ -358,7 +358,7 @@ export const useBackgroundFetch = () => {
 		await BackgroundFetch.configure(config, backgroundTask, (taskId: string) => {
 			// Oh No!  Our task took too long to complete and the OS has signalled
 			// that this task must be finished immediately.
-			console.log('[Fetch] TIMEOUT taskId:', taskId)
+			console.log('[BackgroundFetch] TIMEOUT taskId:', taskId)
 			BackgroundFetch.finish(taskId)
 		})
 	}

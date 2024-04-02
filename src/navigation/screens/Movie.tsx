@@ -18,13 +18,15 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 export const Movie: FC<Props> = ({ route }) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
-	const { styles } = useStyles(stylesheet)
+	const { styles, theme } = useStyles(stylesheet)
 
-	const { data: dataFilm, isFetching: isFetchingFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' })
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow' })
+	const { data: dataFilm, isFetching: isFetchingFilm, isError: isErrorFilm, refetch: refetchFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' }) // TODO isSeries
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries, isError: isErrorTvSeries, refetch: refetchTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow' }) // TODO isSeries
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
+	const isError = isErrorFilm || isErrorTvSeries
+	const refetch = async () => (isErrorTvSeries && refetchTvSeries(), isErrorFilm && refetchFilm())
 
 	// TODO to store
 	const [backdropPath, setBackdropPath] = useState<null | string>(null)
@@ -41,7 +43,7 @@ export const Movie: FC<Props> = ({ route }) => {
 					if (res?.data) {
 						const isSeries = 'seasons' in res.data
 
-						console.log('id_tmdb:', res.data.id_tmdb, { isSeries })
+						console.log(`id_tmdb: ${res.data.id_tmdb}, isSeries: ${isSeries}`)
 
 						setTmdbId(res.data.id_tmdb)
 
@@ -68,6 +70,17 @@ export const Movie: FC<Props> = ({ route }) => {
 		return (
 			<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 				<ActivityIndicator size='large' />
+			</View>
+		)
+	}
+
+	if (isError) {
+		return (
+			<View style={{ flex: 1, padding: 50, paddingHorizontal: 30, alignItems: 'center', justifyContent: 'center' }}>
+				<Text style={{ color: theme.colors.text100, fontSize: 16, paddingHorizontal: 10, paddingBottom: 5 }}>Произошла ошибка</Text>
+				<Button onPress={refetch} animation='scale' paddingVertical={5}>
+					<Text style={{ color: theme.colors.text200, fontSize: 12 }}>Повторите попытку</Text>
+				</Button>
 			</View>
 		)
 	}

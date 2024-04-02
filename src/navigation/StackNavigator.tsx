@@ -16,6 +16,7 @@ interface Props {
 
 export const StackNavigator: FC<Props> = ({ colors }) => {
 	useEffect(() => {
+		// TODO fix notifee
 		notifee.getInitialNotification().then(initialNotification => {
 			if (initialNotification) {
 				openScreenFromNotify(initialNotification)

@@ -43,7 +43,7 @@ export const Favorites: FC = () => {
 
 	const [scrollY] = useState(new Animated.Value(0))
 
-	console.log('Favorites data:', data.length)
+	console.log(`Favorites data: ${data.length}`)
 
 	const handleOnLongPress = (item: Bookmarks) => {} // setItemVisibleModal({ item })
 
