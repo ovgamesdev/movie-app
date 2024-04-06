@@ -35,11 +35,13 @@ export type WatchHistory = {
 
 // SearchHistory
 export type SearchHistoryMovie = {
-	id: number
+	id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
 	type: MovieType
 	title: string
 	poster: string | null
 	timestamp: number
+
+	year: number | null
 }
 export type SearchHistoryPerson = {
 	id: number
@@ -59,7 +61,7 @@ export type SearchHistoryMovieList = {
 
 // Bookmarks
 export type BookmarksMovie = {
-	id: number
+	id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
 	type: MovieType
 	title: string
 	poster: string | null
@@ -84,10 +86,10 @@ export interface ISettings {
 		[key: `${number}` | `tt${number}`]: WatchHistory
 	}
 	searchHistory: {
-		[key: `${SearchHistory['type']}:${number}`]: SearchHistory
+		[key: `${SearchHistory['type']}:${number | `tt${number}`}`]: SearchHistory
 	}
 	bookmarks: {
-		[key: `${Bookmarks['type']}:${number}`]: Bookmarks
+		[key: `${Bookmarks['type']}:${number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`}`]: Bookmarks
 	}
 	_settings_time: number
 	_settings_version: number

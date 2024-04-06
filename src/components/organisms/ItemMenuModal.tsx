@@ -172,38 +172,39 @@ const ModalContent = memo<Props>(({ item }) => {
 						text='Детали'
 						onPress={() => {
 							onClose()
-							if (typeof item.id === 'number') {
-								navigation.push('Movie', { data: { id: item.id, type: item.type } })
-							} else {
-								ToastAndroid.show(`Детали ${isSeries(item.type) ? 'сериала' : 'фильма'} из IMDB недоступны`, ToastAndroid.SHORT)
-								return
-							}
+
+							navigation.push('Movie', { data: { id: item.id, type: item.type } })
 						}}
 					/>
 					<Button
 						text='Notifee'
-						onPress={
-							isSeries(item.type) && !item.notify
-								? loadTranslations
-								: async () => {
-										onClose()
-										const newWatchHistoryData: Partial<WatchHistory> = {
-											notify: !item.notify
-										}
+						onPress={async () => {
+							if (typeof item.id === 'number' || item.id.startsWith('tt')) {
+								if (isSeries(item.type) && !item.notify) {
+									loadTranslations()
+								} else {
+									onClose()
+									const newWatchHistoryData: Partial<WatchHistory> = {
+										notify: !item.notify
+									}
 
-										if (newWatchHistoryData.notify) {
-											const newSeries = await fetchNewSeries(item)
-											if (newSeries && newSeries.total > 0) {
-												newWatchHistoryData.releasedEpisodes = newSeries.total
-											}
-										} else {
-											newWatchHistoryData.notifyTranslation = null
+									if (newWatchHistoryData.notify) {
+										const newSeries = await fetchNewSeries(item)
+										if (newSeries && newSeries.total > 0) {
+											newWatchHistoryData.releasedEpisodes = newSeries.total
 										}
+									} else {
+										newWatchHistoryData.notifyTranslation = null
+									}
 
-										mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
-										isBatteryOptimizationEnabled()
-								  }
-						}
+									mergeItem({ watchHistory: { [`${item.id}`]: newWatchHistoryData } })
+									isBatteryOptimizationEnabled()
+								}
+							} else {
+								ToastAndroid.show(`Уведомления для ${isSeries(item.type) ? 'сериала' : 'фильма'} недоступны, если информация не представлена в KP или IMDB.`, ToastAndroid.SHORT)
+								return
+							}
+						}}
 					/>
 					<View style={{ flexDirection: 'row', gap: 10 }}>
 						<Button text='Изменить created' flex={1} onPress={() => setChangeTime('create')} />

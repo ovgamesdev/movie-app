@@ -2,14 +2,14 @@ import { ActivityIndicator, Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { getKinoboxPlayers } from '@store'
-import { IFilmBaseInfo, ITvSeriesBaseInfo } from '@store/kinopoisk'
+import { MovieType } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { FC, useCallback, useEffect, useState } from 'react'
 
 type Status = 'loading' | 'error' | 'watch' | 'continue' | 'end' | 'off-notify' | 'on-notify'
 
 interface Props {
-	data: IFilmBaseInfo | ITvSeriesBaseInfo
+	data: { title: string; poster: string | null; year: number | null; id: number | `tt${number}`; type: MovieType }
 }
 
 export const WatchButton: FC<Props> = ({ data }) => {
@@ -34,22 +34,9 @@ export const WatchButton: FC<Props> = ({ data }) => {
 			paddingVertical={status === 'loading' ? 6.8 : undefined}
 			onPress={async () => {
 				const item: WatchHistory = watchHistory
-					? {
-							...watchHistory,
-							id: data.id,
-							type: data.__typename,
-							title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-							// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-							year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
-							poster: data.poster?.avatarsUrl ?? null
-					  }
+					? { ...watchHistory, ...data }
 					: {
-							id: data.id,
-							type: data.__typename,
-							title: data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english ?? '',
-							// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-							year: data.productionYear ?? (('releaseYears' in data && data.releaseYears[0]?.start) || null),
-							poster: data.poster?.avatarsUrl ?? null,
+							...data,
 							provider: null,
 							startTimestamp: Date.now(),
 							timestamp: Date.now(),

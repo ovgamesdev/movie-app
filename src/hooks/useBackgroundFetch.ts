@@ -46,6 +46,9 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 		switch (true) {
 			// case provider?.startsWith('HDVB'):
 			// case provider?.startsWith('VIDEOCDN'):
+			// TODO
+			// https://videocdn.tv/api/tv-series?api_token=xxx&ordering=id&direction=desc
+			// https://videocdn.tv/api/short?api_token=xxx&kinopoisk_id=[kp_id]
 			// case provider?.startsWith('VOIDBOOST'):
 			case provider?.startsWith('KODIK'): {
 				const url = `https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`
@@ -70,10 +73,11 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title === notifyTranslation))
 						.reduce((acc, cur) => {
-							const part_match = cur.title.match(/(?<=часть\s)\d+/)
+							const title = [cur.title, cur.title_orig, cur.other_title].filter(it => !!it).join(' / ')
+							const part_match = /(\d+(?=\s+часть))|((?<=часть\s+)\d+)/gi.exec(title)
 							const part_number = part_match ? parseInt(part_match[0]) : 0
 
-							const season_match = cur.title.match(/(?<=ТВ-)\d+/)
+							const season_match = /(?<=ТВ-)\d+/gi.exec(title)
 							const season_number = season_match ? parseInt(season_match[0]) : cur.last_season ?? 0
 
 							const existingItem = acc.find((item: { season_number: number; part_number: number }) => item.season_number === season_number && item.part_number === part_number)

@@ -47,10 +47,10 @@ export const navigation = {
 
 export type RootStackParamList = {
 	Home: undefined
-	Movie: { data: { id: number; type: MovieType } }
+	Movie: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType }; other?: { title: string; poster: string | null; year: number | null } }
 	MovieTrailer: { data: IMainTrailer }
 	Person: { data: { id: number } }
-	Watch: { data: { id: number | `tt${number}`; type: MovieType; title: string; poster: string | null; year: number | null; provider: WatchHistoryProvider | null } }
+	Watch: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType; title: string; poster: string | null; year: number | null; provider: WatchHistoryProvider | null } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 	Episodes: { data: { id: number; type: MovieType; tmdb_id: number } }
 }

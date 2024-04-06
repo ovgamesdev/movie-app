@@ -107,7 +107,7 @@ const LogPage: FC = () => {
 							return new Date(bYear, bMonth - 1, bDay).getTime() - new Date(aYear, aMonth - 1, aDay).getTime()
 						})
 						.map((item, index) => (
-							<Button text={item.name} key={index} onPress={() => selectFile(item)} isActive={openedFile?.name === item.name} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })} />
+							<Button text={item.name} key={index} onPress={() => selectFile(item)} isActive={openedFile?.name === item.name} textColor={theme.colors.text200} activeTextColor={theme.colors.primary300} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })} />
 						))}
 				</ScrollView>
 

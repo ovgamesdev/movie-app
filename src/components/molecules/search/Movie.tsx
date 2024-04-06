@@ -21,7 +21,8 @@ export const Movie: FC<Props> = ({ item, onPress }) => {
 			id: item.id,
 			type: item.__typename,
 			title: item.title.russian ?? item.title.original ?? '',
-			poster: item.poster?.avatarsUrl ?? null
+			poster: item.poster?.avatarsUrl ?? null,
+			year: item.productionYear ?? item.releaseYears?.[0].start ?? null
 		})
 	}
 

@@ -63,9 +63,9 @@ export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }):
 	}
 }
 
-export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` }, data?: { season?: number | null; episode?: string | null; translation?: { id: number; title: string } | null; lastTime?: number | null }): Promise<kinoboxPlayers> => {
+export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` | `KODIK:${string}` }, data?: { season?: number | null; episode?: string | null; translation?: { id: number; title: string } | null; lastTime?: number | null }): Promise<kinoboxPlayers> => {
 	try {
-		const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}&with_episodes=true`)
+		const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('KODIK:') ? 'id' : String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).replace('KODIK:', '')}&token=${Config.KODIK_TOKEN}&with_episodes=true`)
 
 		if (!res.ok) {
 			return { data: null, error: res.statusText, message: await res.text() }
@@ -75,11 +75,12 @@ export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` }, da
 
 		// console.log('json:', json)
 
-		const resultsArray = json?.results?.map((cur: { title: string; last_season: any }) => {
-			const part_match = /(?<=часть\s)\d+/.exec(cur.title)
+		const resultsArray = json?.results?.map((cur: { other_title: string; title_orig: string; title: string; last_season: any }) => {
+			const title = [cur.title, cur.title_orig, cur.other_title].filter(it => !!it).join(' / ')
+			const part_match = /(\d+(?=\s+часть))|((?<=часть\s+)\d+)/gi.exec(title)
 			const part_number = part_match ? parseInt(part_match[0]) : 0
 
-			const season_match = /(?<=ТВ-)\d+/.exec(cur.title)
+			const season_match = /(?<=ТВ-)\d+/gi.exec(title)
 			const season_number = season_match ? parseInt(season_match[0]) : cur.last_season ?? 0
 
 			return { ...cur, part_number, season_number }
@@ -104,15 +105,15 @@ export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` }, da
 				}
 			})
 
-			const item = resultsArray.find((it: { translation: { id: number | undefined }; seasons: { [x: string]: { episodes: any } } }) => it.translation.id === data?.translation?.id && `${data?.season}` in it.seasons && `${data?.episode}` in it.seasons[`${data?.season}`].episodes)
+			const items = resultsArray.filter((it: { translation: { id: number | undefined }; seasons: { [x: string]: { episodes: any } } }) => it.translation.id === data?.translation?.id && `${data?.season}` in it.seasons && `${data?.episode}` in it.seasons[`${data?.season}`].episodes)
 
 			json = {
 				success: true,
 				data: sortedData.reverse().map((it: { seasons: any; translation: any; season_number?: number; id: string; quality: any; link: string; part_number: number }) => {
-					const isSaved = item && 'season_number' in it && 'season_number' in item && it.season_number === item.season_number // ? 'part_number' in it && 'part_number' in item && it.part_number === item.part_number : false
-					const movie = isSaved ? item : it
+					const savedItem = items.find(item => 'season_number' in it && 'season_number' in item && it.season_number === item.season_number && 'part_number' in it && 'part_number' in item && it.part_number === item.part_number) // ? 'part_number' in it && 'part_number' in item && it.part_number === item.part_number : false
+					const movie = savedItem ? savedItem : it
 
-					const movieLink = !isSaved ? `${movie.link}?episode=1` : `${movie.link}?${[data?.lastTime ? 'start_from=' + data.lastTime : null, typeof data?.episode === 'string' ? 'episode=' + data.episode : null, typeof data?.season === 'number' ? 'season=' + data.season : null].filter(it => !!it).join('&')}`
+					const movieLink = !savedItem ? `${movie.link}?episode=1` : `${movie.link}?${[data?.lastTime ? 'start_from=' + data.lastTime : null, typeof data?.episode === 'string' ? 'episode=' + data.episode : null, typeof data?.season === 'number' ? 'season=' + data.season : null].filter(it => !!it).join('&')}`
 
 					return {
 						source: `KODIK:${'season_number' in movie ? movie.season_number : movie.id}${movie.part_number > 0 ? '.' + movie.part_number : ''}`,

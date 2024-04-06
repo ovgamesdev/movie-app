@@ -9,6 +9,7 @@ import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
+import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
@@ -24,7 +25,9 @@ const Loading: FC = () => {
 }
 
 export const Watch: FC<Props> = ({ navigation, route }) => {
-	const data = store.getState().settings.settings.watchHistory[`${route.params.data.id}`] ?? route.params.data
+	const isKPorIMDB = !isNaN(Number(route.params.data.id)) || String(route.params.data.id).startsWith('tt') // number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
+
+	const data: WatchHistory = (isKPorIMDB ? store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] : null) ?? (route.params.data as WatchHistory)
 
 	const isWatchFullscreen = useRef(false)
 	const webViewRef = useRef<WebView>(null)
@@ -60,6 +63,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			timestamp: Date.now()
 		}
 
+		if (!('startTimestamp' in data)) {
+			item.startTimestamp = Date.now()
+		}
+
 		if (data.provider !== provider && isSeries(data.type)) {
 			item.episode = null
 			item.season = null
@@ -67,9 +74,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			// TODO: reset history with episode and season
 			// item.releasedEpisodes = null
 			// item.notifyTranslation = null
+			console.log('watch change provider:', item)
 		}
 
-		console.log('watchHistory init', item)
 		mergeItem({ watchHistory: { [`${data.id}`]: item } })
 
 		const subscription = AppState.addEventListener('change', nextAppState => {
@@ -86,6 +93,54 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		setIsLoading(true)
 		setError(null)
 
+		console.log('watch init:', data)
+
+		if (!isKPorIMDB) {
+			switch (true) {
+				case String(data.id).startsWith('ALLOHA'): {
+					const id = String(data.id).split(':')[1]
+					const iframeUrl = `https://theatre.newplayjj.com:9443/?token_movie=${id}&token=${Config.ALLOHA_TOKEN}` // TODO change url
+
+					setProviders([{ iframeUrl, source: 'ALLOHA', translations: [] }])
+					setProvider('ALLOHA')
+					setError(null)
+					break
+				}
+				case String(data.id).startsWith('COLLAPS'): {
+					const id = String(data.id).split(':')[1]
+					const iframeUrl = `https://api.linktodo.ws/embed/movie/${id}` // TODO change url
+
+					setProviders([{ iframeUrl, source: 'COLLAPS', translations: [] }])
+					setProvider('COLLAPS')
+					setError(null)
+					break
+				}
+				case String(data.id).startsWith('KODIK'): {
+					const id = String(data.id).split(':')[1]
+
+					getKodikPlayers({ id: `KODIK:${id}` }).then(({ data: kodik_data, error, message }) => {
+						if (error) {
+							setError({ error, message })
+							console.error('getKodikPlayers:', { movie: route.params.data, error, message })
+						}
+						if (kodik_data && kodik_data.length > 0) {
+							setProviders(kodik_data.reverse())
+							setProvider(provider ?? route.params.data.provider ?? kodik_data[0]?.source)
+							setError(null)
+						} else {
+							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
+						}
+					})
+					break
+				}
+				case true: {
+					setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
+				}
+			}
+
+			return
+		}
+
 		getKinoboxPlayers(data).then(({ data, error, message }) => {
 			if (error) {
 				setIsLoading(false)
@@ -100,10 +155,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
 					setError(null)
 				} else {
-					const watchHistory = store.getState().settings.settings.watchHistory[`${route.params.data.id}`] as WatchHistory | undefined
-					console.log('watchHistory:', watchHistory)
+					const watchHistory = store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] as WatchHistory | undefined
 
-					getKodikPlayers(route.params.data, watchHistory).then(({ data: kodik_data, error, message }) => {
+					getKodikPlayers(route.params.data as { id: number | `KODIK:${string}` | `tt${number}` }, watchHistory).then(({ data: kodik_data, error, message }) => {
 						if (error) {
 							console.error('getKodikPlayers:', { movie: route.params.data, error, message })
 						}
@@ -468,6 +522,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						{currentProvider && providers ? (
 							providers.map(it => {
 								const isActive = currentProvider.source === it.source
+								const detail = [it.translations[0]?.name, it.translations[0]?.quality].filter(it => !!it).join(', ')
 
 								return (
 									<Button key={it.source} flexDirection='row' alignItems='center' onPress={() => handleProviderChange(it)}>
@@ -475,7 +530,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 										<Text style={{ fontSize: 14, color: theme.colors.text100, flex: 1 }}>
 											{watchHistoryProviderToString(it.source)}
 
-											{`${it.title ? `: ${it.title} ` : ' '}(${[it.translations[0]?.name, it.translations[0]?.quality].filter(it => !!it).join(', ')})`}
+											{`${it.title ? `: ${it.title} ` : ' '}${detail.length === 0 ? '' : `(${detail})`}`}
 										</Text>
 									</Button>
 								)

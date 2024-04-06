@@ -1,41 +1,24 @@
 import { Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
 import { AddToFavoriteIcon, RemoveFromFavoriteIcon } from '@icons'
-import { IFilmBaseInfo, IPersonBaseInfoResults, ITvSeriesBaseInfo } from '@store/kinopoisk'
+import { MovieType } from '@store/kinopoisk'
 import { Bookmarks } from '@store/settings'
 import { FC } from 'react'
 import { useStyles } from 'react-native-unistyles'
 
 interface Props {
-	data: IFilmBaseInfo | ITvSeriesBaseInfo | IPersonBaseInfoResults
+	data: { title: string; poster: string | null; year: number | null; id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType } | { title: string; poster: string | null; id: number; type: 'Person' }
 }
 
 export const FavoritesButton: FC<Props> = ({ data }) => {
 	const { theme } = useStyles()
 	const { mergeItem, removeItemByPath } = useActions()
-	const bookmarks = useTypedSelector(state => state.settings.settings.bookmarks[`${data.__typename}:${data.id}`]) as Bookmarks | undefined
+	const bookmarks = useTypedSelector(state => state.settings.settings.bookmarks[`${data.type}:${data.id}`]) as Bookmarks | undefined
 
 	return (
 		<Button
 			onPress={async () => {
-				const item: Bookmarks =
-					bookmarks ??
-					(data.__typename === 'Person'
-						? {
-								id: data.id,
-								type: data.__typename,
-								title: data.name ?? data.originalName,
-								poster: data.poster?.avatarsUrl ?? null,
-								timestamp: Date.now()
-						  }
-						: {
-								id: data.id,
-								type: data.__typename,
-								title: data.title.russian ?? data.title.localized ?? data.title.original ?? '',
-								poster: data.poster?.avatarsUrl ?? null,
-								timestamp: Date.now(),
-								year: data.productionYear ?? ('releaseYears' in data ? data.releaseYears[0]?.start : null)
-						  })
+				const item: Bookmarks = bookmarks ?? { ...data, timestamp: Date.now() }
 
 				if (bookmarks) {
 					removeItemByPath(['bookmarks', `${item.type}:${item.id}`])

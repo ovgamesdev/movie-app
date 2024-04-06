@@ -1,8 +1,8 @@
 import { Movie, MovieList, Person } from '@components/molecules/search'
-import { useActions, useTypedSelector } from '@hooks'
+import { useActions } from '@hooks'
 import { navigation } from '@navigation'
 import { ISuggestSearchResults } from '@store/kinopoisk'
-import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SearchHistory as SearchHistoryType } from '@store/settings'
+import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson } from '@store/settings'
 import { movieListUrlToFilters } from '@utils'
 import type { FC } from 'react'
 import { Text, View } from 'react-native'
@@ -14,40 +14,21 @@ type Props = {
 
 export const SearchResults: FC<Props> = ({ data }) => {
 	const { styles } = useStyles(stylesheet)
-
-	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
-	const { setItem } = useActions()
-
-	const searchHistoryData = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
-
-	// TODO maybe move to action
-	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
-		const COUNT_SAVE_TO_HISTORY = 15 // TODO to settings?
-
-		const filteredData = searchHistoryData.filter(it => !(it.id === props.id && it.type === props.type))
-		const updatedData = [{ ...props, timestamp: Date.now() }, ...filteredData].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_HISTORY)
-
-		const newSearchHistory = updatedData.reduce<{ [key: string]: SearchHistoryType }>((acc, item) => {
-			acc[`${item.type}:${item.id}`] = item
-			return acc
-		}, {})
-
-		setItem({ searchHistory: newSearchHistory })
-	}
+	const { addItemToSearchHistory } = useActions()
 
 	const onMovieList = (data: Omit<SearchHistoryMovieList, 'timestamp'>) => {
-		addToHistory(data)
+		addItemToSearchHistory(data)
 		const { isFilter, slug, filters } = movieListUrlToFilters(data.url)
 		navigation.push('MovieListSlug', { data: isFilter ? { slug: '', filters } : { slug } })
 	}
 
 	const onMovie = (data: Omit<SearchHistoryMovie, 'timestamp'>) => {
-		addToHistory(data)
+		addItemToSearchHistory(data)
 		navigation.push('Movie', { data: { id: data.id, type: data.type } })
 	}
 
 	const onPerson = (data: Omit<SearchHistoryPerson, 'timestamp'>) => {
-		addToHistory(data)
+		addItemToSearchHistory(data)
 		navigation.push('Person', { data: { id: data.id } })
 	}
 
@@ -78,7 +59,7 @@ export const SearchResults: FC<Props> = ({ data }) => {
 			) : null}
 
 			{data.persons.length > 0 ? (
-				<View style={styles.container}>
+				<View style={[styles.container, styles.line]}>
 					<Text style={styles.title}>Персоны</Text>
 
 					{data.persons.map(({ person }) => (person === null ? null : <Person key={person.id} onPress={onPerson} item={person} />))}

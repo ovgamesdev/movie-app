@@ -1,8 +1,10 @@
 import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from '@store'
-import { AtLeastOneMergeSettings, AtLeastOneSettings, IInitialStateSettings, ISettings, SettingKey, settingsExtraActions } from '@store/settings'
+import { AtLeastOneMergeSettings, AtLeastOneSettings, IInitialStateSettings, ISettings, SearchHistory, SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SettingKey, settingsExtraActions } from '@store/settings'
 import mergeOptions from 'merge-options'
 import { ToastAndroid } from 'react-native'
+
+const COUNT_SAVE_TO_HISTORY = 15
 
 const initialState: IInitialStateSettings = {
 	settings: {
@@ -50,6 +52,20 @@ const settingsSlice = createSlice({
 			if (state.settings[payload[0]] && (state.settings[payload[0]] as any)[payload[1]]) {
 				delete (state.settings[payload[0]] as any)[payload[1]]
 			}
+		},
+		addItemToSearchHistory: (state, { payload }: PayloadAction<Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>>) => {
+			const searchHistoryData = Object.values(state.settings.searchHistory).sort((a, b) => b.timestamp - a.timestamp)
+
+			const filteredData = searchHistoryData.filter(it => !(it.id === payload.id && it.type === payload.type))
+			const updatedData = [{ ...payload, timestamp: Date.now() }, ...filteredData].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_HISTORY)
+
+			const newSearchHistory = updatedData.reduce<{ [key: string]: SearchHistory }>((acc, item) => {
+				acc[`${item.type}:${item.id}`] = item
+				return acc
+			}, {})
+
+			state.settings._settings_time = Date.now()
+			state.settings.searchHistory = newSearchHistory
 		}
 	},
 	extraReducers: builder => {

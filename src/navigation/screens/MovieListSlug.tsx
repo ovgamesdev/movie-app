@@ -86,6 +86,7 @@ export const Filter: FC<{ id: string } & FiltersProps> = ({ id, onResetPage, fil
 				isActive={isActive}
 				buttonColor={isDisabled ? theme.colors.bg200 + '66' : undefined}
 				textColor={isDisabled ? theme.colors.text100 + '66' : undefined}
+				activeTextColor={theme.colors.primary300}
 				disabled={isDisabled}
 				activeButtonColor={theme.colors.primary100}
 				activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })}

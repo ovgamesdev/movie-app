@@ -36,7 +36,7 @@ const SearchHistoryItem: FC<Props> = ({ item, onPress, onRemove }) => {
 				<Text numberOfLines={2} style={{ color: theme.colors.text100, fontSize: 15 }}>
 					{item.title}
 				</Text>
-				<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{item.type === 'TvSeries' || item.type === 'MiniSeries' || item.type === 'TvShow' ? 'сериал' : null}</Text>
+				<Text style={{ color: theme.colors.text200, fontSize: 13 }}>{[item.type === 'TvSeries' || item.type === 'MiniSeries' || item.type === 'TvShow' ? 'сериал' : null, 'year' in item ? item.year : null].filter(it => !!it).join(', ')}</Text>
 			</View>
 			<View style={{ justifyContent: 'center' }}>
 				<Button onPress={handleOnRemove} style={{ height: 30, width: 30 }} transparent justifyContent='center' alignItems='center'>
@@ -52,24 +52,10 @@ export const SearchHistory = () => {
 	const { theme } = useStyles()
 
 	const searchHistory = useTypedSelector(state => state.settings.settings.searchHistory)
-	const { setItem, removeItemByPath } = useActions()
+	const { removeItemByPath, addItemToSearchHistory } = useActions()
 
 	const data = Object.values(searchHistory).sort((a, b) => b.timestamp - a.timestamp)
 
-	// TODO maybe move to action
-	const addToHistory = (props: Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>) => {
-		const COUNT_SAVE_TO_HISTORY = 15 // TODO to settings?
-
-		const filteredData = data.filter(it => !(it.id === props.id && it.type === props.type))
-		const updatedData = [{ ...props, timestamp: Date.now() }, ...filteredData].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_HISTORY)
-
-		const newSearchHistory = updatedData.reduce<{ [key: string]: SearchHistoryType }>((acc, item) => {
-			acc[`${item.type}:${item.id}`] = item
-			return acc
-		}, {})
-
-		setItem({ searchHistory: newSearchHistory })
-	}
 	const removeFromHistory = (item: SearchHistoryMovie | SearchHistoryPerson | SearchHistoryMovieList) => {
 		removeItemByPath(['searchHistory', `${item.type}:${item.id}`])
 	}
@@ -89,17 +75,17 @@ export const SearchHistory = () => {
 			case 'MiniSeries':
 			case 'TvShow':
 			case 'Video': {
-				addToHistory(data)
+				addItemToSearchHistory(data)
 				navigation.push('Movie', { data: { id: data.id, type: data.type } })
 				break
 			}
 			case 'Person': {
-				addToHistory(data)
+				addItemToSearchHistory(data)
 				navigation.push('Person', { data: { id: data.id } })
 				break
 			}
 			case 'MovieListMeta': {
-				addToHistory(data)
+				addItemToSearchHistory(data)
 				const { isFilter, slug, filters } = movieListUrlToFilters(data.url)
 				navigation.push('MovieListSlug', { data: isFilter ? { slug: '', filters } : { slug } })
 				break

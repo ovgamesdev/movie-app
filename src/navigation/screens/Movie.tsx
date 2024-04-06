@@ -5,7 +5,9 @@ import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, 
 import { useTypedSelector, useUpdateBookmarks, useUpdateWatchHistory } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { store } from '@store'
 import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
+import { BookmarksMovie, SearchHistoryMovie, WatchHistory } from '@store/settings'
 import { formatDate, isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { FC, useEffect, useState } from 'react'
 import { Dimensions, Platform, ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
@@ -16,12 +18,14 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 type Props = NativeStackScreenProps<RootStackParamList, 'Movie'>
 
 export const Movie: FC<Props> = ({ route }) => {
+	const isKP = !isNaN(Number(route.params.data.id)) // number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
+
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
 
-	const { data: dataFilm, isFetching: isFetchingFilm, isError: isErrorFilm, refetch: refetchFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id }, { skip: route.params.data.type !== 'Film' && route.params.data.type !== 'Video' }) // TODO isSeries
-	const { data: dataTvSeries, isFetching: isFetchingTvSeries, isError: isErrorTvSeries, refetch: refetchTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id }, { skip: route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow' }) // TODO isSeries
+	const { data: dataFilm, isFetching: isFetchingFilm, isError: isErrorFilm, refetch: refetchFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'Film' && route.params.data.type !== 'Video') }) // TODO isSeries
+	const { data: dataTvSeries, isFetching: isFetchingTvSeries, isError: isErrorTvSeries, refetch: refetchTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow') }) // TODO isSeries
 
 	const data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
 	const isFetching = isFetchingFilm || isFetchingTvSeries
@@ -60,11 +64,76 @@ export const Movie: FC<Props> = ({ route }) => {
 				})
 		}
 
-		init()
+		if (isKP) init()
 	}, [])
 
 	useUpdateWatchHistory(data)
 	useUpdateBookmarks(data)
+
+	if (!isKP) {
+		const data = { ...route.params.data, ...route.params.other }
+
+		const watchHistory = store.getState().settings.settings.watchHistory[`${data.id as number | `tt${number}`}`] as WatchHistory | undefined
+		const bookmarks = store.getState().settings.settings.bookmarks[`${data.type}:${data.id}`] as BookmarksMovie | undefined
+		const searchHistory = store.getState().settings.settings.searchHistory[`${data.type}:${data.id as number | `tt${number}`}`] as SearchHistoryMovie | undefined
+
+		const movie =
+			route.params.other !== undefined || watchHistory !== undefined || bookmarks !== undefined || searchHistory !== undefined
+				? {
+						...data,
+						id: data.id as number | `tt${number}`,
+						title: (watchHistory?.title ?? bookmarks?.title ?? searchHistory?.title ?? route.params.other?.title)!,
+						poster: (watchHistory?.poster ?? bookmarks?.poster ?? searchHistory?.poster ?? route.params.other?.poster)!,
+						year: (watchHistory?.year ?? bookmarks?.year ?? searchHistory?.year ?? route.params.other?.year)!
+				  }
+				: null
+
+		if (!movie) {
+			// TODO to error
+			return null
+		}
+
+		return (
+			<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
+				<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), paddingTop: 50 + insets.top }}>
+					<View style={styles.details}>
+						<View style={styles.detailsInfoWrapper}>
+							<View style={styles.detailsInfoContainer}>
+								<View style={styles.portraitCover}>
+									<View style={[styles.portraitCoverPosterImageStyle, { width: 120, aspectRatio: 2 / 3 }]}>
+										<View style={{ borderRadius: 6 }}>
+											<ImageBackground source={{ uri: normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ width: 120, aspectRatio: 2 / 3 }} borderRadius={6} />
+										</View>
+									</View>
+								</View>
+								<View style={styles.detailsInfo}>
+									<Text style={styles.detailsInfoTitle} selectable={!Platform.isTV}>
+										{movie.title} <Text>{isSeries(movie.type) ? `(сериал${movie.year ? ' ' + movie.year : ''})` : movie.year ? `(${movie.year})` : ''}</Text>
+									</Text>
+
+									{/* <Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>
+										{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
+										{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
+									</Text> */}
+								</View>
+							</View>
+
+							<View>
+								<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
+									<WatchButton data={movie} />
+									<FavoritesButton data={movie} />
+								</TVFocusGuideView>
+							</View>
+							<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
+							<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
+								id: {movie.id}
+							</Text>
+						</View>
+					</View>
+				</ScrollView>
+			</TVFocusGuideView>
+		)
+	}
 
 	if (isFetching) {
 		return (
@@ -164,8 +233,8 @@ export const Movie: FC<Props> = ({ route }) => {
 
 						<View>
 							<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
-								<WatchButton data={data} />
-								<FavoritesButton data={data} />
+								<WatchButton data={{ id: data.id, poster: data.poster?.avatarsUrl ?? null, title: (data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english)!, type: data.__typename, year: (isSeriesData(data) ? data.releaseYears[0]?.start : data.productionYear) ?? null }} />
+								<FavoritesButton data={{ id: data.id, poster: data.poster?.avatarsUrl ?? null, title: (data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english)!, type: data.__typename, year: (isSeriesData(data) ? data.releaseYears[0]?.start : data.productionYear) ?? null }} />
 							</TVFocusGuideView>
 
 							<Text style={styles.sectionTitleAbout}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>

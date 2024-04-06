@@ -116,7 +116,7 @@ export const Pagination: FC<Props> = ({ pageCount, currentPage, pageNeighbours =
 		},
 		label: {
 			fontSize: 13,
-			color: theme.colors.text100
+			color: theme.colors.text200
 		}
 	})
 

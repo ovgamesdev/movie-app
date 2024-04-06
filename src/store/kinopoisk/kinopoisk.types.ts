@@ -39,7 +39,7 @@ export interface IGraphqlMovie {
 
 export interface IGraphqlSuggestMovie {
 	contentId: string | null
-	id: number
+	id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
 	poster: Poster | null
 	productionYear?: number | null
 	rating: Rating
