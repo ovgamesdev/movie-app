@@ -15,7 +15,14 @@ const config: BackgroundFetchConfig = {
 	requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY
 }
 
-type KodikItemType = { last_season: number; last_episode: number; translation: { title: string; type: string } }
+type KodikItemType = {
+	season_number: number
+	part_number: number
+	last_season: number
+	last_episode: number
+	translation: { title: string; type: string }
+}
+
 const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { seasons: KodikItemType[]; releasedEpisodes: number; total: number }): NewEpisodesType => {
 	let remainingEpisodes = total - releasedEpisodes
 	const res: NewEpisodesType = {}
@@ -51,7 +58,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 			// https://videocdn.tv/api/short?api_token=xxx&kinopoisk_id=[kp_id]
 			// case provider?.startsWith('VOIDBOOST'):
 			case provider?.startsWith('KODIK'): {
-				const url = `https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`
+				const url = `https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}&limit=100`
 
 				const response = await fetch(url)
 				const res = await response.json()
@@ -72,7 +79,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 					}
 
 					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title === notifyTranslation))
-						.reduce((acc, cur) => {
+						.reduce<KodikItemType[]>((acc, cur) => {
 							const title = [cur.title, cur.title_orig, cur.other_title].filter(it => !!it).join(' / ')
 							const part_match = /(\d+(?=\s+часть))|((?<=часть\s+)\d+)/gi.exec(title)
 							const part_number = part_match ? parseInt(part_match[0]) : 0
@@ -80,15 +87,15 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 							const season_match = /(?<=ТВ-)\d+/gi.exec(title)
 							const season_number = season_match ? parseInt(season_match[0]) : cur.last_season ?? 0
 
-							const existingItem = acc.find((item: { season_number: number; part_number: number }) => item.season_number === season_number && item.part_number === part_number)
+							const existingItem = acc.find(item => item.season_number === season_number && item.part_number === part_number)
 
-							if (!existingItem) {
-								acc.push({ season_number, part_number, ...cur })
+							if (!existingItem || cur.last_episode > existingItem.last_episode) {
+								return [...acc.filter(item => `${item.season_number}.${item.part_number}` !== `${season_number}.${part_number}`), { season_number, part_number, ...cur }]
 							}
 
 							return acc
 						}, [])
-						.sort((a: { season_number: number; part_number: number }, b: { season_number: number; part_number: number }) => {
+						.sort((a, b) => {
 							if (a.season_number !== b.season_number) {
 								return a.season_number - b.season_number
 							} else {
@@ -310,18 +317,20 @@ export const backgroundTask = async (taskId: string) => {
 			i = i + 1
 			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${movie.type} "${rusToLatin(movie.title)}"`)
 
+			let movieProvider: WatchHistoryProvider | null = movie.provider
 			if (movie.provider === null || movie.provider.startsWith('provider')) {
 				await delay(500)
 				console.log(`[BackgroundFetch] search provider id:${movie.id}`)
 
 				const { data } = await getKinoboxPlayers(movie)
 				if (data === null || data.length === 0) continue
+				movieProvider = data[0].source
 			}
 
 			const newWatchHistoryData: Partial<WatchHistory> = { status: 'new', timestamp: Date.now() }
 
 			if (movie.releasedEpisodes !== undefined) {
-				const newSeries = await fetchNewSeries(movie)
+				const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
 
 				if (newSeries && newSeries.total > movie.releasedEpisodes) {
 					displayNotificationNewEpisode(movie, { newSeries })
@@ -334,7 +343,7 @@ export const backgroundTask = async (taskId: string) => {
 				displayNotificationNewFilm(movie)
 
 				if (isSeries(movie.type)) {
-					const newSeries = await fetchNewSeries(movie)
+					const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
 					if (newSeries && newSeries.total > 0) {
 						newWatchHistoryData.releasedEpisodes = newSeries.total
 						newWatchHistoryData.provider = newSeries.provider

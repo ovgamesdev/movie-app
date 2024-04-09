@@ -65,7 +65,7 @@ export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }):
 
 export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` | `KODIK:${string}` }, data?: { season?: number | null; episode?: string | null; translation?: { id: number; title: string } | null; lastTime?: number | null }): Promise<kinoboxPlayers> => {
 	try {
-		const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('KODIK:') ? 'id' : String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).replace('KODIK:', '')}&token=${Config.KODIK_TOKEN}&with_episodes=true`)
+		const res = await fetch(`https://kodikapi.com/search?${String(id).startsWith('KODIK:') ? 'id' : String(id).startsWith('tt') ? 'imdb_id' : 'kinopoisk_id'}=${String(id).replace('KODIK:', '')}&token=${Config.KODIK_TOKEN}&with_episodes=true&limit=100`)
 
 		if (!res.ok) {
 			return { data: null, error: res.statusText, message: await res.text() }

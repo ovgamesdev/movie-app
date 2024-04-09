@@ -43,7 +43,7 @@ export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, cle
 	const isRight = !!clearable
 
 	return (
-		<TVFocusGuideView style={{ flexDirection: 'row', flex }} autoFocus trapFocusLeft trapFocusRight>
+		<TVFocusGuideView style={{ flexDirection: 'row', flex }} autoFocus>
 			<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1} flexDirection='row' alignItems='center' borderStyle={isRight ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}>
 				{icon === 'search' ? <SearchIcon width={20} height={20} fill={theme.colors.text100} style={{ marginLeft: 10 }} /> : null}
 				{/* FIXME: If there is no onBlur={() => buttonRef.current?.requestTVFocus()}, then when unfocusing from TextInput and trying to focus on it next time, it does not focus on button */}

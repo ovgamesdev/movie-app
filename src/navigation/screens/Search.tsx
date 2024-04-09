@@ -1,6 +1,7 @@
 import { ActivityIndicator, Button, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults, SearchResultsProvider } from '@components/organisms'
 import { useActions, useDebounce, useNavigation, useTypedDispatch } from '@hooks'
+import { ArrowBackIcon } from '@icons'
 import { HomeTabParamList } from '@navigation'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -163,7 +164,7 @@ export const Search: FC<Props> = ({ route }) => {
 	const defaultFilters = route.params?.data ?? {}
 	const insets = useSafeAreaInsets()
 	const navigation = useNavigation()
-	const { styles } = useStyles(stylesheet)
+	const { styles, theme } = useStyles(stylesheet)
 
 	const [isExpandedSearch, setIsExpandedSearch] = useState(false)
 
@@ -270,7 +271,7 @@ export const Search: FC<Props> = ({ route }) => {
 
 				// KODIK
 				if (data.find(it => it.source === 'KODIK')) {
-					const response = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}`)
+					const response = await fetch(`https://kodikapi.com/search?${String(id).startsWith('tt') ? 'imdb' : 'kinopoisk'}_id=${id}&token=${Config.KODIK_TOKEN}&limit=1`)
 
 					if (response.ok) {
 						const json = await response.json()
@@ -339,7 +340,12 @@ export const Search: FC<Props> = ({ route }) => {
 	return (
 		<TVFocusGuideView style={[styles.container, { paddingTop: 10 + insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
 			<View style={styles.inputContainer}>
-				<Input ref={ref} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} onVoice={setKeyword} placeholder={isExpandedSearch ? 'Расширенный поиск: фильмы, сериалы' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+				{isExpandedSearch ? (
+					<Button onPress={() => setIsExpandedSearch(false)} style={{ height: 40 }} paddingVertical={20} paddingHorizontal={10} alignItems='center' justifyContent='center'>
+						<ArrowBackIcon width={20} height={20} fill={theme.colors.text100} style={{}} />
+					</Button>
+				) : null}
+				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} onVoice={setKeyword} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
 			</View>
 
 			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
@@ -405,7 +411,9 @@ const stylesheet = createStyleSheet(theme => ({
 		paddingTop: 10
 	},
 	inputContainer: {
-		paddingHorizontal: 10
+		paddingHorizontal: 10,
+		flexDirection: 'row',
+		gap: 10
 	},
 	dataContainer: {
 		height: 160,
