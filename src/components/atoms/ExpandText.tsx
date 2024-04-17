@@ -35,7 +35,7 @@ const findX = (px: number, pxValues: number[], xValues: number[]): number => {
 	return newX
 }
 
-export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>; textMoreStyle?: StyleProp<TextStyle> }> = ({ children, numberOfLines, containerStyle, style: textStyle, textMoreStyle, ...props }) => {
+export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>; textMoreStyle?: StyleProp<TextStyle> }> = ({ children, numberOfLines = 1, containerStyle, style: textStyle, textMoreStyle, ...props }) => {
 	const [isExpand, setIsExpand] = useState(false)
 	const [expandLines, setExpandLines] = useState<TextLayoutLine[] | null>(null)
 
@@ -70,10 +70,11 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 
 	// console.log('data:', expandLines)
 
-	const lineHeight = expandLines?.[(numberOfLines ?? 1) - 1]?.height
+	const lineHeight = expandLines?.[numberOfLines - 1]?.height
+	const numberOfExpandLines = expandLines && expandLines.length - 1 === numberOfLines ? expandLines.length : numberOfLines
 
 	return (
-		<Button padding={0} buttonColor='transparent' style={style} disabled={!(!!numberOfLines && !!expandLines && expandLines.length > numberOfLines)} onPress={() => setIsExpand(isExpand => !isExpand)}>
+		<Button padding={0} buttonColor='transparent' style={style} disabled={!(!!numberOfExpandLines && !!expandLines && expandLines.length > numberOfExpandLines)} onPress={() => setIsExpand(isExpand => !isExpand)}>
 			<Text {...props} style={[textStyle, isLoadedLines && { color: 'transparent', position: 'absolute' }]} onTextLayout={e => setExpandLines(e.nativeEvent.lines)} numberOfLines={isExpand ? undefined : numberOfLines}>
 				{children}
 				{/* 00{'\n'}
@@ -101,7 +102,7 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 					? (isExpand ? expandLines : expandLines.slice(0, numberOfLines)).map((expandLine, index) => {
 							const expandLineWidth = expandLine.width < 40 ? 40 : expandLine.width
 
-							return !isExpand && expandLines.length > numberOfLines! && index === numberOfLines! - 1 ? (
+							return !isExpand && expandLines.length > numberOfExpandLines! && index === numberOfExpandLines! - 1 ? (
 								// <Text key={index} style={[textStyle, { lineHeight: lineHeight }]}>
 								// 	{expandLine.text.substring(0, expandLine.text.length - 7)}
 								// 	<Text style={[textStyle, { lineHeight: lineHeight, color: theme.colors.text100 }, textMoreStyle]}>{' …ещё'}</Text>
