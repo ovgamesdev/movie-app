@@ -1,11 +1,11 @@
 import { ActivityIndicator, Button, FocusableFlatList, ImageBackground, Rating } from '@components/atoms'
 import { FavoritesButton, FilmographyItems } from '@components/organisms'
-import { useOrientation, useTypedSelector, useUpdateBookmarks } from '@hooks'
+import { useActions, useOrientation, useTypedSelector } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useGetPersonBaseInfoQuery } from '@store/kinopoisk'
 import { declineAge, declineChildren, getSpouseStatus, normalizeUrlWithNull } from '@utils'
-import { useRef, type FC } from 'react'
+import { useEffect, useRef, type FC } from 'react'
 import { ScrollView, StyleProp, TVFocusGuideView, Text, View, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -16,13 +16,18 @@ export const Person: FC<Props> = ({ route }) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { theme } = useStyles()
+	const { updateBookmarks } = useActions()
 	const orientation = useOrientation()
 
 	const ref = useRef<ScrollView>(null)
 
 	const { data, isFetching, isError, refetch } = useGetPersonBaseInfoQuery({ personId: route.params.data.id })
 
-	useUpdateBookmarks(data)
+	useEffect(() => {
+		const updateData = data ? { id: data.id, poster: data.poster?.avatarsUrl ?? null, title: (data.name ?? data.originalName)!, type: data.__typename } : null
+
+		updateBookmarks(updateData)
+	}, [data])
 
 	if (isFetching) {
 		return (
@@ -88,7 +93,7 @@ export const Person: FC<Props> = ({ route }) => {
 						</View>
 						<View style={{}}>
 							<TVFocusGuideView style={{ marginBottom: 5, marginTop: 10, flexDirection: 'row', gap: 10 }} autoFocus>
-								<FavoritesButton data={data} />
+								<FavoritesButton data={{ id: data.id, poster: data.poster?.avatarsUrl ?? null, title: (data.name ?? data.originalName)!, type: data.__typename }} />
 							</TVFocusGuideView>
 
 							<Text style={{ color: theme.colors.text100, fontSize: 22, fontWeight: '600', marginTop: 48, marginBottom: 9 }}>О персоне</Text>

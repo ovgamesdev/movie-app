@@ -2,7 +2,7 @@ import { ActivityIndicator, Button, ExpandText, ImageBackground } from '@compone
 import { CinematicBackdropImage, ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { FavoritesButton } from '@components/organisms'
 import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { useTypedSelector, useUpdateBookmarks, useUpdateWatchHistory } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { store } from '@store'
@@ -23,6 +23,7 @@ export const Movie: FC<Props> = ({ route }) => {
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
+	const { updateWatchHistory, updateBookmarks } = useActions()
 
 	const { data: dataFilm, isFetching: isFetchingFilm, isError: isErrorFilm, refetch: refetchFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'Film' && route.params.data.type !== 'Video') }) // TODO isSeries
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries, isError: isErrorTvSeries, refetch: refetchTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow') }) // TODO isSeries
@@ -67,8 +68,29 @@ export const Movie: FC<Props> = ({ route }) => {
 		if (isKP) init()
 	}, [])
 
-	useUpdateWatchHistory(data)
-	useUpdateBookmarks(data)
+	useEffect(() => {
+		const dataImdb = { ...route.params.data, ...route.params.other }
+
+		const watchHistory = store.getState().settings.settings.watchHistory[`${dataImdb.id as number | `tt${number}`}`] as WatchHistory | undefined
+		const bookmarks = store.getState().settings.settings.bookmarks[`${dataImdb.type}:${dataImdb.id}`] as BookmarksMovie | undefined
+		const searchHistory = store.getState().settings.settings.searchHistory[`${dataImdb.type}:${dataImdb.id as number | `tt${number}`}`] as SearchHistoryMovie | undefined
+
+		const movieData =
+			route.params.other !== undefined || watchHistory !== undefined || bookmarks !== undefined || searchHistory !== undefined
+				? {
+						...dataImdb,
+						id: dataImdb.id as number | `tt${number}`,
+						title: (dataImdb.title ?? searchHistory?.title ?? watchHistory?.title ?? bookmarks?.title)!,
+						poster: (dataImdb.poster ?? searchHistory?.poster ?? watchHistory?.poster ?? bookmarks?.poster)!,
+						year: (dataImdb.year ?? searchHistory?.year ?? watchHistory?.year ?? bookmarks?.year)!
+				  }
+				: null
+
+		const updateData = isKP ? (data ? { id: data.id, poster: data.poster?.avatarsUrl ?? null, title: (data.title.russian ?? data.title.localized ?? data.title.original ?? data.title.english)!, type: data.__typename, year: (isSeriesData(data) ? data.releaseYears[0]?.start : data.productionYear) ?? null } : null) : movieData
+
+		updateBookmarks(updateData)
+		updateWatchHistory(updateData)
+	}, [data])
 
 	if (!isKP) {
 		const data = { ...route.params.data, ...route.params.other }
@@ -82,11 +104,13 @@ export const Movie: FC<Props> = ({ route }) => {
 				? {
 						...data,
 						id: data.id as number | `tt${number}`,
-						title: (watchHistory?.title ?? bookmarks?.title ?? searchHistory?.title ?? route.params.other?.title)!,
-						poster: (watchHistory?.poster ?? bookmarks?.poster ?? searchHistory?.poster ?? route.params.other?.poster)!,
-						year: (watchHistory?.year ?? bookmarks?.year ?? searchHistory?.year ?? route.params.other?.year)!
+						title: (data.title ?? searchHistory?.title ?? watchHistory?.title ?? bookmarks?.title)!,
+						poster: (data.poster ?? searchHistory?.poster ?? watchHistory?.poster ?? bookmarks?.poster)!,
+						year: (data.year ?? searchHistory?.year ?? watchHistory?.year ?? bookmarks?.year)!
 				  }
 				: null
+
+		updateWatchHistory(movie)
 
 		if (!movie) {
 			// TODO to error

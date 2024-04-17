@@ -1,6 +1,7 @@
 import { PayloadAction, Unsubscribe, createSlice, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from '@store'
-import { AtLeastOneMergeSettings, AtLeastOneSettings, IInitialStateSettings, ISettings, SearchHistory, SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SettingKey, settingsExtraActions } from '@store/settings'
+import { MovieType } from '@store/kinopoisk'
+import { AtLeastOneMergeSettings, AtLeastOneSettings, Bookmarks, IInitialStateSettings, ISettings, SearchHistory, SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, SettingKey, WatchHistory, settingsExtraActions } from '@store/settings'
 import mergeOptions from 'merge-options'
 import { ToastAndroid } from 'react-native'
 
@@ -66,6 +67,34 @@ const settingsSlice = createSlice({
 
 			state.settings._settings_time = Date.now()
 			state.settings.searchHistory = newSearchHistory
+		},
+		updateWatchHistory: (state, { payload }: PayloadAction<{ title: string; poster: string | null; year: number | null; id: number | `tt${number}`; type: MovieType } | null>) => {
+			if (!payload) return
+			const { id, ...data } = payload
+
+			const watchHistory = state.settings.watchHistory[`${id}`] as WatchHistory | undefined
+			if (!watchHistory) return
+
+			if (data.title !== watchHistory.title || data.poster !== watchHistory.poster || data.year !== watchHistory.year || data.type !== watchHistory.type) {
+				console.log('change watch history', data)
+				state.settings.watchHistory[`${id}`] = { ...watchHistory, ...data }
+			} else {
+				console.log('use old watch history', data)
+			}
+		},
+		updateBookmarks: (state, { payload }: PayloadAction<{ title: string; poster: string | null; year: number | null; id: number | `tt${number}`; type: MovieType } | { title: string; poster: string | null; id: number; type: 'Person' } | null>) => {
+			if (!payload) return
+			const { id, ...data } = payload
+
+			const bookmarks = state.settings.bookmarks[`${data.type}:${id}`] as Bookmarks | undefined
+			if (!bookmarks) return
+
+			if (data.title !== bookmarks.title || data.poster !== bookmarks.poster || data.type !== bookmarks.type) {
+				console.log('change bookmarks', data)
+				state.settings.bookmarks[`${data.type}:${id}`] = { ...bookmarks, ...data, type: data.type as never }
+			} else {
+				console.log('use old bookmarks', data)
+			}
 		}
 	},
 	extraReducers: builder => {
