@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { authActions, authExtraActions } from '@store/auth'
 import { backgroundRestrictionActions, backgroundRestrictionExtraActions } from '@store/backgroundRestriction'
 import { itemMenuModalActions } from '@store/itemMenuModal'
+import { noticesActions, noticesExtraActions } from '@store/notices'
 import { safeAreaActions } from '@store/safeArea'
 import { settingsActions, settingsExtraActions } from '@store/settings'
 import { updateActions, updateExtraActions } from '@store/update'
@@ -19,7 +20,9 @@ const rootActions = {
 	...safeAreaActions,
 	...backgroundRestrictionActions,
 	...backgroundRestrictionExtraActions,
-	...itemMenuModalActions
+	...itemMenuModalActions,
+	...noticesActions,
+	...noticesExtraActions
 }
 
 export const useActions = () => {

@@ -21,6 +21,13 @@ export const WatchButton: FC<Props> = ({ data }) => {
 	const status: Status = providers === 'loading' ? 'loading' : providers === 'error' ? 'error' : providers ? (watchHistory ? (watchHistory.status === 'end' ? 'end' : 'continue') : 'watch') : watchHistory?.notify ? 'on-notify' : 'off-notify'
 
 	const fetch = useCallback(() => {
+		const isKPorIMDB = !isNaN(Number(data.id)) || String(data.id).startsWith('tt')
+
+		if (!isKPorIMDB) {
+			setProviders([{}])
+			return
+		}
+
 		getKinoboxPlayers(data).then(it => setProviders(it.data ? (it.data.length > 0 ? it.data : null) : 'error'))
 	}, [])
 

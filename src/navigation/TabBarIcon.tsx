@@ -1,4 +1,4 @@
-import { BookmarksIcon, HomeIcon, SearchIcon, SettingsIcon } from '@icons'
+import { BookmarksIcon, HomeIcon, NotificationsIcon, SearchIcon, SettingsIcon } from '@icons'
 import { HomeTabParamList } from '@navigation'
 import { RouteProp } from '@react-navigation/native'
 import { FC } from 'react'
@@ -14,6 +14,8 @@ export const TabBarIcon: FC<Props> = ({ route, ...props }) => {
 			return <HomeIcon {...props} />
 		case 'Settings':
 			return <SettingsIcon {...props} />
+		case 'Notices':
+			return <NotificationsIcon {...props} />
 		case 'Search':
 			return <SearchIcon {...props} />
 		case 'Bookmarks':

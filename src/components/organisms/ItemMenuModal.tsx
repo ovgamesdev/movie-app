@@ -105,6 +105,8 @@ const ModalContent = memo<Props>(({ item }) => {
 					</ScrollView>
 				</View>
 				<View style={{ height: 10 }} />
+				<Input placeholder='Другая озвучка..' onSubmitEditing={async e => selectTranslation(e.nativeEvent.text)} />
+				<View style={{ height: 5 }} />
 				<Button text='Все озвучки' onPress={async () => selectTranslation(null)} />
 			</View>
 		)

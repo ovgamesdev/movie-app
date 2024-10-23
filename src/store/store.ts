@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { authReducer } from '@store/auth'
 import { kinopoiskApi } from '@store/kinopoisk'
+import { noticesReducer } from '@store/notices'
 import { safeAreaReducer } from '@store/safeArea'
 import { settingsReducer } from '@store/settings'
 import { themoviedbApi } from '@store/themoviedb'
@@ -20,7 +21,8 @@ const reducers = combineReducers({
 	[themoviedbApi.reducerPath]: themoviedbApi.reducer,
 	safeArea: safeAreaReducer,
 	backgroundRestriction: backgroundRestrictionReducer,
-	itemMenuModal: itemMenuModalReducer
+	itemMenuModal: itemMenuModalReducer,
+	notices: noticesReducer
 })
 
 export const store = configureStore({

@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Platform, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 import { TabBarIcon } from './TabBarIcon'
-import { Bookmarks, Home, Search, Settings, TvBookmarks } from './screens'
+import { Bookmarks, Home, Notices, Search, Settings, TvBookmarks } from './screens'
 
 const Tab = createBottomTabNavigator<HomeTabParamList>()
 
@@ -13,6 +13,7 @@ export const TabNavigator = () => {
 	const { styles, theme } = useStyles(stylesheet)
 
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
+	const notices = useTypedSelector(state => state.notices.Notices)
 
 	return (
 		<Tab.Navigator
@@ -23,8 +24,8 @@ export const TabNavigator = () => {
 				// tabBarHideOnKeyboard: true,
 
 				// tabBarBackground: () => <View style={{ backgroundColor: 'red', position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}></View>,
-				tabBarButton: ({ children, onPress }) => (
-					<Button onPress={onPress} padding={10} flex={1} transparent style={styles.tabBarButton}>
+				tabBarButton: ({ children, ...props }) => (
+					<Button padding={0} flex={1} transparent style={styles.tabBarButton} {...props}>
 						{children}
 					</Button>
 				),
@@ -38,6 +39,7 @@ export const TabNavigator = () => {
 			<Tab.Screen name='Content' component={Home} />
 			<Tab.Screen name='Search' component={Search} />
 			<Tab.Screen name='Bookmarks' component={Platform.isTV ? TvBookmarks : Bookmarks} />
+			<Tab.Screen name='Notices' component={Notices} options={{ tabBarBadge: notices !== 0 ? notices : undefined }} />
 			<Tab.Screen name='Settings' component={Settings} />
 		</Tab.Navigator>
 	)

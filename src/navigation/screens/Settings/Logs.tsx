@@ -1,34 +1,15 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { UpdateApk, User } from '@components/molecules'
-import { Switch } from '@components/molecules/settings'
-import { useTypedSelector } from '@hooks'
 import { DeleteIcon, RefreshIcon } from '@icons'
 import { useFocusEffect } from '@react-navigation/native'
 import { useCallback, useRef, useState, type FC } from 'react'
-import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { createStyleSheet, useStyles } from 'react-native-unistyles'
+import { useStyles } from 'react-native-unistyles'
 
-const LoaderSettings: FC = () => {
-	const isLoading = useTypedSelector(state => state.settings.isLoading)
-	const { styles } = useStyles(stylesheet)
+export const Logs: FC = () => {
+	const insets = useSafeAreaInsets()
 
-	if (!isLoading) {
-		return null
-	}
-
-	return (
-		<View style={styles.loadingContainer}>
-			<View style={styles.loading}>
-				<Text style={styles.loadingText}>Loading...</Text>
-			</View>
-		</View>
-	)
-}
-
-// TODO to screens
-const LogPage: FC = () => {
 	const [files, setFiles] = useState<{ name: string; path: string }[]>([])
 	const [openedFile, setOpenedFile] = useState<{ name: string; path: string; logs: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
@@ -96,9 +77,9 @@ const LogPage: FC = () => {
 	}
 
 	return (
-		<View style={{ flex: 1 }}>
-			<View style={{ paddingVertical: 10, flexDirection: 'row', gap: 5 }}>
-				<ScrollView horizontal contentContainerStyle={{ gap: 5 }}>
+		<View style={{ flex: 1, marginTop: insets.top }}>
+			<View style={{ paddingTop: 10, paddingRight: 5, flexDirection: 'row', gap: 5 }}>
+				<ScrollView horizontal contentContainerStyle={{ gap: 5, paddingLeft: 5 }}>
 					{files
 						.sort((a, b) => {
 							const [aDay, aMonth, aYear] = a.name.split('-').map(Number)
@@ -121,7 +102,7 @@ const LogPage: FC = () => {
 				</Button>
 			</View>
 
-			<View style={{ flex: 1, backgroundColor: '#000', borderRadius: 10 }}>
+			<View style={{ flex: 1, backgroundColor: '#000', borderRadius: 10, margin: 10 }}>
 				{isLoading ? (
 					<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 						<ActivityIndicator size='large' />
@@ -143,67 +124,3 @@ const LogPage: FC = () => {
 		</View>
 	)
 }
-
-export const Settings = () => {
-	const insets = useSafeAreaInsets()
-	const { styles } = useStyles(stylesheet)
-
-	return (
-		<TVFocusGuideView style={[styles.container, { marginTop: insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
-			<LoaderSettings />
-
-			<View style={styles.updateContainer}>
-				<UpdateApk />
-			</View>
-
-			<User />
-
-			{/* <Select
-				item='theme'
-				options={[
-					{ value: 'light', title: 'light' },
-					{ value: 'dark', title: 'dark' },
-					{ value: null, title: 'default' }
-				]}
-				onChange={value => {
-					if (value === null) {
-						UnistylesRuntime.setAdaptiveThemes(true)
-					} else {
-						UnistylesRuntime.setAdaptiveThemes(false)
-						UnistylesRuntime.setTheme(value)
-					}
-				}}
-			/> */}
-			<Switch item='showDevOptions' />
-
-			<LogPage />
-		</TVFocusGuideView>
-	)
-}
-
-const stylesheet = createStyleSheet(theme => ({
-	loadingContainer: {
-		position: 'absolute',
-		top: 20,
-		left: 0,
-		right: 0,
-		zIndex: 10,
-		alignItems: 'center'
-	},
-	loading: {
-		backgroundColor: theme.colors.bg200,
-		borderRadius: 50,
-		paddingHorizontal: 5
-	},
-	loadingText: {
-		color: theme.colors.text100,
-		textAlign: 'center'
-	},
-	container: {
-		flex: 1,
-		padding: 10
-	},
-	updateContainer: {
-		paddingBottom: 10
-	}
-}))

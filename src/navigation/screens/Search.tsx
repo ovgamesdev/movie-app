@@ -3,8 +3,8 @@ import { SearchHistory, SearchResults, SearchResultsProvider } from '@components
 import { useActions, useDebounce, useNavigation, useTypedDispatch } from '@hooks'
 import { ArrowBackIcon } from '@icons'
 import { HomeTabParamList } from '@navigation'
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { useFocusEffect } from '@react-navigation/native'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { getKinoboxPlayers, store } from '@store'
 import { IGraphqlSuggestMovie, useGetSuggestSearchQuery } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
@@ -158,7 +158,7 @@ const useExpandedSearch = ({ keyword }: { keyword: string }, { skip }: { skip: b
 
 const isImdbRegex = /(tt\d{4,9})/
 
-type Props = NativeStackScreenProps<HomeTabParamList, 'Search'>
+type Props = BottomTabScreenProps<HomeTabParamList, 'Search'>
 
 export const Search: FC<Props> = ({ route }) => {
 	const defaultFilters = route.params?.data ?? {}

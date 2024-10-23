@@ -1,8 +1,9 @@
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { getKinoboxPlayers, startAppListening, store } from '@store'
+import { NewEpisodesType, noticesActions, noticesExtraActions, setupNoticesListeners } from '@store/notices'
 import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
-import { delay, isSeries, normalizeUrlWithNull, rusToLatin, validateDisplayNotificationData } from '@utils'
+import { delay, isSeries, newSeriesToString, normalizeUrlWithNull, rusToLatin } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
 import Config from 'react-native-config'
@@ -45,7 +46,6 @@ const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { 
 	return res
 }
 
-type NewEpisodesType = { [key: string]: string[] }
 export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null> => {
 	// TODO add for other providers
 
@@ -78,7 +78,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 						}
 					}
 
-					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title === notifyTranslation))
+					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title.includes(notifyTranslation)))
 						.reduce<KodikItemType[]>((acc, cur) => {
 							const title = [cur.title, cur.title_orig, cur.other_title].filter(it => !!it).join(' / ')
 							const part_match = /(\d+(?=\s+часть))|((?<=часть\s+)\d+)/gi.exec(title)
@@ -105,7 +105,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 
 					total = seasons.reduce((total: number, { last_episode }: KodikItemType) => total + last_episode, 0)
 
-					if (releasedEpisodes && releasedEpisodes < total) {
+					if (typeof releasedEpisodes === 'number' && releasedEpisodes < total) {
 						data = calculateReleasedEpisodesKodik({ seasons, releasedEpisodes, total })
 					}
 				}
@@ -128,13 +128,13 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 				if (typeof seasons === 'object' && Array.isArray(seasons)) {
 					for (const season of seasons) {
 						for (const episode of season.episodes) {
-							if ((notifyTranslation && !episode.voiceActing.includes(notifyTranslation)) ?? episode.iframe_url === null) {
+							if ((notifyTranslation && !(episode.voiceActing as string[]).find(it => it.includes(notifyTranslation))) ?? episode.iframe_url === null) {
 								continue
 							}
 
 							total = total + 1
 
-							if (releasedEpisodes && releasedEpisodes < total) {
+							if (typeof releasedEpisodes === 'number' && releasedEpisodes < total) {
 								if (`${season.season}` in data) {
 									data[`${season.season}`].push(episode.episode)
 								} else {
@@ -179,13 +179,13 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 								}
 							}
 
-							if (notifyTranslation && !episodeTranslations.includes(notifyTranslation)) {
+							if (notifyTranslation && !episodeTranslations.find(it => it.includes(notifyTranslation))) {
 								continue
 							}
 
 							total = total + 1
 
-							if (releasedEpisodes && releasedEpisodes < total) {
+							if (typeof releasedEpisodes === 'number' && releasedEpisodes < total) {
 								if (`${season.season}` in data) {
 									data[`${season.season}`].push(episode.episode)
 								} else {
@@ -210,83 +210,80 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 const displayNotificationNewFilm = (movie: WatchHistory) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
-	notifee.displayNotification({
-		id: `${movie.type}:${movie.id}`,
-		title: 'Новый контент доступен!',
-		body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
-		data: validateDisplayNotificationData(movie),
-		android: {
-			channelId: 'content-release-channel',
-			style: {
-				type: AndroidStyle.BIGTEXT,
-				text: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`
-			},
-			largeIcon: poster,
-			pressAction: {
-				id: 'movie',
-				launchActivity: 'default'
-			},
-			actions: [
-				{
-					title: 'Смотреть',
-					pressAction: {
-						id: 'watch',
-						launchActivity: 'default'
+	store.dispatch(
+		noticesActions.displayNotification({
+			id: `${movie.type}:${movie.id}`,
+			title: 'Новый контент доступен!',
+			body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
+			data: { type: movie.type, id: movie.id, title: movie.title },
+			android: {
+				channelId: 'content-release-channel',
+				style: {
+					type: AndroidStyle.BIGTEXT,
+					text: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`
+				},
+				largeIcon: poster,
+				pressAction: {
+					id: 'movie',
+					launchActivity: 'default'
+				},
+				actions: [
+					{
+						title: 'Смотреть',
+						pressAction: {
+							id: 'watch',
+							launchActivity: 'default'
+						}
 					}
-				}
-			],
-			timestamp: Date.now(),
-			showTimestamp: true
-		},
-		ios: {
-			attachments: [{ url: poster }]
-		}
-	})
+				],
+				timestamp: Date.now(),
+				showTimestamp: true
+			},
+			ios: {
+				attachments: [{ url: poster }]
+			}
+		})
+	)
 }
 const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: { total: number; data: NewEpisodesType } }) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
-	const seasonTitle = Object.keys(newSeries.data)
-		.map(season => {
-			const episode = newSeries.data[season]
-			const episodeTitle = episode.length < 2 ? episode[0] : episode[0] + ' - ' + episode[episode.length - 1]
+	const seasonTitle = newSeriesToString(newSeries.data)
 
-			return `(эпизод ${episodeTitle}, сезон ${season})`
-		})
-		.join(', ')
-
-	notifee.displayNotification({
-		id: `${movie.type}:${movie.id}`,
-		title: 'Новый контент доступен!',
-		body: `Новый эпизод «${movie.title}» ${seasonTitle.length === 0 ? '' : seasonTitle + '.'}`,
-		data: validateDisplayNotificationData(movie),
-		android: {
-			channelId: 'content-release-channel',
-			style: {
-				type: AndroidStyle.BIGTEXT,
-				text: `Новый эпизод «${movie.title}» ${seasonTitle.length === 0 ? '' : seasonTitle + '.'}`
-			},
-			largeIcon: poster,
-			pressAction: {
-				id: 'movie',
-				launchActivity: 'default'
-			},
-			actions: [
-				{
-					title: 'Смотреть',
-					pressAction: {
-						id: 'watch',
-						launchActivity: 'default'
+	store.dispatch(
+		noticesActions.displayNotification({
+			id: `${movie.type}:${movie.id}`,
+			title: 'Новый контент доступен!',
+			body: `Новый эпизод «${movie.title}» ${seasonTitle ? '' : seasonTitle + '.'}`,
+			data: { type: movie.type, id: movie.id, title: movie.title, newSeries: newSeries.data },
+			android: {
+				channelId: 'content-release-channel',
+				style: {
+					type: AndroidStyle.BIGTEXT,
+					text: `Новый эпизод «${movie.title}» ${seasonTitle ? '' : seasonTitle + '.'}`
+				},
+				largeIcon: poster,
+				pressAction: {
+					id: 'movie',
+					launchActivity: 'default'
+				},
+				actions: [
+					{
+						title: 'Смотреть',
+						pressAction: {
+							id: 'watch',
+							launchActivity: 'default'
+						}
 					}
-				}
-			],
-			timestamp: Date.now(),
-			showTimestamp: true
-		},
-		ios: {
-			attachments: [{ url: poster }]
-		}
-	})
+				],
+				timestamp: Date.now(),
+				showTimestamp: true
+			},
+			ios: {
+				attachments: [{ url: poster }]
+			}
+		})
+	)
 }
 
 let isFinishTask = true
@@ -299,10 +296,12 @@ export const backgroundTask = async (taskId: string) => {
 
 	console.log('[BackgroundFetch] taskId', taskId)
 
-	let unsubscribe: Unsubscribe | null = null
+	const subscriptions: Unsubscribe[] = []
 	if (store.getState().settings.settings._settings_time === 0) {
-		unsubscribe = setupSettingsListeners(startAppListening)
+		subscriptions.push(setupSettingsListeners(startAppListening))
+		subscriptions.push(setupNoticesListeners(startAppListening))
 		await store.dispatch(settingsExtraActions.getSettings())
+		await store.dispatch(noticesExtraActions.getNotices())
 	}
 
 	isFinishTask = false
@@ -362,7 +361,7 @@ export const backgroundTask = async (taskId: string) => {
 
 	// Finish.
 	isFinishTask = true
-	unsubscribe?.()
+	subscriptions.forEach(unsubscribe => unsubscribe())
 	BackgroundFetch.finish(taskId)
 }
 

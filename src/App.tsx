@@ -7,6 +7,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
+import { setupNoticesListeners } from '@store/notices'
 import { setupSettingsListeners } from '@store/settings'
 import { setupUpdateListeners } from '@store/update'
 import { FC, ReactNode, useEffect } from 'react'
@@ -106,11 +107,12 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 
 const AppContent: FC = () => {
 	const { theme } = useStyles()
-	const { getCurrentGoogleUser, getApkVersion } = useActions()
+	const { getCurrentGoogleUser, getApkVersion, getNotices } = useActions()
 
 	useEffect(() => {
 		getCurrentGoogleUser()
 		getApkVersion()
+		getNotices()
 	}, [])
 
 	useBackgroundFetch()
@@ -127,7 +129,7 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
-					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: theme.colors.colorScheme === 'dark', colors: { primary: theme.colors.text100, background: theme.colors.bg100, card: theme.colors.bg100, text: theme.colors.text200, border: theme.colors.bg300, notification: theme.colors.primary100 } }}>
+					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: theme.colors.colorScheme === 'dark', colors: { primary: theme.colors.text100, background: theme.colors.bg100, card: theme.colors.bg100, text: theme.colors.text200, border: theme.colors.bg300, notification: theme.colors.warning } }}>
 						<StackNavigator colors={theme.colors} />
 					</NavigationContainer>
 					<NetInfo />
@@ -159,7 +161,7 @@ const ErrorFallback = (props: { error: Error; resetError: () => void }) => {
 
 const App: FC = () => {
 	useEffect(() => {
-		const subscriptions: Unsubscribe[] = [setupSettingsListeners(startAppListening), setupUpdateListeners(startAppListening)]
+		const subscriptions: Unsubscribe[] = [setupSettingsListeners(startAppListening), setupUpdateListeners(startAppListening), setupNoticesListeners(startAppListening)]
 
 		return () => subscriptions.forEach(unsubscribe => unsubscribe())
 	}, [])

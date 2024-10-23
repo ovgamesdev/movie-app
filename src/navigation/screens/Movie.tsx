@@ -37,6 +37,8 @@ export const Movie: FC<Props> = ({ route }) => {
 	const [backdropPath, setBackdropPath] = useState<null | string>(null)
 	const [tmdbId, setTmdbId] = useState<null | number>(null)
 
+	// TODO (id:764810) `Уж не зомби ли это? OVA-1` Not found (kodik series !== kp series)
+
 	useEffect(() => {
 		const init = () => {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition

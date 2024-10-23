@@ -27,7 +27,7 @@ const Loading: FC = () => {
 export const Watch: FC<Props> = ({ navigation, route }) => {
 	const isKPorIMDB = !isNaN(Number(route.params.data.id)) || String(route.params.data.id).startsWith('tt') // number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`
 
-	const data: WatchHistory = (isKPorIMDB ? store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] : null) ?? (route.params.data as WatchHistory)
+	const data: WatchHistory | null = (isKPorIMDB ? store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] ?? null : null) ?? ('provider' in route.params.data ? (route.params.data as WatchHistory) : null)
 
 	const isWatchFullscreen = useRef(false)
 	const webViewRef = useRef<WebView>(null)
@@ -36,7 +36,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const { theme } = useStyles()
 	const { mergeItem } = useActions()
 	const [providers, setProviders] = useState<KinoboxPlayersData[] | null>(null)
-	const [provider, setProvider] = useState<WatchHistoryProvider | null>(null)
+	const [provider, setProvider] = useState<WatchHistoryProvider | null>(data?.provider ?? null)
 	const [error, setError] = useState<{ error: string; message: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
@@ -52,7 +52,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	}
 
 	useEffect(() => {
-		if (provider === null) return
+		if (provider === null || data === null) return
 
 		notifee.cancelNotification(`${data.type}:${data.id}`)
 
@@ -90,6 +90,8 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	}, [provider])
 
 	const loadPlayers = useCallback(() => {
+		if (data === null) return
+
 		setIsLoading(true)
 		setError(null)
 
@@ -125,7 +127,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 						}
 						if (kodik_data && kodik_data.length > 0) {
 							setProviders(kodik_data.reverse())
-							setProvider(provider ?? route.params.data.provider ?? kodik_data[0]?.source)
+							setProvider(provider ?? kodik_data[0]?.source)
 							setError(null)
 						} else {
 							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
@@ -152,7 +154,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			if (data && data.length > 0) {
 				if (data.findIndex(it => it.source === 'KODIK') === -1 || !isSeries(route.params.data.type)) {
 					setProviders(data)
-					setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
+					setProvider(provider ?? data[0]?.source)
 					setError(null)
 				} else {
 					const watchHistory = store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] as WatchHistory | undefined
@@ -167,7 +169,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
 							setProviders(data.filter(it => it.source !== 'KODIK'))
 						}
-						setProvider(provider ?? route.params.data.provider ?? data[0]?.source)
+						setProvider(provider ?? data[0]?.source)
 						setError(null)
 					})
 				}
@@ -194,6 +196,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	}
 
 	const InputHistory = ({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
+		if (data === null) return
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
 		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
@@ -211,6 +214,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	}
 
 	const WatchHistory = () => {
+		if (data === null) return
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]) as WatchHistory | undefined
 
 		if (!value) return null
@@ -237,10 +241,8 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		)
 	}
 
-	const currentProvider = providers && providers.length > 0 ? providers.find(it => it.source === provider) ?? providers[0] : null
+	const currentProvider = providers && providers.length > 0 && provider !== null ? providers.find(it => it.source.startsWith(provider)) ?? providers[0] : null
 	const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"></head><body><iframe class="kinobox__iframe" seamless allowfullscreen="" frameborder="0" allow="autoplay fullscreen" src="${currentProvider?.iframeUrl}"></iframe><style>.kinobox__iframe { display: block; width: 100%; height: 100%; box-sizing: border-box; } body { margin: 0; padding: 0; width: 100%; height: 100vh; font-size: 16px; color: white; overflow: hidden; color-scheme: dark; background: black; }</style></body></html>`
-
-	// console.log(`currentProvider ${currentProvider?.source} ${provider}`)
 
 	const run = `
 		document.querySelector('head meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
@@ -340,7 +342,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					}
 
 					if (eventTitle === 'kodik_player_current_episode') {
-						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'current_episode', episode: eventData.value.episode+'', season: eventData.value.season, translation: eventData.value.translation }));
+						window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'current_episode', episode: eventData.value.episode === null ? null : eventData.value.episode+'', season: eventData.value.season, translation: eventData.value.translation }));
 					}
 
 					if (eventTitle === 'kodik_player_play') {
@@ -393,6 +395,8 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 		true;
 	`
+
+	if (data === null) return null
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: insets.top }} trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>

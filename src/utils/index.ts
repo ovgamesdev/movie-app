@@ -1,5 +1,6 @@
 import { IFilmBaseInfo, IListSlugFilter, IMovieBaseInfo, ITvSeriesBaseInfo, MovieType, ReleaseYear } from '@store/kinopoisk'
-import { WatchHistory, WatchHistoryProvider, WatchHistoryStatus } from '@store/settings'
+import { NewEpisodesType } from '@store/notices'
+import { WatchHistoryProvider } from '@store/settings'
 
 // MOVIE
 
@@ -170,6 +171,40 @@ export const formatDate = (date: string | number | Date) => {
 	return new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' г.', '')
 }
 
+export const getTimeAgo = (timestamp: number): string => {
+	const diff = Date.now() - timestamp
+
+	const seconds = Math.floor(diff / 1000)
+	const minutes = Math.floor(seconds / 60)
+	const hours = Math.floor(minutes / 60)
+	const days = Math.floor(hours / 24)
+
+	if (days > 7) {
+		return new Date(timestamp).toLocaleDateString()
+	} else if (days > 0) {
+		return `${days} ${getNoun(days, 'день', 'дня', 'дней')} назад`
+	} else if (hours > 0) {
+		return `${hours} ${getNoun(hours, 'час', 'часа', 'часов')} назад`
+	} else if (minutes > 0) {
+		return `${minutes} ${getNoun(minutes, 'минуту', 'минуты', 'минут')} назад`
+	} else {
+		return `${seconds} ${getNoun(seconds, 'секунду', 'секунды', 'секунд')} назад`
+	}
+}
+
+export const newSeriesToString = (data: NewEpisodesType): string | null => {
+	const seasonTitle = Object.keys(data)
+		.map(season => {
+			const episode = data[season]
+			const episodeTitle = episode.length < 2 ? episode[0] : episode[0] + ' - ' + episode[episode.length - 1]
+
+			return `(эпизод ${episodeTitle}, сезон ${season})`
+		})
+		.join(', ')
+
+	return seasonTitle.length === 0 ? null : seasonTitle
+}
+
 // Search
 
 export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: string; filters: IListSlugFilter } => {
@@ -202,48 +237,6 @@ export const movieListUrlToFilters = (url: string): { isFilter: boolean; slug: s
 
 export const releaseYearsToString = (releaseYears: ReleaseYear[] | undefined): string | null => {
 	return !releaseYears ? null : releaseYears.length !== 0 ? (releaseYears[0]?.start === releaseYears[0]?.end ? (releaseYears[0].start === null || releaseYears[0].start === 0 ? null : String(releaseYears[0].start)) ?? '' : releaseYears[0].start != null || releaseYears[0].end != null ? (releaseYears[0].start ?? '...') + ' - ' + (releaseYears[0].end ?? '...') : '') : null
-}
-
-// notifee
-export const validateDisplayNotificationData = <T extends object>(obj: T) => {
-	const resObj: { [key: string]: string | number | object } = {}
-
-	for (const f in obj) {
-		const value: unknown = obj[f as keyof T]
-
-		if (value === null) {
-			continue
-		} else if (typeof value === 'string' || typeof value === 'number') {
-			resObj[f] = value
-		} else if (typeof value === 'object') {
-			resObj[f] = validateDisplayNotificationData(value)
-		}
-	}
-
-	return resObj
-}
-
-export const restrictDisplayNotificationData = (obj: { [key: string]: string | number | object }) => {
-	const resObj: WatchHistory = {
-		id: obj.id as number,
-		provider: (obj.provider as WatchHistoryProvider | undefined) ?? null,
-		type: obj.type as MovieType,
-		title: obj.title as string,
-		poster: (obj.poster as string | undefined) ?? null,
-		year: (obj.year as number | undefined) ?? null,
-		startTimestamp: obj.startTimestamp as number,
-		timestamp: obj.timestamp as number,
-		status: obj.status as WatchHistoryStatus
-		//
-		// duration?: number
-		// lastTime?: number
-		// //
-		// notify?: boolean
-		// fileIndex?: number
-		// releasedEpisodes?: number
-	}
-
-	return resObj
 }
 
 // Watch
