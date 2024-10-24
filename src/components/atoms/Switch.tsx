@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { clamp, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
@@ -29,12 +29,16 @@ export const Switch: FC<Props> = ({ onValueChange, trackColor, thumbColor, value
 		onValueChange(!value)
 	}, [onValueChange, value])
 
-	switchTranslate.value = withSpring(value ? 21 : 0, animConfig)
+	useEffect(() => {
+		switchTranslate.value = withSpring(value ? 21 : 0, animConfig)
+	}, [switchTranslate, value])
 
 	const pan = Gesture.Pan()
-		.onChange(e => (switchTranslate.value = clamp(switchTranslate.value + e.changeX, 0, 21)))
+		.onChange(e => {
+			switchTranslate.value = clamp(switchTranslate.get() + e.changeX, 0, 21)
+		})
 		.onFinalize(() => {
-			const is = switchTranslate.value > 10.5
+			const is = switchTranslate.get() > 10.5
 			switchTranslate.value = withSpring(is ? 21 : 0, animConfig)
 
 			if (is !== value) {

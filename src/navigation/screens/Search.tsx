@@ -1,17 +1,18 @@
 import { ActivityIndicator, Button, Input, InputType } from '@components/atoms'
 import { SearchHistory, SearchResults, SearchResultsProvider } from '@components/organisms'
-import { useActions, useDebounce, useNavigation, useTypedDispatch } from '@hooks'
+import { useActions, useDebounce, useNavigation, useTypedDispatch, useTypedSelector } from '@hooks'
 import { ArrowBackIcon } from '@icons'
 import { HomeTabParamList } from '@navigation'
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
+import { BottomTabScreenProps, useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useFocusEffect } from '@react-navigation/native'
 import { getKinoboxPlayers, store } from '@store'
 import { IGraphqlSuggestMovie, useGetSuggestSearchQuery } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
-import { BackHandler, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
+import { BackHandler, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
@@ -164,6 +165,8 @@ export const Search: FC<Props> = ({ route }) => {
 	const defaultFilters = route.params?.data ?? {}
 	const insets = useSafeAreaInsets()
 	const navigation = useNavigation()
+	const bottomTabBarHeight = useBottomTabBarHeight()
+	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
 	const { styles, theme } = useStyles(stylesheet)
 
 	const [isExpandedSearch, setIsExpandedSearch] = useState(false)
@@ -348,7 +351,9 @@ export const Search: FC<Props> = ({ route }) => {
 				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} />
 			</View>
 
-			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
+			{/* TODO: ? 25 */}
+			{/* TODO: test (isShowNetInfo ? 0 : insets.bottom) */}
+			<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom) - insets.top - 25} style={{ flex: 1 }} contentContainerStyle={{ flex: 1 }}>
 				{isImdbSearch ? (
 					<Button onPress={async () => watchImdb(deferredKeyword)} paddingHorizontal={16} paddingVertical={11} animation='scale' transparent alignItems='stretch' flexDirection='row' style={{ marginTop: 10 }}>
 						{isFetchingImdb ? (

@@ -8,8 +8,9 @@ import { KinoboxPlayersData, getKinoboxPlayers, getKodikPlayers, store } from '@
 import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
 import { FC, memo, useCallback, useEffect, useRef, useState } from 'react'
-import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
+import { AppState, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
 import WebView from 'react-native-webview'
@@ -33,7 +34,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	const webViewRef = useRef<WebView>(null)
 
 	const insets = useSafeAreaInsets()
-	const { theme } = useStyles()
+	const { theme, breakpoint, styles } = useStyles()
 	const { mergeItem } = useActions()
 	const [providers, setProviders] = useState<KinoboxPlayersData[] | null>(null)
 	const [provider, setProvider] = useState<WatchHistoryProvider | null>(data?.provider ?? null)
@@ -523,8 +524,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 				{isLoading && <Loading />}
 			</View>
-			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
-				<ScrollView contentContainerStyle={{ gap: 6, padding: 10, paddingBottom: 10 + insets.bottom }}>
+
+			{/* TODO: ? 25 */}
+			<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={25} style={{ flex: 1 }} contentContainerStyle={{ flex: 1 }}>
+				<ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 6, padding: 10, paddingBottom: 10 + insets.bottom }}>
 					<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 					<View style={{ gap: 6 }}>
 						{currentProvider && providers ? (

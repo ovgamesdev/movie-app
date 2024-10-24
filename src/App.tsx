@@ -15,6 +15,7 @@ import { Text, View } from 'react-native'
 import BootSplash from 'react-native-bootsplash'
 import ErrorBoundary from 'react-native-error-boundary'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { ReduxNetworkProvider } from 'react-native-offline'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useStyles } from 'react-native-unistyles'
@@ -170,9 +171,11 @@ const App: FC = () => {
 		<SafeAreaProvider>
 			<Provider store={store}>
 				<ReduxNetworkProvider pingTimeout={10000} pingServerUrl='https://www.google.com/' shouldPing={true} pingInterval={30000} pingOnlyIfOffline={false} pingInBackground={false} httpMethod={'HEAD'}>
-					<ErrorBoundary FallbackComponent={ErrorFallback}>
-						<AppContent />
-					</ErrorBoundary>
+					<KeyboardProvider statusBarTranslucent>
+						<ErrorBoundary FallbackComponent={ErrorFallback}>
+							<AppContent />
+						</ErrorBoundary>
+					</KeyboardProvider>
 				</ReduxNetworkProvider>
 			</Provider>
 		</SafeAreaProvider>
