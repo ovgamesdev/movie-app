@@ -1,6 +1,7 @@
-import { GoogleSignin, User } from '@react-native-google-signin/google-signin'
+import { GoogleSignin, isErrorWithCode, statusCodes, User } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { settingsExtraActions } from '@store/settings'
+import { Alert } from 'react-native'
 import { AppDispatch, RootState } from '../store'
 
 const createAppAsyncThunk = createAsyncThunk.withTypes<{
@@ -10,17 +11,12 @@ const createAppAsyncThunk = createAsyncThunk.withTypes<{
 
 export const getCurrentGoogleUser = createAppAsyncThunk('auth/get-google-user', async (_, thunkAPI) => {
 	try {
-		const isSignedIn = await GoogleSignin.isSignedIn()
+		const { type, data } = await GoogleSignin.signInSilently()
 
 		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
-		if (isSignedIn) {
-			let userInfo = await GoogleSignin.getCurrentUser()
-			if (userInfo === null) {
-				userInfo = await GoogleSignin.signInSilently()
-			}
-
-			return userInfo
+		if (type === 'success') {
+			return data
 		}
 		return null
 	} catch (error: any) {
@@ -33,27 +29,36 @@ export const getCurrentGoogleUser = createAppAsyncThunk('auth/get-google-user', 
 export const signInGoogleUser = createAppAsyncThunk<User | null>('auth/sign-in-google-user', async (_, thunkAPI) => {
 	try {
 		await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
-		const userInfo = await GoogleSignin.signIn()
+		const { data } = await GoogleSignin.signIn()
 
 		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
-		return userInfo
+		return data
 	} catch (error: any) {
 		console.error(`signInGoogleUser`, { ...error })
-		thunkAPI.abort(error.code)
+		if (isErrorWithCode(error)) {
+			thunkAPI.abort(error.code)
+			if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+				Alert.alert('play services not available or outdated')
+			}
+		} else {
+			thunkAPI.abort()
+		}
 		return null
 	}
 })
 
 export const addScopeGoogleUser = createAppAsyncThunk<User | null>('auth/add-scope-google-user', async (_, thunkAPI) => {
 	try {
-		const userInfo = await GoogleSignin.addScopes({
+		await GoogleSignin.addScopes({
 			scopes: ['https://www.googleapis.com/auth/drive.appdata']
 		})
 
+		const { data } = await GoogleSignin.signInSilently()
+
 		thunkAPI.dispatch(settingsExtraActions.getSettings())
 
-		return userInfo
+		return data
 	} catch (error: any) {
 		console.error(`addScopeGoogleUser`, { ...error })
 		thunkAPI.abort(error.code)
@@ -63,8 +68,9 @@ export const addScopeGoogleUser = createAppAsyncThunk<User | null>('auth/add-sco
 
 export const signOutGoogleUser = createAppAsyncThunk<null>('auth/sign-out-google-user', async (_, thunkAPI) => {
 	try {
-		const userInfo = await GoogleSignin.signOut()
-		return userInfo
+		// await GoogleSignin.revokeAccess() // TODO add other buttoh with accept
+		await GoogleSignin.signOut()
+		return null
 	} catch (error: any) {
 		console.error(`signOutGoogleUser`, { ...error })
 		thunkAPI.abort(error.code)

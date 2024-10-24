@@ -345,7 +345,7 @@ export const Search: FC<Props> = ({ route }) => {
 						<ArrowBackIcon width={20} height={20} fill={theme.colors.text100} style={{}} />
 					</Button>
 				) : null}
-				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} onVoice={setKeyword} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} voice />
+				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} />
 			</View>
 
 			<KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>

@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { KinoboxPlayersData, getKinoboxPlayers, getKodikPlayers, store } from '@store'
 import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 import { isSeries, watchHistoryProviderToString } from '@utils'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StatusBar, TVFocusGuideView, Text, TextInputChangeEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -195,7 +195,9 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		}
 	}
 
-	const InputHistory = ({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
+	const InputHistory = memo(({ field, title }: { field: 'fileIndex' | 'releasedEpisodes'; title: string }) => {
+		console.log('update InputHistory')
+
 		if (data === null) return
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
@@ -211,7 +213,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
 			</View>
 		)
-	}
+	})
 
 	const WatchHistory = () => {
 		if (data === null) return
@@ -397,6 +399,8 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 	`
 
 	if (data === null) return null
+
+	console.log('update Watch')
 
 	return (
 		<TVFocusGuideView style={{ flex: 1, marginTop: insets.top }} trapFocusDown trapFocusLeft trapFocusRight trapFocusUp>

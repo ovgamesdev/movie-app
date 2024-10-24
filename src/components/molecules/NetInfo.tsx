@@ -1,6 +1,6 @@
 import { Button } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { Animated, Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
@@ -15,7 +15,7 @@ export const NetInfo: FC = () => {
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null)
 
-	const [netInfoHeight] = useState(new Animated.Value(isConnected ? 0 : 24 + insets.bottom))
+	const netInfoHeight = useRef(new Animated.Value(isConnected ? 0 : 24 + insets.bottom)).current
 
 	useEffect(() => {
 		if (isConnected) {

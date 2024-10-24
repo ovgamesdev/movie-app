@@ -11,7 +11,7 @@ const drive: { fileId: string; accessToken: string } = { fileId: '', accessToken
 
 const getCloudSettings = async (): Promise<ISettings | null> => {
 	try {
-		if (!(await GoogleSignin.isSignedIn())) {
+		if (!GoogleSignin.hasPreviousSignIn()) {
 			return null
 		}
 
@@ -57,7 +57,7 @@ const saveCloudSettings = async (_value: object): Promise<boolean> => {
 	try {
 		const value = JSON.stringify(_value)
 
-		if (!(await GoogleSignin.isSignedIn())) {
+		if (!GoogleSignin.hasPreviousSignIn()) {
 			return false
 		}
 

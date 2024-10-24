@@ -32,7 +32,7 @@ export const Home = () => {
 	)
 }
 
-const stylesheet = createStyleSheet(theme => ({
+const stylesheet = createStyleSheet({
 	container: {
 		flex: 1
 	},
@@ -42,4 +42,4 @@ const stylesheet = createStyleSheet(theme => ({
 	devText: {
 		color: 'rgba(255,255,255,0.65)'
 	}
-}))
+})

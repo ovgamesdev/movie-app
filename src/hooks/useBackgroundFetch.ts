@@ -254,13 +254,13 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 		noticesActions.displayNotification({
 			id: `${movie.type}:${movie.id}`,
 			title: 'Новый контент доступен!',
-			body: `Новый эпизод «${movie.title}» ${seasonTitle ? '' : seasonTitle + '.'}`,
+			body: `Новый эпизод «${movie.title}» ${seasonTitle ? seasonTitle + '.' : ''}`,
 			data: { type: movie.type, id: movie.id, title: movie.title, newSeries: newSeries.data },
 			android: {
 				channelId: 'content-release-channel',
 				style: {
 					type: AndroidStyle.BIGTEXT,
-					text: `Новый эпизод «${movie.title}» ${seasonTitle ? '' : seasonTitle + '.'}`
+					text: `Новый эпизод «${movie.title}» ${seasonTitle ? seasonTitle + '.' : ''}`
 				},
 				largeIcon: poster,
 				pressAction: {

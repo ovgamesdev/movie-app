@@ -1,8 +1,7 @@
 import { Button, ButtonType } from '@components/atoms'
-import { VoiceComponent } from '@components/molecules/search'
 import { CloseIcon, SearchIcon } from '@icons'
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { Keyboard, TVFocusGuideView, TextInput, TextInputProps, ToastAndroid } from 'react-native'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { TVFocusGuideView, TextInput, TextInputProps } from 'react-native'
 import { useStyles } from 'react-native-unistyles'
 
 export interface InputProps extends TextInputProps {
@@ -10,8 +9,6 @@ export interface InputProps extends TextInputProps {
 	icon?: 'search'
 	clearable?: boolean
 	onClear?: () => void
-	voice?: boolean
-	onVoice?: (value: string) => void
 
 	// styles
 	flex?: number
@@ -22,9 +19,8 @@ export type InputType = {
 	focus: () => void
 }
 
-export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, clearable, onClear, voice, onVoice, flex, placeholder, ...props }, forwardRef) => {
+export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, clearable, onClear, flex, placeholder, ...props }, forwardRef) => {
 	const { theme } = useStyles()
-	const [voicePlaceholder, setVoicePlaceholder] = useState<string | null>(null)
 
 	const buttonRef = useRef<ButtonType | null>(null)
 	const textInputRef = useRef<TextInput | null>(null)
@@ -40,55 +36,20 @@ export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, cle
 		focus: () => textInputRef.current?.focus()
 	}))
 
-	const isRight = !!clearable
+	const isClearable = !!clearable && props.value?.length !== 0
 
 	return (
 		<TVFocusGuideView style={{ flexDirection: 'row', flex }} autoFocus>
-			<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1} flexDirection='row' alignItems='center' borderStyle={isRight ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}>
+			<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1} flexDirection='row' alignItems='center' borderStyle={isClearable ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}>
 				{icon === 'search' ? <SearchIcon width={20} height={20} fill={theme.colors.text100} style={{ marginLeft: 10 }} /> : null}
 				{/* FIXME: If there is no onBlur={() => buttonRef.current?.requestTVFocus()}, then when unfocusing from TextInput and trying to focus on it next time, it does not focus on button */}
-				<TextInput ref={textInputRef} style={{ color: theme.colors.text100, fontSize: 14, height: 40, padding: 10, flex: 1 }} placeholder={voicePlaceholder ?? placeholder} placeholderTextColor={voicePlaceholder ? theme.colors.text100 : theme.colors.text200} onSubmitEditing={() => buttonRef.current?.requestTVFocus()} onBlur={() => buttonRef.current?.requestTVFocus()} cursorColor={theme.colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
+				<TextInput ref={textInputRef} style={{ color: theme.colors.text100, fontSize: 14, height: 40, padding: 10, flex: 1 }} placeholder={placeholder} placeholderTextColor={theme.colors.text200} onSubmitEditing={() => buttonRef.current?.requestTVFocus()} onBlur={() => buttonRef.current?.requestTVFocus()} cursorColor={theme.colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
 			</Button>
 
-			{isRight ? (
-				<>
-					{props.value?.length !== 0 ? (
-						<Button onPress={onClear} style={{ height: 46, width: 45 }} justifyContent='center' alignItems='center' borderStyle={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
-							<CloseIcon width={15} height={15} fill={theme.colors.text100} />
-						</Button>
-					) : null}
-
-					{voice && props.value?.length === 0 ? (
-						<VoiceComponent
-							onPress={Keyboard.dismiss}
-							onSpeechPartialResult={e => e !== null && setVoicePlaceholder(e)}
-							onSpeechResult={e => (setVoicePlaceholder(null), e !== null && onVoice?.(e))}
-							onSpeechError={e => {
-								setVoicePlaceholder(null)
-
-								// https://developer.android.com/reference/android/speech/SpeechRecognizer#ERROR_AUDIO
-								switch (e?.error?.code) {
-									case 'NOT_AVAILABLE':
-										ToastAndroid.show('Голосовой ввод не поддерживается', ToastAndroid.SHORT)
-										break
-									case '6':
-										ToastAndroid.show('Не удается обнаружить сигнал микрофона', ToastAndroid.SHORT)
-										break
-									case '7':
-										ToastAndroid.show('Неразборчиво', ToastAndroid.SHORT)
-										break
-									case '9':
-										ToastAndroid.show('Недостаточно разрешений', ToastAndroid.SHORT)
-										break
-									default:
-										ToastAndroid.show('Неизвестная ошибка, попробуйте еще раз', ToastAndroid.SHORT)
-										console.error('VoiceComponent', e)
-										break
-								}
-							}}
-						/>
-					) : null}
-				</>
+			{isClearable ? (
+				<Button onPress={onClear} style={{ height: 46, width: 45 }} justifyContent='center' alignItems='center' borderStyle={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+					<CloseIcon width={15} height={15} fill={theme.colors.text100} />
+				</Button>
 			) : null}
 		</TVFocusGuideView>
 	)

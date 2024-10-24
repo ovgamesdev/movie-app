@@ -1,5 +1,6 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { Animated, FlexAlignType, GestureResponderEvent, Pressable, PressableProps, PressableStateCallbackType, Text, View } from 'react-native'
+import Config from 'react-native-config'
 import { useStyles } from 'react-native-unistyles'
 
 interface BorderProps {
@@ -49,7 +50,7 @@ export type ButtonType = {
 
 export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, paddingHorizontal, paddingVertical, justifyContent, alignItems, flex, flexDirection, text, animation, transparent, focusable, isActive, textColor, activeTextColor, buttonColor, activeButtonColor, pressedButtonColor, activePressedButtonColor, borderStyle, style, onPressIn, onPressOut, ...props }, forwardRef) => {
 	const { theme } = useStyles()
-	const [scale] = useState(new Animated.Value(1))
+	const scale = useRef(new Animated.Value(1)).current
 
 	const _style = (state: PressableStateCallbackType) => (typeof style === 'function' ? style(state) : typeof style === 'object' ? style : {})
 
@@ -100,7 +101,7 @@ export const Button = forwardRef<ButtonType, Props>(({ children, padding = 7, pa
 					},
 					{
 						borderWidth: 3,
-						borderColor: state.focused ? theme.colors.accent100 : 'transparent',
+						borderColor: state.focused && Config.UI_MODE === 'tv' ? theme.colors.accent100 : 'transparent',
 						borderTopLeftRadius: borderStyle?.borderTopLeftRadius,
 						borderBottomLeftRadius: borderStyle?.borderBottomLeftRadius,
 						borderTopRightRadius: borderStyle?.borderTopRightRadius,

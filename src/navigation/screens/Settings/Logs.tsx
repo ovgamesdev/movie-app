@@ -78,8 +78,8 @@ export const Logs: FC = () => {
 
 	return (
 		<View style={{ flex: 1, marginTop: insets.top }}>
-			<View style={{ paddingTop: 10, paddingRight: 5, flexDirection: 'row', gap: 5 }}>
-				<ScrollView horizontal contentContainerStyle={{ gap: 5, paddingLeft: 5 }}>
+			<View style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 10, flexDirection: 'row', gap: 5 }}>
+				<ScrollView horizontal contentContainerStyle={{ gap: 5 }}>
 					{files
 						.sort((a, b) => {
 							const [aDay, aMonth, aYear] = a.name.split('-').map(Number)

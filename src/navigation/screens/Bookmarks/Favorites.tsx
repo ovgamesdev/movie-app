@@ -41,7 +41,7 @@ export const Favorites: FC = () => {
 		})
 	const barHeight = bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom)
 
-	const [scrollY] = useState(new Animated.Value(0))
+	const scrollY = useRef(new Animated.Value(0)).current
 
 	console.log(`Favorites data: ${data.length}`)
 
