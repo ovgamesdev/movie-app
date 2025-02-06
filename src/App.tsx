@@ -2,7 +2,7 @@ import { Button } from '@components/atoms'
 import { NetInfo } from '@components/molecules'
 import { BackgroundRestrictionModal, UpdateApkModal } from '@components/organisms'
 import { useActions, useBackgroundFetch, useTypedSelector } from '@hooks'
-import { navigationRef } from '@navigation'
+import { navigation, navigationRef } from '@navigation'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
@@ -93,16 +93,33 @@ const LoadingAppSettings: FC<LoadingAppSettingsProps> = ({ children }) => {
 	const isLoaded = useTypedSelector(state => state.settings.isLoaded)
 	const { theme } = useStyles()
 
-	if (isLoaded) {
-		return children
-	}
+	useEffect(() => {
+		if (isLoaded) {
+			const data = store.getState().settings.navigation
+
+			if (data) {
+				navigation[data.method](...data.data)
+			}
+		}
+	}, [isLoaded])
+
+	// if (isLoaded) {
+	// 	return children
+	// }
+
+	return children
 
 	return (
-		<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-			<View style={{ backgroundColor: theme.colors.bg100, borderRadius: 50, paddingHorizontal: 5 }}>
-				<Text style={{ color: theme.colors.text100, textAlign: 'center' }}>Loading...</Text>
-			</View>
-		</View>
+		<>
+			{children}
+			{isLoaded && (
+				<View style={{ backgroundColor: theme.colors.bg200, alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+					<View style={{ backgroundColor: theme.colors.bg100, borderRadius: 50, paddingHorizontal: 5 }}>
+						<Text style={{ color: theme.colors.text100, textAlign: 'center' }}>Loading...</Text>
+					</View>
+				</View>
+			)}
+		</>
 	)
 }
 

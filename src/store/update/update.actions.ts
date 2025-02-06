@@ -66,7 +66,8 @@ export const downloadApk = createAppAsyncThunk('update/download-apk', async (_, 
 
 	const downloadDestPath = `${RNFetchBlob.fs.dirs.CacheDir}/NewApp.apk`
 
-	const task = RNFetchBlob.config({ fileCache: true, path: downloadDestPath }).fetch('GET', remote.apkUrl)
+	// const task = RNFetchBlob.config({ fileCache: true, path: downloadDestPath }).fetch('GET', remote.apkUrl) // ???
+	const task = RNFetchBlob.config({ addAndroidDownloads: { useDownloadManager: true, notification: true } }).fetch('GET', downloadDestPath) // ???
 
 	showStartProgress = false
 

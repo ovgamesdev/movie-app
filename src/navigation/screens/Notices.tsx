@@ -1,22 +1,29 @@
-import { Button, FocusableFlashList, FocusableFlashListRenderItem, ImageBackground } from '@components/atoms'
+import { Button, FocusableFlashList, FocusableFlashListRenderItem, FocusableFlashListType, ImageBackground } from '@components/atoms'
 import { useActions, useTypedSelector } from '@hooks'
-import { HomeTabParamList } from '@navigation'
+import { HomeTabParamList, navigation } from '@navigation'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
+import { useScrollToTop } from '@react-navigation/native'
 import { NoticesItem } from '@store/notices'
+import { WatchHistory } from '@store/settings'
 import { getTimeAgo, newSeriesToString } from '@utils'
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AppState, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = BottomTabScreenProps<HomeTabParamList, 'Notices'>
 
-export const Notices: FC<Props> = ({ navigation }) => {
+export const Notices: FC<Props> = ({ navigation: nav }) => {
 	const insets = useSafeAreaInsets()
 	const { styles, theme } = useStyles(stylesheet)
 	const { setReadNotices } = useActions()
 
-	const data = useTypedSelector(state => state.notices.notifications)
+	const notifications = useTypedSelector(state => state.notices.notifications)
+	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
+
+	const ref = useRef<FocusableFlashListType>(null)
+
+	const data = useMemo(() => notifications.filter(it => !!(watchHistory[`${it.data.id}`] as WatchHistory | undefined)), [notifications, watchHistory])
 
 	const subscribe = useCallback(() => {
 		const subscription = AppState.addEventListener('change', nextAppState => {
@@ -25,7 +32,7 @@ export const Notices: FC<Props> = ({ navigation }) => {
 			}
 		})
 
-		const unsubscribe = navigation.addListener('blur', () => setReadNotices())
+		const unsubscribe = nav.addListener('blur', () => setReadNotices())
 
 		return () => {
 			subscription.remove()
@@ -48,16 +55,10 @@ export const Notices: FC<Props> = ({ navigation }) => {
 						paddingVertical={10}
 						onFocus={onFocus}
 						onBlur={onBlur}
-						// onLongPress={() => handleOnLongPress(item)}
-						onPress={() => {
-							// removeItem(item)
-							//
-							// if (item.type === 'Person') {
-							// 	navigation.navigate('Person', { data: { id: item.id } })
-							// } else {
-							// navigation.navigate('Movie', { data: item.data })
-							// }
+						onLongPress={() => {
+							navigation.push('ItemMenuModal', { data: watchHistory[`${item.data.id}`], lookAtHistory: Date.now() })
 						}}
+						onPress={() => navigation.navigate('Watch', { data: { id: item.data.id, type: item.data.type } })}
 						hasTVPreferredFocus={hasTVPreferredFocus}>
 						<ImageBackground source={{ uri: item.poster }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6} />
 						<View style={{ marginLeft: 20, flex: 1, minHeight: 92, maxHeight: 120 }}>
@@ -83,10 +84,18 @@ export const Notices: FC<Props> = ({ navigation }) => {
 
 	const keyExtractor = useCallback((item: NoticesItem) => `${item.timestamp}_${item.id}`, [])
 
+	useScrollToTop(
+		useRef({
+			scrollToTop: () => {
+				ref.current?.scrollToOffset({ offset: 0, animated: true })
+			}
+		})
+	)
+
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp>
 			<FocusableFlashList
-				// ref={ref}
+				ref={ref}
 				data={data}
 				keyExtractor={keyExtractor}
 				renderItem={renderItem}

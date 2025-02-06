@@ -1,6 +1,6 @@
 import { NavigatorScreenParams, createNavigationContainerRef } from '@react-navigation/native'
 import { IListSlugFilter, IMainTrailer, MovieType } from '@store/kinopoisk'
-import { WatchHistoryProvider } from '@store/settings'
+import { WatchHistory, WatchHistoryProvider } from '@store/settings'
 
 export * from './StackNavigator'
 export * from './TabBar'
@@ -9,6 +9,10 @@ export * from './TabNavigator'
 
 type ParamList = RootStackParamList & HomeTabParamList & BookmarksTabParamList & SettingsTabParamList
 type NavigateType<RouteName extends keyof ParamList> = RouteName extends unknown ? (undefined extends ParamList[RouteName] ? [screen: RouteName] | [screen: RouteName, params: ParamList[RouteName]] : [screen: RouteName, params: ParamList[RouteName]]) : never
+
+export type NavigationType = {
+	[RouteName in keyof ParamList]: NavigateType<RouteName>
+}[keyof ParamList]
 
 export const navigationRef = createNavigationContainerRef<ParamList>()
 export const navigation = {
@@ -65,6 +69,8 @@ export type RootStackParamList = {
 	Watch: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType } | { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType; title: string; poster: string | null; year: number | null; provider: WatchHistoryProvider | null } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
 	Episodes: { data: { id: number; type: MovieType; tmdb_id: number } }
+
+	ItemMenuModal: { data: WatchHistory; lookAtHistory?: number }
 }
 
 export type HomeTabParamList = {
@@ -77,10 +83,11 @@ export type HomeTabParamList = {
 
 export type BookmarksTabParamList = {
 	Favorites: undefined
-	History: undefined
+	History: undefined | { scrollToItem: WatchHistory; lookAtHistory: number }
 }
 
 export type SettingsTabParamList = {
 	SettingsHome: undefined
 	Logs: undefined
+	Backup: undefined
 }

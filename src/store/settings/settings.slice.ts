@@ -19,7 +19,8 @@ const initialState: IInitialStateSettings = {
 	},
 	isLoading: true,
 	isLoaded: false,
-	lastSaveTime: 0
+	lastSaveTime: 0,
+	navigation: null
 }
 
 const settingsSlice = createSlice({
@@ -95,6 +96,10 @@ const settingsSlice = createSlice({
 			} else {
 				console.log('use old bookmarks', data)
 			}
+		},
+
+		openNotificationByInit: (state, { payload }: PayloadAction<IInitialStateSettings['navigation']>) => {
+			state.navigation = payload
 		}
 	},
 	extraReducers: builder => {

@@ -35,7 +35,7 @@ export const Movie: FC<Props> = ({ item, onPress }) => {
 				</Text>
 				<View style={styles.details}>
 					<Text style={styles.originalTitle} numberOfLines={1}>
-						{item.rating.kinopoisk?.value && item.rating.kinopoisk.value > 0 ? <Text style={styles.rating(item.rating.kinopoisk.value)}>{item.rating.kinopoisk.value.toFixed(1)} </Text> : <Text>— </Text>}
+						{item.rating.kinopoisk?.isActive && (item.rating.kinopoisk.value && item.rating.kinopoisk.value > 0 ? <Text style={styles.rating(item.rating.kinopoisk.value)}>{item.rating.kinopoisk.value.toFixed(1)} </Text> : <Text>— </Text>)}
 						{item.title.russian !== null && item.title.original !== null ? item.title.original : null}
 					</Text>
 					<Text style={styles.commonText} numberOfLines={1}>

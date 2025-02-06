@@ -1,3 +1,4 @@
+import { NavigationType } from '@navigation'
 import { MovieType } from '@store/kinopoisk'
 
 export interface IInitialStateSettings {
@@ -5,10 +6,14 @@ export interface IInitialStateSettings {
 	isLoading: boolean
 	isLoaded: boolean
 	lastSaveTime: number
+	navigation: null | {
+		method: 'push' | 'navigate'
+		data: NavigationType
+	}
 }
 
 // WatchHistory
-export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' // TODO await
+export type WatchHistoryStatus = 'watch' | 'pause' | 'end' | 'new' | 'dropped' // TODO await
 export type WatchHistoryProvider = 'ALLOHA' | 'COLLAPS' | 'VIDEOCDN' | 'KODIK' | `KODIK:${string}` | 'HDVB' | 'VOIDBOOST'
 export type WatchHistory = {
 	id: number | `tt${number}`

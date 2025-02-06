@@ -23,7 +23,7 @@ const authSlice = createSlice({
 			.addCase(authExtraActions.getCurrentGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
-				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
+				state.isAllScopeAllowed = payload?.scopes.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
 			.addCase(authExtraActions.getCurrentGoogleUser.rejected, state => {
 				state.user = null
@@ -38,7 +38,7 @@ const authSlice = createSlice({
 			.addCase(authExtraActions.signInGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
-				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
+				state.isAllScopeAllowed = payload?.scopes.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
 			.addCase(authExtraActions.signInGoogleUser.rejected, (state, { error: { message } }) => {
 				state.user = null
@@ -63,7 +63,7 @@ const authSlice = createSlice({
 			.addCase(authExtraActions.addScopeGoogleUser.fulfilled, (state, { payload }) => {
 				state.user = payload
 				state.isLoading = false
-				state.isAllScopeAllowed = payload?.scopes?.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
+				state.isAllScopeAllowed = payload?.scopes.includes('https://www.googleapis.com/auth/drive.appdata') ?? false
 			})
 			.addCase(authExtraActions.addScopeGoogleUser.rejected, (state, { error: { message } }) => {
 				state.user = null

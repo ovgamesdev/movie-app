@@ -39,6 +39,7 @@ export const WatchButton: FC<Props> = ({ data }) => {
 			style={{ minWidth: watchHistory ? (watchHistory.status === 'end' ? 110.36 : 170.66) : 84, minHeight: 39.33 }}
 			disabled={status === 'loading'}
 			paddingVertical={status === 'loading' ? 6.8 : undefined}
+			onLongPress={() => watchHistory && navigation.push('ItemMenuModal', { data: watchHistory, lookAtHistory: Date.now() })}
 			onPress={async () => {
 				const item: WatchHistory = watchHistory
 					? { ...watchHistory, ...data }

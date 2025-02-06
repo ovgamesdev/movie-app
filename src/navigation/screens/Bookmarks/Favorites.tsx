@@ -1,8 +1,9 @@
 import { Button, FocusableFlashList, ImageBackground, type FocusableFlashListRenderItem, type FocusableFlashListType } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { useActions, useTypedSelector } from '@hooks'
+import { useTypedSelector } from '@hooks'
 import { navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useScrollToTop } from '@react-navigation/native'
 import { MovieType } from '@store/kinopoisk'
 import { Bookmarks } from '@store/settings'
 import { isSeries, normalizeUrlWithNull } from '@utils'
@@ -16,7 +17,6 @@ const filters_bookmarks: Record<FilterKeys, string> = { all: 'Все', movie: '�
 
 export const Favorites: FC = () => {
 	const bookmarks = useTypedSelector(state => state.settings.settings.bookmarks)
-	const { setItemVisibleModal } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
@@ -45,7 +45,7 @@ export const Favorites: FC = () => {
 
 	console.log(`Favorites data: ${data.length}`)
 
-	const handleOnLongPress = (item: Bookmarks) => {} // setItemVisibleModal({ item })
+	const handleOnLongPress = (data: Bookmarks) => {} // navigation.push('ItemMenuModal', { data })
 
 	const renderItem: FocusableFlashListRenderItem<Bookmarks> = useCallback(
 		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
@@ -106,10 +106,15 @@ export const Favorites: FC = () => {
 		setActiveFilter(value)
 		ref.current?.scrollToOffset({ offset: 0, animated: false })
 	}
+	const scrollToTop = () => {
+		ref.current?.scrollToOffset({ offset: 0, animated: true })
+	}
+
+	useScrollToTop(useRef({ scrollToTop }))
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
-			<Filters filters={filters_bookmarks} activeFilter={activeFilter} setActiveFilter={handleChangeActiveFilter} scrollY={scrollY} />
+			<Filters filters={filters_bookmarks} activeFilter={activeFilter} setActiveFilter={handleChangeActiveFilter} scrollToTop={scrollToTop} scrollY={scrollY} />
 			<FocusableFlashList ref={ref} data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
 
 			{/* <ItemMenuModal /> */}

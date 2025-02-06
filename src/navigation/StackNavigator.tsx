@@ -1,10 +1,13 @@
-import { RootStackParamList, navigation } from '@navigation'
+import { useActions } from '@hooks'
+import { navigation, navigationRef, RootStackParamList } from '@navigation'
 import notifee, { EventType, Notification, NotificationPressAction } from '@notifee/react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { store } from '@store'
 import { MovieType } from '@store/kinopoisk'
 import { FC, useEffect } from 'react'
 import { ColorTypes } from 'src/theme/themes'
 import { TabNavigator } from './TabNavigator'
+import { ItemMenuModal } from './modals'
 import { Episodes, Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -14,6 +17,8 @@ interface Props {
 }
 
 export const StackNavigator: FC<Props> = ({ colors }) => {
+	const { openNotificationByInit } = useActions()
+
 	useEffect(() => {
 		// TODO fix notifee
 		notifee.getInitialNotification().then(initialNotification => {
@@ -38,12 +43,18 @@ export const StackNavigator: FC<Props> = ({ colors }) => {
 				const data = notification.data as { id: number; type: MovieType }
 				switch (pressAction.id) {
 					case 'movie':
-						navigation.push('Movie', { data })
-						console.log('navigate Movie', data) // NOTE test
+						if (navigationRef.isReady() && store.getState().settings.isLoaded) {
+							navigation.push('Movie', { data })
+						} else {
+							openNotificationByInit({ method: 'push', data: ['Movie', { data }] })
+						}
 						break
 					case 'watch':
-						navigation.navigate('Watch', { data })
-						console.log('navigate Watch', data) // NOTE test
+						if (navigationRef.isReady() && store.getState().settings.isLoaded) {
+							navigation.navigate('Watch', { data })
+						} else {
+							openNotificationByInit({ method: 'navigate', data: ['Watch', { data }] })
+						}
 						break
 				}
 				await notifee.cancelNotification(notification.id)
@@ -55,13 +66,18 @@ export const StackNavigator: FC<Props> = ({ colors }) => {
 
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
-			<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
-			<Stack.Screen name='Movie' component={Movie} options={{ orientation: __DEV__ ? 'all' : 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
-			<Stack.Screen name='MovieTrailer' component={MovieTrailer} options={{ orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true }} />
-			<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
-			<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
-			<Stack.Screen name='MovieListSlug' component={MovieListSlug} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
-			<Stack.Screen name='Episodes' component={Episodes} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+			<Stack.Group>
+				<Stack.Screen name='Home' component={TabNavigator} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+				<Stack.Screen name='Movie' component={Movie} options={{ orientation: __DEV__ ? 'all' : 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+				<Stack.Screen name='MovieTrailer' component={MovieTrailer} options={{ orientation: 'landscape', statusBarHidden: true, navigationBarHidden: true }} />
+				<Stack.Screen name='Person' component={Person} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+				<Stack.Screen name='Watch' component={Watch} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+				<Stack.Screen name='MovieListSlug' component={MovieListSlug} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+				<Stack.Screen name='Episodes' component={Episodes} options={{ orientation: 'portrait_up', statusBarHidden: false, statusBarColor: 'rgba(0,0,0,0.6)', statusBarTranslucent: true, navigationBarColor: colors.bg100 + '99' }} />
+			</Stack.Group>
+			<Stack.Group screenOptions={{ presentation: 'containedTransparentModal', animation: 'none' }}>
+				<Stack.Screen name='ItemMenuModal' component={ItemMenuModal} />
+			</Stack.Group>
 		</Stack.Navigator>
 	)
 }

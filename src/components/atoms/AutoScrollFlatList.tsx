@@ -20,7 +20,7 @@ interface FocusableListRenderItemInfo<ItemT> {
 // TODO movie to types
 export type AutoFocusableListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => React.ReactElement | null
 
-export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: AutoFocusableListRenderItem<ItemT> | null | undefined; animated?: boolean; autoScroll?: number }) => {
+export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, data, ...props }: Omit<FlatListProps<ItemT>, 'renderItem'> & { renderItem: AutoFocusableListRenderItem<ItemT> | null | undefined; animated?: boolean; autoScroll?: number }) => {
 	const navigation = useNavigation()
 	const window = Dimensions.get('window')
 
@@ -42,10 +42,10 @@ export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, .
 
 	const scrollIndex = useRef<number>(0)
 	const scrollInterval = useRef<NodeJS.Timer | null>(null)
-	const totalIndex = props.data ? props.data.length - 1 : 1
+	const totalIndex = data ? data.length - 1 : 1
 
 	useEffect(() => {
-		if (!props.data || props.data.length <= 1 || !autoScroll) return
+		if (!data || data.length <= 1 || !autoScroll) return
 
 		scrollInterval.current = setInterval(() => {
 			scrollIndex.current++
@@ -59,10 +59,10 @@ export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, .
 		return () => {
 			scrollInterval.current && clearInterval(scrollInterval.current)
 		}
-	}, [autoScroll, props.data])
+	}, [autoScroll, data])
 
 	const handleOnFocus = ({ index }: { index: number }) => {
-		// if (props.data && index < props.data.length) {
+		// if (data && index < data.length) {
 		// 	TODO add scrollToIndex
 		// 	ref.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
 		// }
@@ -107,6 +107,7 @@ export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, .
 	return (
 		<FL
 			{...props}
+			data={data as (Animated.WithAnimatedObject<ItemT> & { length: number }) | null | undefined}
 			ref={ref}
 			{...autoScrollData}
 			renderItem={

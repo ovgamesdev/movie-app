@@ -9,10 +9,11 @@ interface Props<T extends string> {
 	scrollY: Animated.Value
 	activeFilter: T
 	setActiveFilter: (value: T) => void
+	scrollToTop: (value: T) => void
 	filters: Record<T, string>
 }
 
-export const Filters = <T extends string>({ scrollY, activeFilter, setActiveFilter, filters }: Props<T>) => {
+export const Filters = <T extends string>({ scrollY, activeFilter, setActiveFilter, scrollToTop, filters }: Props<T>) => {
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
@@ -35,7 +36,7 @@ export const Filters = <T extends string>({ scrollY, activeFilter, setActiveFilt
 						const isActive = key === activeFilter
 
 						return (
-							<Button key={index} onPress={() => !isActive && setActiveFilter(key)} isActive={isActive} padding={4} paddingHorizontal={10} alignItems='center' justifyContent='center' buttonColor={theme.colors.bg200} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48 }}>
+							<Button key={index} onPress={() => (!isActive ? setActiveFilter(key) : scrollToTop(key))} isActive={isActive} padding={4} paddingHorizontal={10} alignItems='center' justifyContent='center' buttonColor={theme.colors.bg200} activeButtonColor={theme.colors.primary100} activePressedButtonColor={theme.getColorForTheme({ dark: 'primary200', light: 'text200' })} style={{ minWidth: 48 }}>
 								<Text style={{ color: isActive ? theme.colors.primary300 : theme.colors.text200, fontSize: 14, textAlign: 'center' }}>{tab}</Text>
 							</Button>
 						)

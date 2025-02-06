@@ -22,6 +22,7 @@ interface FocusableListRenderItemInfo<ItemT> {
 export type FocusableFlashListRenderItem<ItemT> = (info: FocusableListRenderItemInfo<ItemT>) => ReactElement | null
 export type FocusableFlashListType = {
 	scrollToOffset: (params: { animated?: boolean | null | undefined; offset: number }) => void
+	scrollToIndex: (params: { animated?: boolean | null | undefined; index: number; viewOffset?: number | undefined; viewPosition?: number | undefined }) => void
 }
 
 type Props<ItemT> = Omit<FlashListProps<ItemT>, 'renderItem'> & { renderItem: FocusableFlashListRenderItem<ItemT> | null | undefined; animated?: boolean }
@@ -33,7 +34,8 @@ const FocusableFlashListBase = <ItemT,>({ renderItem, animated, ...props }: Prop
 	const [refreshFocusedItem, setRefreshFocusedItem] = useState({ focus: { index: -1 }, blur: { index: -1 } })
 
 	useImperativeHandle(forwardRef, () => ({
-		scrollToOffset: params => ref.current?.scrollToOffset(params)
+		scrollToOffset: params => ref.current?.scrollToOffset(params),
+		scrollToIndex: params => ref.current?.scrollToIndex(params)
 	}))
 
 	useEffect(() => {

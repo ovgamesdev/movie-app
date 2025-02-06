@@ -5,7 +5,7 @@ import { NewEpisodesType, noticesActions, noticesExtraActions, setupNoticesListe
 import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
 import { delay, isSeries, newSeriesToString, normalizeUrlWithNull, rusToLatin } from '@utils'
 import { useEffect } from 'react'
-import BackgroundFetch, { BackgroundFetchConfig } from 'react-native-background-fetch'
+import BackgroundFetch, { BackgroundFetchConfig, HeadlessEvent } from 'react-native-background-fetch'
 import Config from 'react-native-config'
 
 const config: BackgroundFetchConfig = {
@@ -48,6 +48,7 @@ const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { 
 
 export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null> => {
 	// TODO add for other providers
+	// console.log('[fetchNewSeries]', { id, releasedEpisodes, provider, notifyTranslation })
 
 	try {
 		switch (true) {
@@ -207,7 +208,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 	}
 }
 
-const displayNotificationNewFilm = (movie: WatchHistory) => {
+export const displayNotificationNewFilm = (movie: WatchHistory) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 
 	store.dispatch(
@@ -287,7 +288,17 @@ const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { new
 }
 
 let isFinishTask = true
-export const backgroundTask = async (taskId: string) => {
+export const backgroundTask = async (event: string | HeadlessEvent) => {
+	const taskId = typeof event === 'string' ? event : event.taskId
+	const isTimeout = typeof event === 'string' ? false : event.timeout
+
+	if (isTimeout) {
+		console.log('[BackgroundFetch] Headless TIMEOUT:', taskId)
+		// isFinishTask = true
+		// BackgroundFetch.finish(taskId)
+		// return
+	}
+
 	if (!isFinishTask) {
 		console.log('[BackgroundFetch] continue taskId', taskId)
 		await delay(1000 * 60 * 10)
@@ -326,13 +337,17 @@ export const backgroundTask = async (taskId: string) => {
 				movieProvider = data[0].source
 			}
 
-			const newWatchHistoryData: Partial<WatchHistory> = { status: 'new', timestamp: Date.now() }
+			const newWatchHistoryData: Partial<WatchHistory> = {}
 
 			if (movie.releasedEpisodes !== undefined) {
 				const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
 
-				if (newSeries && newSeries.total > movie.releasedEpisodes) {
-					displayNotificationNewEpisode(movie, { newSeries })
+				if (newSeries && newSeries.total !== movie.releasedEpisodes) {
+					if (newSeries.total > movie.releasedEpisodes) {
+						displayNotificationNewEpisode(movie, { newSeries })
+						newWatchHistoryData.status = 'new'
+						newWatchHistoryData.timestamp = Date.now()
+					}
 					newWatchHistoryData.releasedEpisodes = newSeries.total
 					newWatchHistoryData.provider = newSeries.provider
 
@@ -340,6 +355,8 @@ export const backgroundTask = async (taskId: string) => {
 				}
 			} else {
 				displayNotificationNewFilm(movie)
+				newWatchHistoryData.status = 'new'
+				newWatchHistoryData.timestamp = Date.now()
 
 				if (isSeries(movie.type)) {
 					const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
@@ -375,19 +392,18 @@ export const useBackgroundFetch = () => {
 		})
 	}
 
+	const initNotifee = async () => {
+		await notifee.requestPermission()
+		await notifee.createChannel({
+			id: 'content-release-channel',
+			name: 'Content Release Notifications',
+			description: 'Channel for notifications about new seasons, series, and movies.',
+			importance: AndroidImportance.DEFAULT
+		})
+	}
+
 	useEffect(() => {
-		const init = async () => {
-			await notifee.createChannel({
-				id: 'content-release-channel',
-				name: 'Content Release Notifications',
-				description: 'Channel for notifications about new seasons, series, and movies.',
-				importance: AndroidImportance.DEFAULT
-			})
-			await notifee.requestPermission()
-
-			initBackgroundFetch()
-		}
-
-		init()
+		initBackgroundFetch()
+		initNotifee()
 	}, [])
 }

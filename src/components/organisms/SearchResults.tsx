@@ -2,7 +2,7 @@ import { Movie, MovieList, Person } from '@components/molecules/search'
 import { useActions } from '@hooks'
 import { navigation } from '@navigation'
 import { ISuggestSearchResults } from '@store/kinopoisk'
-import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson } from '@store/settings'
+import { SearchHistoryMovie, SearchHistoryMovieList, SearchHistoryPerson, WatchHistory } from '@store/settings'
 import { movieListUrlToFilters } from '@utils'
 import type { FC } from 'react'
 import { Text, View } from 'react-native'
@@ -10,9 +10,10 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = {
 	data: ISuggestSearchResults
+	historyData: WatchHistory[]
 }
 
-export const SearchResults: FC<Props> = ({ data }) => {
+export const SearchResults: FC<Props> = ({ data, historyData }) => {
 	const { styles } = useStyles(stylesheet)
 	const { addItemToSearchHistory } = useActions()
 
@@ -39,6 +40,30 @@ export const SearchResults: FC<Props> = ({ data }) => {
 					<Text style={styles.title}>Возможно, вы искали</Text>
 
 					{data.topResult.global.__typename === 'Person' ? <Person onPress={onPerson} item={data.topResult.global} /> : data.topResult.global.__typename === 'MovieListMeta' ? <MovieList key={data.topResult.global.id} onPress={onMovieList} item={data.topResult.global} /> : <Movie onPress={onMovie} item={data.topResult.global} />}
+				</View>
+			) : null}
+
+			{historyData.length > 0 ? (
+				<View style={[styles.container, styles.line]}>
+					<Text style={styles.title}>История просмотров</Text>
+
+					{historyData.map(({ id, poster, title, type, year }) => (
+						<Movie
+							key={id}
+							onPress={onMovie}
+							item={{
+								__typename: type,
+								id,
+								contentId: 'id',
+								poster: { avatarsUrl: poster, fallbackUrl: poster },
+								rating: { expectation: { count: 0, isActive: false, value: null }, kinopoisk: { count: 0, isActive: false, value: null } },
+								title: { original: null, russian: title },
+								type,
+								viewOption: null,
+								productionYear: year
+							}}
+						/>
+					))}
 				</View>
 			) : null}
 

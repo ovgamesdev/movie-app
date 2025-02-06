@@ -12,16 +12,17 @@ type Props = {
 	onFocus: ({ index }: { index: number }) => void
 	onBlur: ({ index }: { index: number }) => void
 	onPress: (value: WatchHistory) => void
+	onLongPress: (value: WatchHistory) => void
 }
 
-export const ContinueWatchItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }) => {
+export const ContinueWatchItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress, onLongPress }) => {
 	const poster = normalizeUrlWithNull(data.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
 	const { styles } = useStyles(stylesheet)
 
 	return (
-		<Button onFocus={() => onFocus({ index })} onBlur={() => onBlur({ index })} onPress={() => onPress(data)} hasTVPreferredFocus={hasTVPreferredFocus} animation='scale' flex={0} padding={5} transparent style={styles.container}>
+		<Button onFocus={() => onFocus({ index })} onBlur={() => onBlur({ index })} onPress={() => onPress(data)} onLongPress={() => onLongPress(data)} hasTVPreferredFocus={hasTVPreferredFocus} animation='scale' flex={0} padding={5} transparent style={styles.container}>
 			<ImageBackground source={{ uri: poster }} style={styles.image} borderRadius={6}>
-				{data.duration && data.lastTime ? (
+				{data.duration !== undefined && data.lastTime !== undefined && data.duration !== -1 && data.lastTime !== -1 ? (
 					<View style={styles.progressContainer}>
 						<Progress duration={data.status === 'end' ? data.lastTime : data.duration} lastTime={data.lastTime} />
 					</View>

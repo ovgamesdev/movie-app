@@ -1,23 +1,25 @@
 import { Button, FocusableFlashList, ImageBackground, Progress, type FocusableFlashListRenderItem, type FocusableFlashListType } from '@components/atoms'
 import { Filters } from '@components/molecules'
-import { ItemMenuModal } from '@components/organisms'
-import { useActions, useTypedSelector } from '@hooks'
+import { useTypedSelector } from '@hooks'
 import { NotificationsIcon } from '@icons'
-import { navigation } from '@navigation'
+import { BookmarksTabParamList, navigation } from '@navigation'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { WatchHistory, WatchHistoryStatus } from '@store/settings'
 import { getNoun, isSeries, normalizeUrlWithNull, watchHistoryProviderToString } from '@utils'
 import { FC, useCallback, useMemo, useRef, useState } from 'react'
-import { Animated, TVFocusGuideView, Text, View } from 'react-native'
+import { Animated, InteractionManager, TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type FilterKeys = 'all' | WatchHistoryStatus
-const filters: Record<FilterKeys, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое' }
+const filters: Record<FilterKeys, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое', dropped: 'Брошено' }
 
-export const History: FC = () => {
+type Props = NativeStackScreenProps<BookmarksTabParamList, 'History'>
+
+export const History: FC<Props> = ({ navigation: nav, route: { params } }) => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
-	const { setItemVisibleModal } = useActions()
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
@@ -35,7 +37,7 @@ export const History: FC = () => {
 
 	console.log(`History data: ${data.length}`)
 
-	const handleOnLongPress = (item: WatchHistory) => setItemVisibleModal({ item })
+	const handleOnLongPress = (data: WatchHistory) => navigation.push('ItemMenuModal', { data })
 
 	const renderItem: FocusableFlashListRenderItem<WatchHistory> = useCallback(
 		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
@@ -56,8 +58,8 @@ export const History: FC = () => {
 							</Text>
 
 							<View style={{ justifyContent: 'flex-end', flex: 1, marginBottom: 8, marginRight: 10 }}>
-								<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? (item.duration && item.lastTime ? `Осталось ${Math.floor((item.duration - item.lastTime) / 60)} ${getNoun(Math.floor((item.duration - item.lastTime) / 60), 'минута', 'минуты', 'минут')}` : 'Смотрю') : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
-								{(item.status === 'end' || item.status === 'watch') && item.duration && item.lastTime ? <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> : null}
+								<Text style={{ color: theme.colors.text200, fontSize: 14, marginBottom: 4 }}>{item.status === 'end' ? 'Просмотрено' : item.status === 'dropped' ? 'Брошено' : item.status === 'pause' ? 'Пауза' : item.status === 'watch' ? (item.duration !== undefined && item.lastTime !== undefined && item.duration !== -1 && item.lastTime !== -1 ? `Осталось ${Math.floor((item.duration - item.lastTime) / 60)} ${getNoun(Math.floor((item.duration - item.lastTime) / 60), 'минута', 'минуты', 'минут')}` : 'Смотрю') : isSeries(item.type) ? 'Доступны новые серии' : 'Фильм вышел'}</Text>
+								{(item.status === 'end' || item.status === 'watch') && item.duration !== undefined && item.lastTime !== undefined && item.duration !== -1 && item.lastTime !== -1 ? <Progress duration={item.status === 'end' ? item.lastTime : item.duration} lastTime={item.lastTime} /> : null}
 							</View>
 						</View>
 						{item.notify && (
@@ -90,14 +92,40 @@ export const History: FC = () => {
 		setActiveFilter(value)
 		ref.current?.scrollToOffset({ offset: 0, animated: false })
 	}
+	const scrollToTop = () => {
+		ref.current?.scrollToOffset({ offset: 0, animated: true })
+	}
+
+	const hasScrollToItem = useRef<string | null>(null)
+	const initialScrollIndex = data.findIndex(it => it.id === params?.scrollToItem.id)
+	useFocusEffect(
+		useCallback(() => {
+			if (!params) return
+
+			const index = data.findIndex(it => it.id === params.scrollToItem.id)
+
+			if (index === -1 && hasScrollToItem.current !== `${params.scrollToItem.id}:${params.lookAtHistory}`) {
+				setActiveFilter('all')
+				return
+			}
+
+			const task = InteractionManager.runAfterInteractions(() => {
+				if (index !== -1 && hasScrollToItem.current !== `${params.scrollToItem.id}:${params.lookAtHistory}`) {
+					hasScrollToItem.current = `${params.scrollToItem.id}:${params.lookAtHistory}`
+					setTimeout(() => ref.current?.scrollToIndex({ index, viewOffset: 51 }), 0)
+				}
+			})
+
+			return () => task.cancel()
+		}, [params, ref.current, data])
+	)
+
+	useScrollToTop(useRef({ scrollToTop }))
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
-			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={handleChangeActiveFilter} scrollY={scrollY} />
-			<FocusableFlashList ref={ref} data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
-
-			{/* TODO modal to global */}
-			<ItemMenuModal />
+			<Filters filters={filters} activeFilter={activeFilter} setActiveFilter={handleChangeActiveFilter} scrollToTop={scrollToTop} scrollY={scrollY} />
+			<FocusableFlashList initialScrollIndex={initialScrollIndex} ref={ref} data={data} keyExtractor={keyExtractor} renderItem={renderItem} estimatedItemSize={146} bounces={false} overScrollMode='never' contentContainerStyle={{ ...styles.contentContainer, paddingTop: barHeight }} ListEmptyComponent={ListEmptyComponent} animated onScroll={handleOnScroll} />
 		</TVFocusGuideView>
 	)
 }

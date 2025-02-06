@@ -40,7 +40,7 @@ export const MovieTrailer: FC<Props> = ({ route }) => {
 				style={{ backgroundColor: 'rgba(0,0,0,0)' }}
 				containerStyle={{ backgroundColor: 'rgba(0,0,0,0)' }}
 				source={{ uri: (streamUrl || sourceVideoUrl) ?? `https://via.placeholder.com/${window.width}x${window.height}` }}
-				webviewDebuggingEnabled={__DEV__}
+				webviewDebuggingEnabled
 				onLoadEnd={() => setIsLoading(false)}
 				//
 			/>

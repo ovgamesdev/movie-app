@@ -29,17 +29,13 @@ const noticesSlice = createSlice({
 			state.notifications = [...state.notifications, item].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_LIMIT - 1)
 			state.Notices = state.notifications.filter(it => !it.read).length
 		},
-		// addNotice: (state: IInitialStateNotices, { payload }: PayloadAction<NoticesItem>) => {
-		// 	state.notifications = [...state.notifications, payload].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_LIMIT - 1)
-
-		// 	state.Notices = state.notifications.filter(it => !it.read).length
-		// },
 		removeNotice: (state: IInitialStateNotices, { payload }: PayloadAction<NoticesItem>) => {
-			// TODO add remove notice
-			// data.filter(it => !(it.id === item.id && it.timestamp === item.timestamp))
-			//
-			// state.notifications = [...state.notifications, payload].sort((a, b) => b.timestamp - a.timestamp).slice(0, COUNT_SAVE_TO_LIMIT - 1)
-			// state.Notices = state.notifications.filter(it => !it.read).length
+			state.notifications = state.notifications
+				.filter(it => !(it.id === payload.id && it.timestamp === payload.timestamp))
+				.sort((a, b) => b.timestamp - a.timestamp)
+				.slice(0, COUNT_SAVE_TO_LIMIT - 1)
+
+			state.Notices = state.notifications.filter(it => !it.read).length
 		},
 		setReadNotices: (state: IInitialStateNotices) => {
 			state.notifications = state.notifications

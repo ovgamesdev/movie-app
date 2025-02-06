@@ -9,6 +9,7 @@ import { type FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
+import { Backup } from './Backup'
 import { Logs } from './Logs'
 
 const LoaderSettings: FC = () => {
@@ -40,6 +41,7 @@ export const Settings: FC = () => {
 			<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }} initialRouteName={'SettingsHome'}>
 				<Stack.Screen name='SettingsHome' component={SettingsScreen} />
 				<Stack.Screen name='Logs' component={Logs} />
+				<Stack.Screen name='Backup' component={Backup} />
 			</Stack.Navigator>
 			{/* <Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName={'Settings'} backBehavior='initialRoute'>
 				<Tab.Screen name='Settings' component={SettingsScreen} />
@@ -83,6 +85,7 @@ export const SettingsScreen: FC = () => {
 
 			<View style={{ gap: 10, paddingTop: 10 }}>
 				<Button text='Logs' onPress={() => navigation.navigate('Logs', undefined)} />
+				<Button text='Backup' onPress={() => navigation.navigate('Backup', undefined)} />
 				<Button text='Открыть настройки уведомлений' onPress={async () => notifee.openNotificationSettings()} />
 			</View>
 		</TVFocusGuideView>

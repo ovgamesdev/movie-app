@@ -21,22 +21,21 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 		navigation.push('Movie', { data: { id: data.id, type: data.type }, other: { poster: data.poster, title: data.title, year: data.year } })
 	}
 
-	const [showAll, setShowAll] = useState<null | 'id' | 'title'>(null)
+	const [showAll, setShowAll] = useState<null | 'id' | 'title'>('title')
 
 	const kodik =
 		showAll === null
 			? data.kodik
-			: data.kodik
-					.reduce<IGraphqlSuggestMovie[]>((acc, cur) => {
-						const existingItem = acc.find(item => (showAll === 'title' ? item.title.russian === cur.title.russian : item.id === cur.id))
+			: data.kodik.reduce<IGraphqlSuggestMovie[]>((acc, cur) => {
+					const existingItem = acc.find(item => (showAll === 'title' ? item.title.russian === cur.title.russian : item.id === cur.id))
 
-						if (!existingItem) {
-							acc.push(cur)
-						}
+					if (!existingItem) {
+						acc.push(cur)
+					}
 
-						return acc
-					}, [])
-					.sort((a, b) => Number(String(a.id).replace('tt', '')) - Number(String(b.id).replace('tt', '')))
+					return acc
+			  }, [])
+	// .sort((a, b) => Number(String(a.id).replace('tt', '')) - Number(String(b.id).replace('tt', '')))
 
 	return (
 		<View>
@@ -68,9 +67,9 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 						<DropDown
 							value={showAll}
 							items={[
-								{ value: null, label: 'Показать все' },
+								{ value: 'title', label: 'Объединить по названию' },
 								{ value: 'id', label: 'Объединить по id' },
-								{ value: 'title', label: 'Объединить по названию' }
+								{ value: null, label: 'Показать все' }
 							]}
 							onChange={setShowAll}
 						/>

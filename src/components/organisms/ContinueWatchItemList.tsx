@@ -26,7 +26,7 @@ export const ContinueWatchItemList: FC<Props> = ({ status, title }) => {
 	const isEmpty = data.length === 0
 
 	const renderItem: FocusableListRenderItem<WatchHistory> = ({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
-		return <ContinueWatchItem data={item} index={index} onFocus={onFocus} onBlur={onBlur} onPress={data => navigation.push('Watch', { data })} hasTVPreferredFocus={hasTVPreferredFocus} />
+		return <ContinueWatchItem data={item} index={index} onFocus={onFocus} onBlur={onBlur} onPress={data => navigation.push('Watch', { data })} onLongPress={data => navigation.push('ItemMenuModal', { data, lookAtHistory: Date.now() })} hasTVPreferredFocus={hasTVPreferredFocus} />
 	}
 
 	return (

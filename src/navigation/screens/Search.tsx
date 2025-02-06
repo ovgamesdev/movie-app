@@ -181,13 +181,17 @@ export const Search: FC<Props> = ({ route }) => {
 	const { isError: isErrorSearch, isFetching: isFetchingSearch, data: dataSearch, refetch: refetchSearch } = useGetSuggestSearchQuery({ keyword: deferredKeyword }, { skip: isExpandedSearch || isImdbSearch || deferredKeyword.length === 0 })
 	const { isError: isErrorExpanded, isFetching: isFetchingExpanded, data: dataExpanded, refetch: refetchExpanded } = useExpandedSearch({ keyword: deferredKeyword }, { skip: !isExpandedSearch || isImdbSearch || deferredKeyword.length === 0 })
 
+	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
+	const watchHistoryData = Object.values(watchHistory).filter(it => RegExp(deferredKeyword, 'i').exec(it.title))
+	const watchHistoryDataRes = watchHistoryData.sort((a, b) => b.timestamp - a.timestamp).slice(0, 3)
+
 	const data = isExpandedSearch ? dataExpanded : dataSearch
 	const isFetching = isFetchingSearch || isFetchingExpanded
 	const isError = isErrorSearch || isErrorExpanded
 	const refetch = async () => (!isExpandedSearch && refetchSearch(), isExpandedSearch && refetchExpanded())
 
 	const isEmptyExpandedSearch = !!(data && 'collaps' in data && !(data.collaps.length > 0) && !(data.alloha.length > 0) && !(data.kodik.length > 0))
-	const isEmptySearch = !!(data && 'topResult' in data && !data.topResult?.global && !(data.movies.length > 0) && !(data.movieLists.length > 0) && !(data.persons.length > 0))
+	const isEmptySearch = !!(data && 'topResult' in data && !data.topResult?.global && !(data.movies.length > 0) && !(data.movieLists.length > 0) && !(data.persons.length > 0) && !(watchHistoryDataRes.length > 0))
 	const isEmpty = isImdbSearch ? false : isExpandedSearch ? isEmptyExpandedSearch : isEmptySearch
 	const isLoading = isImdbSearch || deferredKeyword.length === 0 ? false : isFetching || keyword !== deferredKeyword
 
@@ -348,7 +352,7 @@ export const Search: FC<Props> = ({ route }) => {
 						<ArrowBackIcon width={20} height={20} fill={theme.colors.text100} style={{}} />
 					</Button>
 				) : null}
-				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => setKeyword('')} />
+				<Input ref={ref} flex={1} value={keyword} onChangeText={setKeyword} onSubmitEditing={onSubmitEditing} placeholder={isExpandedSearch ? 'Расширенный поиск' : 'Фильмы, сериалы, персоны'} autoFocus returnKeyType='search' inputMode='search' icon='search' clearable onClear={() => (setIsExpandedSearch(false), setKeyword(''))} />
 			</View>
 
 			{/* TODO: ? 25 */}
@@ -395,7 +399,7 @@ export const Search: FC<Props> = ({ route }) => {
 					</View>
 				) : data ? (
 					<ScrollView contentContainerStyle={[styles.resultsContainer, { paddingBottom: 15 + insets.bottom }]}>
-						{'collaps' in data ? <SearchResultsProvider data={data} /> : <SearchResults data={data} />}
+						{'collaps' in data ? <SearchResultsProvider data={data} /> : <SearchResults data={data} historyData={watchHistoryDataRes} />}
 						{!isExpandedSearch && (
 							<Button paddingHorizontal={16} paddingVertical={12} transparent onPress={async () => (setIsExpandedSearch(true), setKeyword(keyword => keyword + ' '))}>
 								<Text style={styles.showMoreText}>Показать все</Text>

@@ -1,5 +1,7 @@
 import { ContinueWatchItemList, OttTop10Monthly, SlugItemList, TopItemsAllList } from '@components/organisms'
 import { useTypedSelector } from '@hooks'
+import { useScrollToTop } from '@react-navigation/native'
+import { useRef } from 'react'
 import { ScrollView, TVFocusGuideView, Text, View } from 'react-native'
 import Config from 'react-native-config'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -8,8 +10,11 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 export const Home = () => {
 	const insets = useSafeAreaInsets()
 	const { styles } = useStyles(stylesheet)
+	const ref = useRef<ScrollView>(null)
 
 	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
+
+	useScrollToTop(ref)
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp>
@@ -18,7 +23,7 @@ export const Home = () => {
 					<Text style={styles.devText}>isTv: {String(Config.UI_MODE === 'tv')}</Text>
 				</View>
 			)}
-			<ScrollView>
+			<ScrollView ref={ref}>
 				<OttTop10Monthly />
 
 				<View style={styles.scrollViewContainer}>

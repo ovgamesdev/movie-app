@@ -8,7 +8,6 @@ import { themoviedbApi } from '@store/themoviedb'
 import { updateReducer } from '@store/update'
 import { reducer as network } from 'react-native-offline'
 import { backgroundRestrictionReducer } from './backgroundRestriction'
-import { itemMenuModalReducer } from './itemMenuModal'
 import { listenerMiddleware } from './listenerMiddleware'
 
 const reducers = combineReducers({
@@ -20,7 +19,6 @@ const reducers = combineReducers({
 	[themoviedbApi.reducerPath]: themoviedbApi.reducer,
 	safeArea: safeAreaReducer,
 	backgroundRestriction: backgroundRestrictionReducer,
-	itemMenuModal: itemMenuModalReducer,
 	notices: noticesReducer
 })
 
