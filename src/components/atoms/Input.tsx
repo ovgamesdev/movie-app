@@ -2,6 +2,7 @@ import { Button, ButtonType } from '@components/atoms'
 import { CloseIcon, SearchIcon } from '@icons'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { TVFocusGuideView, TextInput, TextInputProps } from 'react-native'
+import Config from 'react-native-config'
 import { useStyles } from 'react-native-unistyles'
 
 export interface InputProps extends TextInputProps {
@@ -26,13 +27,13 @@ export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, cle
 	const textInputRef = useRef<TextInput | null>(null)
 
 	useEffect(() => {
-		if (props.hasTVPreferredFocus) {
+		if (props.hasTVPreferredFocus && Config.UI_MODE === 'tv') {
 			setTimeout(() => buttonRef.current?.requestTVFocus(), 0)
 		}
 	}, [props.hasTVPreferredFocus])
 
 	useImperativeHandle(forwardRef, () => ({
-		requestTVFocus: () => buttonRef.current?.requestTVFocus(),
+		requestTVFocus: () => Config.UI_MODE === 'tv' && buttonRef.current?.requestTVFocus(),
 		focus: () => textInputRef.current?.focus()
 	}))
 
@@ -43,7 +44,7 @@ export const Input = forwardRef<InputType, InputProps>(({ transparent, icon, cle
 			<Button ref={buttonRef} onPress={() => textInputRef.current?.focus()} padding={0} flex={1} flexDirection='row' alignItems='center' borderStyle={isClearable ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}>
 				{icon === 'search' ? <SearchIcon width={20} height={20} fill={theme.colors.text100} style={{ marginLeft: 10 }} /> : null}
 				{/* FIXME: If there is no onBlur={() => buttonRef.current?.requestTVFocus()}, then when unfocusing from TextInput and trying to focus on it next time, it does not focus on button */}
-				<TextInput ref={textInputRef} style={{ color: theme.colors.text100, fontSize: 14, height: 40, padding: 10, flex: 1 }} placeholder={placeholder} placeholderTextColor={theme.colors.text200} onSubmitEditing={() => buttonRef.current?.requestTVFocus()} onBlur={() => buttonRef.current?.requestTVFocus()} cursorColor={theme.colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
+				<TextInput ref={textInputRef} style={{ color: theme.colors.text100, fontSize: 14, height: 40, padding: 10, flex: 1 }} placeholder={placeholder} placeholderTextColor={theme.colors.text200} onSubmitEditing={() => Config.UI_MODE === 'tv' && buttonRef.current?.requestTVFocus()} onBlur={() => Config.UI_MODE === 'tv' && buttonRef.current?.requestTVFocus()} cursorColor={theme.colors.primary200} disableFullscreenUI autoComplete='off' {...props} />
 			</Button>
 
 			{isClearable ? (

@@ -234,7 +234,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
 		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
-			mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
+			if (!isNaN(Number(e.nativeEvent.text))) mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
 		}
 
 		if (!isSeries(data.type)) return null
@@ -242,7 +242,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		return (
 			<View style={{ paddingVertical: 10, gap: 5 }}>
 				<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{title}</Text>
-				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
+				<Input value={value === undefined ? '' : String(value)} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
 			</View>
 		)
 	})

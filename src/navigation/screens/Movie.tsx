@@ -147,13 +147,15 @@ export const Movie: FC<Props> = ({ route }) => {
 							<View>
 								<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
 									<WatchButton data={movie} />
+									<Button style={{ minHeight: 39.33 }} text='Изменить' onPress={() => navigation.push('ChangeFilm', { data: { id: movie.id }, other: { type: movie.type, poster: normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' }), title: movie.title, year: movie.year } })} />
 									<FavoritesButton data={movie} />
 								</TVFocusGuideView>
+
+								<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
+								<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
+									id: {movie.id}
+								</Text>
 							</View>
-							<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
-							<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
-								id: {movie.id}
-							</Text>
 						</View>
 					</View>
 				</ScrollView>

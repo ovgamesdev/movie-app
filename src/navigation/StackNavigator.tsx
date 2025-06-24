@@ -7,7 +7,7 @@ import { MovieType } from '@store/kinopoisk'
 import { FC, useEffect } from 'react'
 import { ColorTypes } from 'src/theme/themes'
 import { TabNavigator } from './TabNavigator'
-import { ItemMenuModal } from './modals'
+import { ChangeFilm, ItemMenuModal } from './modals'
 import { Episodes, Movie, MovieListSlug, MovieTrailer, Person, Watch } from './screens'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -77,6 +77,7 @@ export const StackNavigator: FC<Props> = ({ colors }) => {
 			</Stack.Group>
 			<Stack.Group screenOptions={{ presentation: 'containedTransparentModal', animation: 'none' }}>
 				<Stack.Screen name='ItemMenuModal' component={ItemMenuModal} />
+				<Stack.Screen name='ChangeFilm' component={ChangeFilm} />
 			</Stack.Group>
 		</Stack.Navigator>
 	)

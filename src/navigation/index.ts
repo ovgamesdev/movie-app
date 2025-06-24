@@ -71,6 +71,7 @@ export type RootStackParamList = {
 	Episodes: { data: { id: number; type: MovieType; tmdb_id: number } }
 
 	ItemMenuModal: { data: WatchHistory; lookAtHistory?: number }
+	ChangeFilm: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}` }; other?: { type: MovieType; title: string; poster: string | null; year: number | null } }
 }
 
 export type HomeTabParamList = {
