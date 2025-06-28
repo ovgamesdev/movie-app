@@ -28,7 +28,10 @@ export const WatchButton: FC<Props> = ({ data }) => {
 			return
 		}
 
-		getKinoboxPlayers(data).then(it => setProviders(it.data ? (it.data.length > 0 ? it.data : null) : 'error'))
+		getKinoboxPlayers(data).then(it => {
+			const data = it.data.filter(it => 'iframeUrl' in it)
+			setProviders(it.error ? 'error' : data.length === 0 ? null : data)
+		})
 	}, [])
 
 	useEffect(fetch, [])

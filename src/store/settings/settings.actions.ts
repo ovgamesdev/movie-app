@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { GDrive, ListQueryBuilder, MimeTypes } from '@robinbobin/react-native-google-drive-api-wrapper'
+import { GDrive, ListQueryBuilder, MIME_TYPES } from '@robinbobin/react-native-google-drive-api-wrapper'
 import { ISettings } from '@store/settings'
 import { AppDispatch, RootState } from '../store'
 
@@ -24,8 +24,8 @@ const getCloudSettings = async (): Promise<ISettings | null> => {
 		gdrive.fetchTimeout = 15000
 
 		if (drive.fileId.length === 0) {
-			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
-			if (list?.files?.length > 0) {
+			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder('name', '=', KEY) }) // new ListQueryBuilder().e('name', KEY)
+			if (list.files.length > 0) {
 				drive.fileId = list.files[0].id
 			}
 		}
@@ -70,21 +70,22 @@ const saveCloudSettings = async (_value: object): Promise<boolean> => {
 		gdrive.fetchTimeout = 15000
 
 		if (drive.fileId.length === 0) {
-			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder().e('name', KEY) })
-			if (list?.files?.length > 0) {
+			const list = await gdrive.files.list({ spaces: 'appDataFolder', q: new ListQueryBuilder('name', '=', KEY) }) // new ListQueryBuilder().e('name', KEY)
+			if (list.files.length > 0) {
 				drive.fileId = list.files[0].id
 			}
 		}
 
 		if (drive.fileId.length > 0) {
-			const file = await gdrive.files.newMultipartUploader().setData(value, MimeTypes.JSON_UTF8).setIdOfFileToUpdate(drive.fileId).execute()
+			const file = await gdrive.files.newMultipartUploader().setData(value).setDataMimeType(MIME_TYPES.application.json).setIdOfFileToUpdate(drive.fileId).execute()
 
 			drive.fileId = file.id
 			return true
 		} else {
 			const file = await gdrive.files
 				.newMultipartUploader()
-				.setData(value, MimeTypes.JSON_UTF8)
+				.setData(value)
+				.setDataMimeType(MIME_TYPES.application.json)
 				.setRequestBody({ name: KEY, parents: ['appDataFolder'] })
 				.execute()
 

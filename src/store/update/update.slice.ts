@@ -1,7 +1,7 @@
 import { PayloadAction, Unsubscribe, createSlice } from '@reduxjs/toolkit'
 import { AppStartListening } from '@store'
 import { IDownload, IInitialStateUpdate, IRemote } from '@store/update'
-import { Alert, NativeModules } from 'react-native'
+import { NativeModules, ToastAndroid } from 'react-native'
 import semver from 'semver'
 
 const RNUpdateAPK = NativeModules.RNUpdateAPK
@@ -70,7 +70,7 @@ const updateSlice = createSlice({
 				}
 			} catch (error) {
 				console.error('RNUpdateAPK::getApkVersionSuccess - Unknown error', error)
-				Alert.alert('Произошла ошибка', 'Unknown error')
+				ToastAndroid.show(`Не удалось проверить обновление приложения.`, ToastAndroid.SHORT)
 			}
 		}
 	}

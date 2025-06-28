@@ -41,7 +41,7 @@ export const AutoScrollFlatList = <ItemT,>({ renderItem, animated, autoScroll, d
 	}, [focusedItem.current, navigation])
 
 	const scrollIndex = useRef<number>(0)
-	const scrollInterval = useRef<NodeJS.Timer | null>(null)
+	const scrollInterval = useRef<NodeJS.Timeout | null>(null)
 	const totalIndex = data ? data.length - 1 : 1
 
 	useEffect(() => {

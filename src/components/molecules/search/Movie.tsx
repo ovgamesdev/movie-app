@@ -8,26 +8,43 @@ import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = {
 	item: IGraphqlSuggestMovie
-	onPress: (item: Omit<SearchHistoryMovie, 'timestamp'>) => void
+	onPress: (item: Omit<SearchHistoryMovie, 'timestamp'>, _item: IGraphqlSuggestMovie) => void
+	onLongPress?: (item: Omit<SearchHistoryMovie, 'timestamp'>, _item: IGraphqlSuggestMovie) => void
 }
 
-export const Movie: FC<Props> = ({ item, onPress }) => {
+export const Movie: FC<Props> = ({ item, onPress, onLongPress }) => {
 	const { styles } = useStyles(stylesheet)
 
 	const poster = normalizeUrlWithNull(item.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/80x120' })
 
 	const handleOnPress = () => {
-		onPress({
-			id: item.id,
-			type: item.__typename,
-			title: item.title.russian ?? item.title.original ?? '',
-			poster: item.poster?.avatarsUrl ?? null,
-			year: item.productionYear ?? item.releaseYears?.[0].start ?? null
-		})
+		onPress(
+			{
+				id: item.id,
+				type: item.__typename,
+				title: item.title.russian ?? item.title.original ?? '',
+				poster: item.poster?.avatarsUrl ?? null,
+				year: item.productionYear ?? item.releaseYears?.[0].start ?? null
+			},
+			item
+		)
+	}
+
+	const handleOnLongPress = () => {
+		onLongPress?.(
+			{
+				id: item.id,
+				type: item.__typename,
+				title: item.title.russian ?? item.title.original ?? '',
+				poster: item.poster?.avatarsUrl ?? null,
+				year: item.productionYear ?? item.releaseYears?.[0].start ?? null
+			},
+			item
+		)
 	}
 
 	return (
-		<Button onPress={handleOnPress} paddingHorizontal={16} animation='scale' transparent alignItems='stretch' flexDirection='row'>
+		<Button onPress={handleOnPress} onLongPress={handleOnLongPress} paddingHorizontal={16} animation='scale' transparent alignItems='stretch' flexDirection='row'>
 			<ImageBackground source={{ uri: poster }} resizeMode='contain' style={styles.image} />
 			<View style={styles.container}>
 				<Text numberOfLines={2} style={styles.title}>

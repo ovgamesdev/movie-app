@@ -135,14 +135,26 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				case String(data.id).startsWith('KODIK'): {
 					const id = String(data.id).split(':')[1]
 
-					getKodikPlayers({ id: `KODIK:${id}` }).then(({ data: kodik_data, error, message }) => {
+					getKodikPlayers({ id: `KODIK:${id}` }).then(({ data: kodik_data, error }) => {
 						if (error) {
-							setError({ error, message })
-							console.error('getKodikPlayers:', { movie: route.params.data, error, message })
+							switch (error) {
+								case 'ERROR':
+									setError({ error: 'Ошибка', message: 'Возникла неопознанная ошибка' })
+									break
+								default:
+									setError({ error: 'Ошибка', message: 'Возникла неопознанная ошибка' })
+									console.warn('[Watch:getKodikPlayers] [TODO] [Неизвестный параметр]:', error)
+									break
+							}
+
+							console.error('getKodikPlayers:', { movie: route.params.data, data: kodik_data, error })
 						}
-						if (kodik_data && kodik_data.length > 0) {
-							setProviders(kodik_data.reverse())
-							setProvider(provider ?? kodik_data[0]?.source)
+
+						const success_kodik_data = kodik_data.filter(it => 'iframeUrl' in it)
+
+						if (success_kodik_data.length > 0) {
+							setProviders(success_kodik_data.reverse())
+							setProvider(provider ?? success_kodik_data[0]?.source)
 							setError(null)
 						} else {
 							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
@@ -158,40 +170,30 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			return
 		}
 
-		getKinoboxPlayers(data).then(({ data, error, message }) => {
+		getKinoboxPlayers(data).then(({ data, error }) => {
 			if (error) {
 				setIsLoading(false)
-				setError({ error, message })
-				console.error('getKinoboxPlayers', { movie: route.params.data, data, error, message })
+
+				switch (error) {
+					case 'ERROR':
+						setError({ error: 'Ошибка', message: 'Возникла неопознанная ошибка' })
+						break
+					default:
+						setError({ error: 'Ошибка', message: 'Возникла неопознанная ошибка' })
+						console.warn('[Watch:getKinoboxPlayers] [TODO] [Неизвестный параметр]:', error)
+						break
+				}
+
+				console.error('getKinoboxPlayers', { movie: route.params.data, data, error })
 				return
 			}
 
-			if (data && data.length > 0) {
-				if (data.findIndex(it => it.source === 'KODIK') === -1) {
-					setProviders(data)
-					setProvider(provider ?? data[0]?.source)
-					setError(null)
-				} else {
-					const watchHistory = store.getState().settings.settings.watchHistory[`${route.params.data.id as number}`] as WatchHistory | undefined
+			const success_data = data.filter(it => 'iframeUrl' in it)
 
-					console.log('111: watchHistory', watchHistory)
-
-					getKodikPlayers(route.params.data as { id: number | `KODIK:${string}` | `tt${number}` }, watchHistory).then(({ data: kodik_data, error, message }) => {
-						if (error) {
-							console.error('getKodikPlayers:', { movie: route.params.data, error, message })
-						}
-						if (kodik_data && kodik_data.length > 0) {
-							setProviders(data.map(it => (it.source === 'KODIK' ? kodik_data.reverse() : it)).flat())
-						} else {
-							ToastAndroid.show('Ошибка KODIK, пожалуйста, повторите попытку позже.', ToastAndroid.SHORT)
-							setProviders(data.filter(it => it.source !== 'KODIK'))
-						}
-
-						console.log('111: getKodikPlayers', { kodik_data, error, message })
-						setProvider(provider ?? data[0]?.source)
-						setError(null)
-					})
-				}
+			if (success_data.length > 0) {
+				setProviders(success_data)
+				setProvider(provider ?? success_data[0]?.source)
+				setError(null)
 			} else {
 				setIsLoading(false)
 				setError({ error: 'Ошибка', message: 'Видео файл не обнаружен.' })
@@ -208,7 +210,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 	useEffect(loadPlayers, [])
 
-	// console.log('providers:', providers)
+	console.log('providers:', providers)
 
 	const handleProviderChange = (it: KinoboxPlayersData, translation?: number | null) => {
 		setIsLoading(true)
@@ -234,7 +236,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
 		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
-			if (!isNaN(Number(e.nativeEvent.text))) mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
+			mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
 		}
 
 		if (!isSeries(data.type)) return null
@@ -242,7 +244,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		return (
 			<View style={{ paddingVertical: 10, gap: 5 }}>
 				<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{title}</Text>
-				<Input value={value === undefined ? '' : String(value)} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
+				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
 			</View>
 		)
 	})
@@ -599,7 +601,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 
 			{/* TODO: ? 25 */}
 			{!isFullWatch && (
-				<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={25} style={{ flex: 1 }} contentContainerStyle={{ flex: 1 }}>
+				<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={25} style={{ flex: 1 }}>
 					<ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 6, padding: 10, paddingBottom: 10 + insets.bottom }}>
 						<Text style={{ fontSize: 14, color: theme.colors.text100 }}>Выбор провайдера:</Text>
 						<View style={{ gap: 6 }}>
@@ -672,7 +674,7 @@ const SelectProvider: FC<{ data: WatchHistory | null; currentProvider: KinoboxPl
 						{it.translations.map(translation => {
 							const isActive = watchHistory?.translation?.id === translation.id
 							return (
-								<Button buttonColor='transparent' flexDirection='row' alignItems='center' onPress={() => (onProviderChange(it, translation.id), setIsCollapsTranslation(null))}>
+								<Button key={translation.id} buttonColor='transparent' flexDirection='row' alignItems='center' onPress={() => (onProviderChange(it, translation.id), setIsCollapsTranslation(null))}>
 									{isActive && <CheckIcon width={20} height={20} fill={theme.colors.text100} style={{ marginRight: 10 }} />}
 									<Text style={{ fontSize: 14, color: theme.colors[isActive ? 'text100' : 'text200'], flex: 1 }}>{translation.name ?? `${['—', translation.quality].filter(it => !!it).join(', ')}`}</Text>
 								</Button>

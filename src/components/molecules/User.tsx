@@ -18,14 +18,14 @@ export const User: FC = () => {
 	}
 
 	if (user == null) {
-		return <Button text='Auth with Google' onPress={signInGoogleUser} />
+		return <Button text='Auth with Google' onPress={() => signInGoogleUser()} />
 	}
 
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
 			<Text style={styles.name}>{user.user.name}</Text>
-			<Button text='signOut' onPress={signOutGoogleUser} buttonColor={theme.colors.warning} pressedButtonColor={theme.colors.warning + '99'} textColor={theme.colors.primary300} />
-			{!isAllScopeAllowed ? <Button text='addScope' onPress={addScopeGoogleUser} style={styles.button} /> : null}
+			<Button text='signOut' onPress={() => signOutGoogleUser()} buttonColor={theme.colors.warning} pressedButtonColor={theme.colors.warning + '99'} textColor={theme.colors.primary300} />
+			{!isAllScopeAllowed ? <Button text='addScope' onPress={() => addScopeGoogleUser()} style={styles.button} /> : null}
 		</TVFocusGuideView>
 	)
 }

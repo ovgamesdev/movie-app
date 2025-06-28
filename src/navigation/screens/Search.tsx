@@ -9,7 +9,7 @@ import { getKinoboxPlayers, store } from '@store'
 import { IGraphqlSuggestMovie, useGetSuggestSearchQuery } from '@store/kinopoisk'
 import { WatchHistory } from '@store/settings'
 import { getTMDBPosterImage, themoviedbApi } from '@store/themoviedb'
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { BackHandler, NativeSyntheticEvent, ScrollView, TVFocusGuideView, Text, TextInputSubmitEditingEventData, ToastAndroid, View } from 'react-native'
 import Config from 'react-native-config'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
@@ -46,7 +46,7 @@ const useExpandedSearch = ({ keyword }: { keyword: string }, { skip }: { skip: b
 
 						collaps.push({
 							__typename: isSeries ? 'TvSeries' : 'Film',
-							contentId: String(movie.id),
+							contentId: `COLLAPS:${movie.id}`,
 							id: movie.kinopoisk_id ?? (movie.imdb_id ? 'tt' + movie.imdb_id : null) ?? `COLLAPS:${movie.id}`,
 							poster: {
 								avatarsUrl: movie.poster,
@@ -84,7 +84,7 @@ const useExpandedSearch = ({ keyword }: { keyword: string }, { skip }: { skip: b
 
 					alloha.push({
 						__typename: isSeries ? 'TvSeries' : 'Film',
-						contentId: res.data.token_movie,
+						contentId: `ALLOHA:${res.data.token_movie}`,
 						id: res.data.id_kp ?? res.data.id_imdb ?? `ALLOHA:${res.data.token_movie}`,
 						poster: {
 							avatarsUrl: res.data.poster,
@@ -121,7 +121,7 @@ const useExpandedSearch = ({ keyword }: { keyword: string }, { skip }: { skip: b
 
 						kodik.push({
 							__typename: isSeries ? 'TvSeries' : 'Film',
-							contentId: movie.id,
+							contentId: `KODIK:${movie.id}`,
 							id: movie.kinopoisk_id ?? movie.imdb_id ?? `KODIK:${movie.id}`,
 							poster: {
 								avatarsUrl: movie.material_data?.poster_url ?? null,
@@ -236,100 +236,8 @@ export const Search: FC<Props> = ({ route }) => {
 
 		const getTitleByProviders = async ({ id }: { id: `tt${number}` }): Promise<null | Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'>> => {
 			try {
-				// kinopoisk.dev
-				const response = await fetch(`https://api.kinopoisk.dev/v1.4/movie?page=1&limit=10&externalId.imdb=${id}`, { headers: { 'X-Api-Key': Config.KINOPOISKDEV_TOKEN } })
-
-				if (response.ok) {
-					const json = await response.json()
-					if ('docs' in json && Array.isArray(json.docs) && json.docs.length > 0) {
-						return {
-							title: json.docs[0].name ?? json.docs[0].alternativeName,
-							id,
-							poster: json.docs[0].poster.url ?? json.docs[0].poster.previewUrl ?? null,
-							type: json.type === 'tv-series' ? 'TvSeries' : 'Film',
-							year: json.year ?? null
-						}
-					}
-				}
-
-				const { data } = await getKinoboxPlayers({ id })
-
-				// Omdbapi
-				if (data === null || data.length === 0) {
-					const response = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=${Config.OMDBAPI_TOKEN}`)
-
-					if (response.ok) {
-						const json = await response.json()
-						if (json.Response === 'True') {
-							return {
-								title: json.Title,
-								id,
-								poster: json.Poster === 'N/A' ? null : json.Poster,
-								type: json.Type === 'series' ? 'TvSeries' : 'Film',
-								year: json.Year === 'N/A' ? null : json.Year.split('–')[0] ?? null
-							}
-						}
-					}
-
-					return null
-				}
-
-				// COLLAPS
-				if (data.find(it => it.source === 'COLLAPS')) {
-					const response = await fetch(`https://api.bhcesh.me/franchise/details?token=${Config.COLLAPS_TOKEN}&imdb_id=${String(id).replace('tt', '')}`)
-
-					if (response.ok) {
-						const json = await response.json()
-						if (!('status' in json) && 'id' in json) {
-							return {
-								title: json.name ?? json.name_eng,
-								id,
-								poster: json.poster ?? null,
-								type: 'seasons' in json ? 'TvSeries' : 'Film',
-								year: json.year ?? null
-							}
-						}
-					}
-				}
-
-				// ALLOHA
-				if (data.find(it => it.source === 'ALLOHA')) {
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
-					const response = await fetch(`${false ? 'https://api.alloha.tv' : 'https://api.apbugall.org'}/?token=${Config.ALLOHA_TOKEN}&imdb=${id}`)
-
-					if (response.ok) {
-						const json = await response.json()
-						if (json?.data && json?.status === 'success') {
-							return {
-								title: json.data.name ?? json.data.original_name,
-								id,
-								poster: json.data.poster,
-								type: 'seasons' in json.data ? 'TvSeries' : 'Film',
-								year: json.data.year ?? null
-							}
-						}
-					}
-				}
-
-				// KODIK
-				if (data.find(it => it.source === 'KODIK')) {
-					const response = await fetch(`https://kodikapi.com/search?imdb_id=${id}&token=${Config.KODIK_TOKEN}&limit=1`)
-
-					if (response.ok) {
-						const json = await response.json()
-						if ('results' in json && Array.isArray(json.results) && json.results.length > 0) {
-							return {
-								title: json.results[0].title ?? json.results[0].title_orig,
-								id,
-								poster: typeof json.results[0].kinopoisk_id === 'string' ? `https://st.kp.yandex.net/images/film_big/${json.results[0].kinopoisk_id}.jpg` : null,
-								type: 'last_season' in json.results[0] ? 'TvSeries' : 'Film',
-								year: json.results[0].year ?? null
-							}
-						}
-					}
-				}
-
-				return null
+				const data = await getKinoboxPlayers({ id: id }).then(it => it.data.find(it => 'data' in it))
+				return data?.data ?? null
 			} catch {
 				return null
 			}
@@ -374,9 +282,8 @@ export const Search: FC<Props> = ({ route }) => {
 			setIsFetchingImdb(false)
 			navigation.push('Movie', { data: { id: item.id, type: item.type }, other: { poster: item.poster, title: item.title, year: item.year } })
 		} else {
-			ToastAndroid.show('IMDB: Не удалось найти фильм', ToastAndroid.SHORT)
 			setIsFetchingImdb(false)
-			navigation.push('ChangeFilm', { data: { id } })
+			ToastAndroid.show('IMDB: Не удалось найти фильм', ToastAndroid.SHORT)
 		}
 	}
 
@@ -393,7 +300,7 @@ export const Search: FC<Props> = ({ route }) => {
 
 			{/* TODO: ? 25 */}
 			{/* TODO: test (isShowNetInfo ? 0 : insets.bottom) */}
-			<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom) - insets.top - 25} style={{ flex: 1 }} contentContainerStyle={{ flex: 1 }}>
+			<KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom) - insets.top - 25} style={{ flex: 1 }}>
 				{isImdbSearch ? (
 					<Button onPress={async () => watchImdb(deferredKeyword)} paddingHorizontal={16} paddingVertical={11} animation='scale' transparent alignItems='stretch' flexDirection='row' style={{ marginTop: 10 }}>
 						{isFetchingImdb ? (

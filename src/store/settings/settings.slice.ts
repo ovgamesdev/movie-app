@@ -56,6 +56,7 @@ const settingsSlice = createSlice({
 			}
 		},
 		addItemToSearchHistory: (state, { payload }: PayloadAction<Omit<SearchHistoryMovie, 'timestamp'> | Omit<SearchHistoryPerson, 'timestamp'> | Omit<SearchHistoryMovieList, 'timestamp'>>) => {
+			state.settings._settings_time = Date.now()
 			const searchHistoryData = Object.values(state.settings.searchHistory).sort((a, b) => b.timestamp - a.timestamp)
 
 			const filteredData = searchHistoryData.filter(it => !(it.id === payload.id && it.type === payload.type))
@@ -78,6 +79,7 @@ const settingsSlice = createSlice({
 
 			if (data.title !== watchHistory.title || data.poster !== watchHistory.poster || data.year !== watchHistory.year || data.type !== watchHistory.type) {
 				console.log('change watch history', data)
+				state.settings._settings_time = Date.now()
 				state.settings.watchHistory[`${id}`] = { ...watchHistory, ...data }
 			} else {
 				console.log('use old watch history', data)
@@ -92,10 +94,15 @@ const settingsSlice = createSlice({
 
 			if (data.title !== bookmarks.title || data.poster !== bookmarks.poster || data.type !== bookmarks.type) {
 				console.log('change bookmarks', data)
+				state.settings._settings_time = Date.now()
 				state.settings.bookmarks[`${data.type}:${id}`] = { ...bookmarks, ...data, type: data.type as never }
 			} else {
 				console.log('use old bookmarks', data)
 			}
+		},
+		restoreSettings: (state, { payload }: PayloadAction<ISettings>) => {
+			state.settings._settings_time = Date.now()
+			state.settings = payload
 		},
 
 		openNotificationByInit: (state, { payload }: PayloadAction<IInitialStateSettings['navigation']>) => {
@@ -170,7 +177,7 @@ export const { actions, reducer } = settingsSlice
 
 export const setupSettingsListeners = (startListening: AppStartListening): Unsubscribe =>
 	startListening({
-		matcher: isAnyOf(actions.setItem, actions.mergeItem, actions.removeItem, actions.removeItemByPath),
+		matcher: isAnyOf(actions.setItem, actions.mergeItem, actions.removeItem, actions.removeItemByPath, actions.addItemToSearchHistory, actions.restoreSettings),
 		effect: async (action, listenerApi) => {
 			listenerApi.dispatch(settingsExtraActions.saveSettings())
 		}

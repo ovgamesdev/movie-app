@@ -332,8 +332,8 @@ export const backgroundTask = async (event: string | HeadlessEvent) => {
 				await delay(500)
 				console.log(`[BackgroundFetch] search provider id:${movie.id}`)
 
-				const { data } = await getKinoboxPlayers(movie)
-				if (data === null || data.length === 0) continue
+				const data = await getKinoboxPlayers(movie).then(it => it.data.filter(it => 'iframeUrl' in it))
+				if (data.length === 0) continue
 				movieProvider = data[0].source
 			}
 

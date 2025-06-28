@@ -15,9 +15,9 @@ export const UpdateApk: FC = () => {
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight>
 			{download?.error ? (
-				<Button text='Повторить обновление' onPress={downloadApk} textColor={theme.colors.primary100} />
+				<Button text='Повторить обновление' onPress={() => downloadApk()} textColor={theme.colors.primary100} />
 			) : download?.completed ? (
-				<Button text='Установить обновление' onPress={installDownloadedApk} textColor={theme.colors.primary100} />
+				<Button text='Установить обновление' onPress={() => installDownloadedApk()} textColor={theme.colors.primary100} />
 			) : download?.progress ? (
 				<View style={styles.downloadWrapper}>
 					<DownloadIcon width={18} height={18} fill={theme.colors.text200} style={styles.downloadIcon} />

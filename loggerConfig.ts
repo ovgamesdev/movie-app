@@ -1,33 +1,17 @@
 import { InteractionManager } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
-import { configLoggerType, consoleTransport, logger, transportFunctionType } from 'react-native-logs'
+import { consoleTransport, logger, transportFunctionType } from 'react-native-logs'
 
-const customTransport: transportFunctionType = async props => {
-	let _b, _c
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	if (!props) return false
+const customTransport: transportFunctionType<{ fileName: string; filePath: string }> = async props => {
+	if (!props.options) return false
 
-	let fileName = 'log'
-	let filePath = RNFetchBlob.fs.dirs.DocumentDir
+	const today = new Date()
+	const d = today.getDate()
+	const m = today.getMonth() + 1
+	const y = today.getFullYear()
 
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	if ((_b = props === null || props === void 0 ? void 0 : props.options) === null || _b === void 0 ? void 0 : _b.fileName) {
-		const today = new Date()
-		const d = today.getDate()
-		const m = today.getMonth() + 1
-		const y = today.getFullYear()
-		fileName = props.options.fileName
-		fileName = fileName.replace('{date-today}', `${d}-${m}-${y}`)
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	if ((_c = props === null || props === void 0 ? void 0 : props.options) === null || _c === void 0 ? void 0 : _c.filePath) {
-		filePath = props.options.filePath
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const output = `${props === null || props === void 0 ? void 0 : props.msg}\n`
-	const path = filePath + '/logs/' + fileName
+	const output = `${props.msg}\n`
+	const path = props.options.filePath + '/logs/' + props.options.fileName.replace('{date-today}', `${d}-${m}-${y}`)
 
 	try {
 		await RNFetchBlob.fs.appendFile(path, output, 'utf8')
@@ -71,7 +55,7 @@ const stringifyFunc = (msg: any): string => {
 	return stringMsg
 }
 
-const config: configLoggerType = {
+const LOG = logger.createLogger({
 	async: true,
 	asyncFunc: InteractionManager.runAfterInteractions,
 	stringifyFunc,
@@ -92,11 +76,10 @@ const config: configLoggerType = {
 			error: 'redBright'
 		},
 		extensionColors: {},
-		fileName: `logs_{date-today}.txt`
+		fileName: `logs_{date-today}.txt`,
+		filePath: RNFetchBlob.fs.dirs.DocumentDir
 	}
-}
-
-const LOG = logger.createLogger(config)
+})
 
 LOG.patchConsole()
 

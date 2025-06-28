@@ -9,8 +9,7 @@ import { type FC } from 'react'
 import { TVFocusGuideView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
-import { Backup } from './Backup'
-import { Logs } from './Logs'
+import { Backup, Logs } from './index'
 
 const LoaderSettings: FC = () => {
 	const isLoading = useTypedSelector(state => state.settings.isLoading)

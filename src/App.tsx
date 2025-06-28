@@ -4,7 +4,7 @@ import { BackgroundRestrictionModal, UpdateApkModal } from '@components/organism
 import { useActions, useBackgroundFetch, useTypedSelector } from '@hooks'
 import { navigation, navigationRef } from '@navigation'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
-import { NavigationContainer } from '@react-navigation/native'
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { startAppListening, store } from '@store'
 import { setupNoticesListeners } from '@store/notices'
@@ -69,8 +69,8 @@ const Temp: FC = () => {
 	return (
 		<View style={{ marginTop: insets.top, marginHorizontal: 10 }}>
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
-				<Button text='getSettings' onPress={getSettings} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
-				<Button text='saveSettings' onPress={saveSettings} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
+				<Button text='getSettings' onPress={() => getSettings()} flex={1} justifyContent='center' style={{ marginRight: 2 }} />
+				<Button text='saveSettings' onPress={() => saveSettings()} flex={1} justifyContent='center' style={{ marginLeft: 2 }} />
 			</View>
 
 			<View style={{ flexDirection: 'row', marginTop: 10 }}>
@@ -147,7 +147,7 @@ const AppContent: FC = () => {
 						<Settings />
 					</View> */}
 
-					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ dark: theme.colors.colorScheme === 'dark', colors: { primary: theme.colors.text100, background: theme.colors.bg100, card: theme.colors.bg100, text: theme.colors.text200, border: theme.colors.bg300, notification: theme.colors.warning } }}>
+					<NavigationContainer ref={navigationRef} onReady={async () => BootSplash.hide({ fade: true })} theme={{ fonts: DefaultTheme.fonts, dark: theme.colors.colorScheme === 'dark', colors: { primary: theme.colors.text100, background: theme.colors.bg100, card: theme.colors.bg100, text: theme.colors.text200, border: theme.colors.bg300, notification: theme.colors.warning } }}>
 						<StackNavigator colors={theme.colors} />
 					</NavigationContainer>
 					<NetInfo />

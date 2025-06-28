@@ -54,7 +54,7 @@ export const SearchResults: FC<Props> = ({ data, historyData }) => {
 							item={{
 								__typename: type,
 								id,
-								contentId: 'id',
+								contentId: 'history_id',
 								poster: { avatarsUrl: poster, fallbackUrl: poster },
 								rating: { expectation: { count: 0, isActive: false, value: null }, kinopoisk: { count: 0, isActive: false, value: null } },
 								title: { original: null, russian: title },

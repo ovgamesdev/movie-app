@@ -1,8 +1,8 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { useTypedSelector } from '@hooks'
+import { useActions, useTypedSelector } from '@hooks'
 import { DownloadIcon } from '@icons'
 import { useRef, useState, type FC } from 'react'
-import { PermissionsAndroid, ScrollView, Text, TextInput, View } from 'react-native'
+import { PermissionsAndroid, ScrollView, Text, TextInput, ToastAndroid, View } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
 import Modal from 'react-native-modal'
 import { btoa } from 'react-native-quick-base64'
@@ -31,10 +31,14 @@ export const Backup: FC = () => {
 	const [openedFile, setOpenedFile] = useState<{ name: string; path: string; logs: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 
+	const [restoreData, setRestoreData] = useState('')
+
 	const [settingsStringBase64, setSettingsStringBase64] = useState<string | null>(null)
 	const [settingsStringDecoded, setSettingsStringDecoded] = useState<string | null>(null)
 
 	const { theme } = useStyles()
+
+	const { restoreSettings } = useActions()
 
 	const fileViewRef = useRef<ScrollView>(null)
 
@@ -110,6 +114,26 @@ window.onload = () => download('movieapp_${new Date().toJSON().split('.')[0]}.ba
 		// console.log('dirs.DownloadDir:', dirs.DownloadDir)
 	}
 
+	const handleRestore = async () => {
+		if (restoreData.trim().length === 0) {
+			ToastAndroid.show(`restoreData === 0.`, ToastAndroid.SHORT)
+			return
+		}
+		try {
+			const data = JSON.parse(restoreData)
+
+			if ('watchHistory' in data.settings && 'searchHistory' in data.settings && 'bookmarks' in data.settings) {
+				ToastAndroid.show(`Восстановление...`, ToastAndroid.SHORT)
+				restoreSettings(data.settings)
+			} else {
+				ToastAndroid.show(`Неверный формат.`, ToastAndroid.SHORT)
+			}
+		} catch (e) {
+			console.error('[handleRestore]', e)
+			ToastAndroid.show(`[ошибка] Неверный формат.`, ToastAndroid.SHORT)
+		}
+	}
+
 	return (
 		<View style={{ flex: 1, marginTop: insets.top }}>
 			<View style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 10, flexDirection: 'row', gap: 5 }}>
@@ -129,10 +153,8 @@ window.onload = () => download('movieapp_${new Date().toJSON().split('.')[0]}.ba
 				<Button onPress={handleDownload}>
 					<DownloadIcon width={18} height={18} fill={theme.colors.text100} />
 				</Button>
-
-				{/* <Button onPress={refreshFiles}>
-					<RefreshIcon width={18} height={18} fill={theme.colors.text100} />
-				</Button> */}
+				<TextInput maxLength={99999999999} multiline style={{ flex: 1, backgroundColor: theme.colors.bg200 }} placeholder='JSON' onChangeText={setRestoreData} />
+				<Button onPress={handleRestore} text='Восстановить' />
 			</View>
 
 			<View style={{ flex: 1, backgroundColor: '#000', borderRadius: 10, margin: 10 }}>

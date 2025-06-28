@@ -15,7 +15,7 @@ const getColorForTheme = <T extends ColorValue>(theme: ColorForTheme<T>, colors:
 }
 
 export interface ColorTypes {
-	colorScheme: string
+	colorScheme: 'dark' | 'light'
 
 	warning: string
 	success: string

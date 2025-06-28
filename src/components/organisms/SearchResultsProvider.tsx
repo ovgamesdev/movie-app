@@ -21,6 +21,11 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 		navigation.push('Movie', { data: { id: data.id, type: data.type }, other: { poster: data.poster, title: data.title, year: data.year } })
 	}
 
+	const onModal = (data: Omit<SearchHistoryMovie, 'timestamp'>, { contentId }: IGraphqlSuggestMovie) => {
+		addItemToSearchHistory(data)
+		navigation.push('Movie', { data: { id: contentId as `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`, type: data.type }, other: { poster: data.poster, title: data.title, year: data.year } })
+	}
+
 	const [showAll, setShowAll] = useState<null | 'id' | 'title'>('title')
 
 	const kodik =
@@ -44,7 +49,7 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 					<Text style={styles.title}>COLLAPS</Text>
 
 					{data.collaps.map(movie => (
-						<Movie key={movie.contentId} onPress={onMovie} item={movie} />
+						<Movie key={movie.contentId} onPress={onMovie} onLongPress={onModal} item={movie} />
 					))}
 				</View>
 			) : null}
@@ -54,7 +59,7 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 					<Text style={styles.title}>ALLOHA</Text>
 
 					{data.alloha.map(movie => (
-						<Movie key={movie.contentId} onPress={onMovie} item={movie} />
+						<Movie key={movie.contentId} onPress={onMovie} onLongPress={onModal} item={movie} />
 					))}
 				</View>
 			) : null}
@@ -76,7 +81,7 @@ export const SearchResultsProvider: FC<Props> = ({ data }) => {
 					</View>
 
 					{kodik.map(movie => (
-						<Movie key={movie.contentId} onPress={onMovie} item={movie} />
+						<Movie key={movie.contentId} onPress={onMovie} onLongPress={onModal} item={movie} />
 					))}
 				</View>
 			) : null}
