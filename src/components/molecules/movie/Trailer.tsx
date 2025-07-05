@@ -15,7 +15,7 @@ interface Props {
 export const Trailer: FC<Props> = ({ mainTrailer, borderRadius }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
-	const poster = normalizeUrlWithNull(mainTrailer.preview?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' })
+	const poster = normalizeUrlWithNull(mainTrailer.preview?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/600x380' })
 
 	return (
 		<Button padding={0} transparent animation='scale' style={styles.container} onPress={() => navigation.push('MovieTrailer', { data: mainTrailer })}>

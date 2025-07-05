@@ -81,8 +81,6 @@ const settingsSlice = createSlice({
 				console.log('change watch history', data)
 				state.settings._settings_time = Date.now()
 				state.settings.watchHistory[`${id}`] = { ...watchHistory, ...data }
-			} else {
-				console.log('use old watch history', data)
 			}
 		},
 		updateBookmarks: (state, { payload }: PayloadAction<{ title: string; poster: string | null; year: number | null; id: number | `tt${number}`; type: MovieType } | { title: string; poster: string | null; id: number; type: 'Person' } | null>) => {
@@ -96,8 +94,6 @@ const settingsSlice = createSlice({
 				console.log('change bookmarks', data)
 				state.settings._settings_time = Date.now()
 				state.settings.bookmarks[`${data.type}:${id}`] = { ...bookmarks, ...data, type: data.type as never }
-			} else {
-				console.log('use old bookmarks', data)
 			}
 		},
 		restoreSettings: (state, { payload }: PayloadAction<ISettings>) => {

@@ -21,7 +21,14 @@ interface kinoboxPlayers {
 	error: null | 'ERROR'
 }
 
-export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }): Promise<kinoboxPlayers> => {
+export interface KodikQuery {
+	season?: number | null
+	episode?: string | null
+	translation?: { id: number; title: string } | null
+	lastTime?: number | null
+}
+
+export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }, query?: { kodik?: KodikQuery }): Promise<kinoboxPlayers> => {
 	const data: (KinoboxPlayersData | ErrorPlayerData)[] = []
 
 	const requests = [
@@ -141,7 +148,7 @@ export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }):
 		})(),
 
 		(async () => {
-			const res = await getKodikPlayers({ id })
+			const res = await getKodikPlayers({ id }, query?.kodik)
 			data.push(...res.data)
 		})()
 	]
@@ -177,7 +184,7 @@ export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }):
 	return { data, error }
 }
 
-export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` | `KODIK:${string}` }, _data?: { season?: number | null; episode?: string | null; translation?: { id: number; title: string } | null; lastTime?: number | null }): Promise<kinoboxPlayers> => {
+export const getKodikPlayers = async ({ id }: { id: number | `tt${number}` | `KODIK:${string}` }, _data?: KodikQuery): Promise<kinoboxPlayers> => {
 	const data: (KinoboxPlayersData | ErrorPlayerData)[] = []
 
 	try {

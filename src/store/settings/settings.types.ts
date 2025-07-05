@@ -26,8 +26,8 @@ export type WatchHistory = {
 	timestamp: number // Время последнего просмотра
 	status: WatchHistoryStatus
 	//
-	duration?: number
-	lastTime?: number
+	duration?: number | null
+	lastTime?: number | null
 	episode?: string | null
 	season?: number | null
 	translation?: { id: number; title: string } | null

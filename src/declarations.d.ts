@@ -9,6 +9,8 @@ declare module 'react-native-config' {
 	export interface NativeConfig {
 		UI_MODE?: string
 		THEMOVIEDB_TOKEN: string
+		OMDBAPI_TOKEN: string
+		KINOPOISKDEV_TOKEN: string
 		//
 		ALLOHA_TOKEN: string
 		COLLAPS_TOKEN: string

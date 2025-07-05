@@ -153,7 +153,7 @@ const Season: FC<{ tmdbId: number; season: Pick<IMovieTMDBDataResults, 'seasons'
 
 				return (
 					<View style={{ flexDirection: 'row', gap: 10, paddingTop: index === 0 ? 0 : 10 }}>
-						<ImageBackground source={{ uri: episode.still_path ? `https://image.tmdb.org/t/p/w342${episode.still_path}` : 'https://via.placeholder.com/342x192' }} style={{ height: 55, aspectRatio: 342 / 192 }} />
+						<ImageBackground source={{ uri: episode.still_path ? `https://image.tmdb.org/t/p/w342${episode.still_path}` : 'https://dummyimage.com/{width}x{height}/eee/aaa/342x192' }} style={{ height: 55, aspectRatio: 342 / 192 }} />
 						<View style={{ flex: 1 }}>
 							<View style={{ flexDirection: 'row' }}>
 								<Text style={{ color: theme.colors.text100, fontSize: 15, fontWeight: '700' }}>{episode.episode_number}</Text>

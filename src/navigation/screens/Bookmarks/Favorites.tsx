@@ -49,7 +49,7 @@ export const Favorites: FC = () => {
 
 	const renderItem: FocusableFlashListRenderItem<Bookmarks> = useCallback(
 		({ item, index, hasTVPreferredFocus, onBlur, onFocus }) => {
-			const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+			const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 			return (
 				<>

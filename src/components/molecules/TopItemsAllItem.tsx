@@ -15,7 +15,7 @@ type Props = {
 }
 
 export const TopItemsAllItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }) => {
-	const poster = normalizeUrlWithNull(data.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? data.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(data.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? data.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 	const { styles } = useStyles(stylesheet)
 
 	return (

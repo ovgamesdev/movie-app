@@ -59,7 +59,7 @@ export const Person: FC<Props> = ({ route }) => {
 	// console.log('person data', data)
 
 	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
-		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
@@ -204,7 +204,7 @@ export const Person: FC<Props> = ({ route }) => {
 												horizontal
 												showsHorizontalScrollIndicator={!false}
 												renderItem={({ item: { movie }, hasTVPreferredFocus, onBlur, onFocus }) => {
-													const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+													const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 													return (
 														<Button key={movie.id} animation='scale' flex={0} padding={5} transparent style={{ width: 110, height: 215.5 }} onBlur={onBlur} onFocus={onFocus} onPress={() => navigation.push('Movie', { data: { id: movie.id, type: movie.__typename } })} hasTVPreferredFocus={hasTVPreferredFocus}>

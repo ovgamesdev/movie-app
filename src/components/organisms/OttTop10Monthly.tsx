@@ -117,7 +117,7 @@ export const OttTop10Monthly = () => {
 		if (Platform.isTV) {
 			return <TopItemsAllItem data={item.movie} index={index} onFocus={onFocus} onBlur={onBlur} onPress={data => navigation.push('Movie', { data })} hasTVPreferredFocus={hasTVPreferredFocus} />
 		} else {
-			const poster = normalizeUrlWithNull(item.movie.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? item.movie.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: `/${imageSize}x` })
+			const poster = normalizeUrlWithNull(item.movie.gallery.posters.verticalWithRightholderLogo?.avatarsUrl ?? item.movie.gallery.posters.vertical?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: `/${imageSize}x` })
 
 			return (
 				<View>

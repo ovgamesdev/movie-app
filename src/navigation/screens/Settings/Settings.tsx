@@ -32,6 +32,8 @@ export const Settings: FC = () => {
 	const Stack = createNativeStackNavigator<SettingsTabParamList>()
 	// const Tab = createMaterialTopTabNavigator<SettingsTabParamList>()
 
+	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
+
 	// const [activeTab, setActiveTab] = useState<keyof BookmarksTabParamList>('History')
 
 	return (
@@ -39,7 +41,7 @@ export const Settings: FC = () => {
 			{/* <TabBarTv activeTab={activeTab} setActiveTab={tab => navigation.replace(tab)} /> */}
 			<Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }} initialRouteName={'SettingsHome'}>
 				<Stack.Screen name='SettingsHome' component={SettingsScreen} />
-				<Stack.Screen name='Logs' component={Logs} />
+				{showDevOptions && <Stack.Screen name='Logs' component={Logs} />}
 				<Stack.Screen name='Backup' component={Backup} />
 			</Stack.Navigator>
 			{/* <Tab.Navigator initialLayout={Dimensions.get('window')} initialRouteName={'Settings'} backBehavior='initialRoute'>
@@ -53,6 +55,8 @@ export const Settings: FC = () => {
 export const SettingsScreen: FC = () => {
 	const insets = useSafeAreaInsets()
 	const { styles } = useStyles(stylesheet)
+
+	const showDevOptions = useTypedSelector(state => state.settings.settings.showDevOptions)
 
 	return (
 		<TVFocusGuideView style={[styles.container, { marginTop: insets.top }]} trapFocusLeft trapFocusRight trapFocusUp>
@@ -83,7 +87,7 @@ export const SettingsScreen: FC = () => {
 			<Switch item='showDevOptions' />
 
 			<View style={{ gap: 10, paddingTop: 10 }}>
-				<Button text='Logs' onPress={() => navigation.navigate('Logs', undefined)} />
+				{showDevOptions && <Button text='Logs' onPress={() => navigation.navigate('Logs', undefined)} />}
 				<Button text='Backup' onPress={() => navigation.navigate('Backup', undefined)} />
 				<Button text='Открыть настройки уведомлений' onPress={async () => notifee.openNotificationSettings()} />
 			</View>

@@ -83,6 +83,10 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			item.episode = null
 			item.season = null
 			item.translation = null
+
+			item.duration = null
+			item.lastTime = null
+
 			// TODO: reset history with episode and season
 			// item.releasedEpisodes = null
 			// item.notifyTranslation = null
@@ -135,7 +139,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				case String(data.id).startsWith('KODIK'): {
 					const id = String(data.id).split(':')[1]
 
-					getKodikPlayers({ id: `KODIK:${id}` }).then(({ data: kodik_data, error }) => {
+					getKodikPlayers({ id: `KODIK:${id}` }, data).then(({ data: kodik_data, error }) => {
 						if (error) {
 							switch (error) {
 								case 'ERROR':
@@ -170,7 +174,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 			return
 		}
 
-		getKinoboxPlayers(data).then(({ data, error }) => {
+		getKinoboxPlayers(data, { kodik: data }).then(({ data, error }) => {
 			if (error) {
 				setIsLoading(false)
 
@@ -236,7 +240,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const value = useTypedSelector(state => state.settings.settings.watchHistory[`${data.id}`]?.[field])
 		const onChange = (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
-			mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
+			if (!isNaN(Number(e.nativeEvent.text))) mergeItem({ watchHistory: { [`${data.id}`]: { [field]: Number(e.nativeEvent.text) } } })
 		}
 
 		if (!isSeries(data.type)) return null
@@ -244,7 +248,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 		return (
 			<View style={{ paddingVertical: 10, gap: 5 }}>
 				<Text style={{ color: theme.colors.text100, fontSize: 14 }}>{title}</Text>
-				<Input value={value?.toString() ?? ''} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
+				<Input value={value === undefined ? '' : String(value)} placeholder={value === undefined ? 'Нет данных' : ''} onChange={onChange} keyboardType='numeric' />
 			</View>
 		)
 	})
@@ -260,7 +264,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 				<View style={{ flexDirection: 'row' }}>
 					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>progress: </Text>
 					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>
-						{value.lastTime}/{value.duration} ({value.lastTime !== undefined && value.duration !== undefined ? Math.round((value.lastTime / value.duration) * 100) : NaN}%)
+						{value.lastTime}/{value.duration} ({typeof value.lastTime === 'number' && typeof value.duration === 'number' ? Math.round((value.lastTime / value.duration) * 100) : NaN}%)
 					</Text>
 				</View>
 				<View style={{ flexDirection: 'row' }}>
@@ -271,7 +275,7 @@ export const Watch: FC<Props> = ({ navigation, route }) => {
 					<Text style={{ color: theme.colors.text100, fontSize: 14 }}></Text>
 					<Text style={{ color: theme.colors.text100, fontSize: 14 }}>
 						{value.provider} | s{value.season}:e{value.episode}
-						{value.translation ? ` | [${value.translation.id}](${value.translation.title})` : 'null'}
+						{value.translation ? ` | [${value.translation.id}](${value.translation.title})` : ' [null]'}
 					</Text>
 				</View>
 				<View style={{ flexDirection: 'row' }}>

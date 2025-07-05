@@ -1,20 +1,21 @@
 import { ActivityIndicator, Button } from '@components/atoms'
-import { DeleteIcon, RefreshIcon } from '@icons'
+import { DeleteIcon, DownloadIcon, RefreshIcon, ShareIcon } from '@icons'
+import { errorCodes, isErrorWithCode, saveDocuments, types } from '@react-native-documents/picker'
 import { useFocusEffect } from '@react-navigation/native'
 import { useCallback, useRef, useState, type FC } from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import { Alert, ScrollView, Text, ToastAndroid, View } from 'react-native'
 import RNFetchBlob from 'react-native-blob-util'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Share, { ShareOptions } from 'react-native-share'
 import { useStyles } from 'react-native-unistyles'
 
 export const Logs: FC = () => {
 	const insets = useSafeAreaInsets()
+	const { theme } = useStyles()
 
 	const [files, setFiles] = useState<{ name: string; path: string }[]>([])
 	const [openedFile, setOpenedFile] = useState<{ name: string; path: string; logs: string } | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
-
-	const { theme } = useStyles()
 
 	const fileViewRef = useRef<ScrollView>(null)
 
@@ -43,7 +44,7 @@ export const Logs: FC = () => {
 
 				setFiles(logFiles.map(file => ({ name: file.replace('.txt', '').replace('logs_', ''), path: RNFetchBlob.fs.dirs.DocumentDir + '/logs/' + file })))
 
-				selectFile(openedFile)
+				// selectFile(openedFile)
 			})
 			.catch(e => {
 				console.error('Ошибка получения списка логов', e)
@@ -76,6 +77,70 @@ export const Logs: FC = () => {
 			.catch(e => console.error('Ошибка удаления файла', e))
 	}
 
+	const downloadFile = async ({ path }: { name: string; path: string; logs: string }) => {
+		const fileName = path.slice(path.lastIndexOf('/') + 1)
+
+		try {
+			const [{ uri: targetUri, error, name }] = await saveDocuments({
+				sourceUris: [`file://${path}`],
+				copy: false,
+				mimeType: types.plainText,
+				fileName
+			})
+
+			if (error === null) {
+				ToastAndroid.show(`Успешно сохранено как "${name}".`, ToastAndroid.SHORT)
+			} else {
+				ToastAndroid.show(`Ошибка сохранения "${error}".`, ToastAndroid.SHORT)
+			}
+
+			console.log('saveDocuments:', targetUri, error, name)
+		} catch (err) {
+			if (isErrorWithCode(err)) {
+				switch (err.code) {
+					case errorCodes.OPERATION_CANCELED:
+						console.log('ОПЕРАЦИЯ_ОТМЕНЕНА')
+						break
+					case errorCodes.IN_PROGRESS:
+						console.warn('В_ПРОЦЕССЕ.')
+						ToastAndroid.show(`В_ПРОЦЕССЕ`, ToastAndroid.SHORT)
+						break
+					case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
+						console.warn('НЕВОЗМОЖНО_ОТКРЫТЬ_ТИП_ФАЙЛА.')
+						ToastAndroid.show(`НЕВОЗМОЖНО_ОТКРЫТЬ_ТИП_ФАЙЛА`, ToastAndroid.SHORT)
+						break
+					default:
+						console.error('Ошибка сохранения файла:', err)
+						Alert.alert('Ошибка', 'Возникла ошибка при сохранении файла.')
+				}
+			} else {
+				console.error('Ошибка сохранения файла:', err)
+				Alert.alert('Ошибка', 'Возникла ошибка при сохранении файла.')
+			}
+		}
+	}
+
+	const sendFile = async ({ path }: { name: string; path: string; logs: string }) => {
+		console.log('path:', path)
+
+		try {
+			const options: ShareOptions = {
+				url: `file://${path}`,
+				type: types.plainText
+			}
+
+			const shareResponse = await Share.open(options)
+
+			if (shareResponse.success) {
+				console.log('[Share.open]', shareResponse.message)
+			} else {
+				console.error('[Share.open]', shareResponse.message)
+			}
+		} catch (e) {
+			console.error('[Share.open]', e)
+		}
+	}
+
 	return (
 		<View style={{ flex: 1, marginTop: insets.top }}>
 			<View style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 10, flexDirection: 'row', gap: 5 }}>
@@ -95,6 +160,16 @@ export const Logs: FC = () => {
 				{openedFile && (
 					<Button onPress={() => removeFile(openedFile)}>
 						<DeleteIcon width={18} height={18} fill={theme.colors.text100} />
+					</Button>
+				)}
+				{openedFile && (
+					<Button onPress={async () => downloadFile(openedFile)}>
+						<DownloadIcon width={18} height={18} fill={theme.colors.text100} />
+					</Button>
+				)}
+				{openedFile && (
+					<Button onPress={async () => sendFile(openedFile)}>
+						<ShareIcon width={18} height={18} fill={theme.colors.text100} />
 					</Button>
 				)}
 				<Button onPress={refreshFiles}>

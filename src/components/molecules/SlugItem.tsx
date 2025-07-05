@@ -15,7 +15,7 @@ type Props = {
 }
 
 export const SlugItem: FC<Props> = ({ data, index, hasTVPreferredFocus, onFocus, onBlur, onPress }) => {
-	const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 	const { styles } = useStyles(stylesheet)
 
 	return (

@@ -128,7 +128,7 @@ export const Movie: FC<Props> = ({ route }) => {
 								<View style={styles.portraitCover}>
 									<View style={[styles.portraitCoverPosterImageStyle, { width: 120, aspectRatio: 2 / 3 }]}>
 										<View style={{ borderRadius: 6 }}>
-											<ImageBackground source={{ uri: normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' }) }} style={{ width: 120, aspectRatio: 2 / 3 }} borderRadius={6} />
+											<ImageBackground source={{ uri: normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }) }} style={{ width: 120, aspectRatio: 2 / 3 }} borderRadius={6} />
 										</View>
 									</View>
 								</View>
@@ -147,13 +147,14 @@ export const Movie: FC<Props> = ({ route }) => {
 							<View>
 								<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
 									<WatchButton data={movie} />
+									<Button style={{ minHeight: 39.33 }} text='Изменить' onPress={() => navigation.push('ChangeFilm', { data: { id: movie.id }, other: { type: movie.type, poster: normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }), title: movie.title, year: movie.year } })} />
 									<FavoritesButton data={movie} />
 								</TVFocusGuideView>
+								<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
+								<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
+									id: {movie.id}
+								</Text>
 							</View>
-							<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
-							<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
-								id: {movie.id}
-							</Text>
 						</View>
 					</View>
 				</ScrollView>
@@ -192,7 +193,7 @@ export const Movie: FC<Props> = ({ route }) => {
 	// console.log('data:', data)
 
 	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
-		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 		return (
 			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
@@ -208,7 +209,7 @@ export const Movie: FC<Props> = ({ route }) => {
 			return null
 		}
 
-		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/1344x756' })
+		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/1344x756' })
 
 		return <CinematicBackdropImage source={{ uri: poster }} />
 	}
@@ -227,7 +228,7 @@ export const Movie: FC<Props> = ({ route }) => {
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <CinematicBackdropImage source={{ uri: normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/600x380' }) }} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
+				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <CinematicBackdropImage source={{ uri: normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/600x380' }) }} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
 
 				<View style={styles.details}>
 					<View style={styles.landscapeCover}>

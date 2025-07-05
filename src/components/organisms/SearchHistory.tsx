@@ -17,7 +17,7 @@ type Props = {
 
 const SearchHistoryItem: FC<Props> = ({ item, onPress, onRemove }) => {
 	const { theme } = useStyles()
-	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://via.placeholder.com', append: item.type === 'MovieListMeta' ? '/64x64' : '/80x120' })
+	const poster = normalizeUrlWithNull(item.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: item.type === 'MovieListMeta' ? '/64x64' : '/80x120' })
 
 	const handleOnPress = () => {
 		onPress(item)

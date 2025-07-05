@@ -236,8 +236,48 @@ export const Search: FC<Props> = ({ route }) => {
 
 		const getTitleByProviders = async ({ id }: { id: `tt${number}` }): Promise<null | Pick<WatchHistory, 'title' | 'type' | 'year' | 'poster' | 'id'>> => {
 			try {
-				const data = await getKinoboxPlayers({ id: id }).then(it => it.data.find(it => 'data' in it))
-				return data?.data ?? null
+				// kinopoisk.dev
+				const response = await fetch(`https://api.kinopoisk.dev/v1.4/movie?page=1&limit=10&externalId.imdb=${id}`, { headers: { 'X-Api-Key': Config.KINOPOISKDEV_TOKEN } })
+
+				if (response.ok) {
+					const json = await response.json()
+					if ('docs' in json && Array.isArray(json.docs) && json.docs.length > 0) {
+						console.log('KINOPOISKDEV:', json.docs[0].name ?? json.docs[0].alternativeName)
+						return {
+							title: json.docs[0].name ?? json.docs[0].alternativeName,
+							id,
+							poster: json.docs[0].poster.url ?? json.docs[0].poster.previewUrl ?? null,
+							type: json.type === 'tv-series' ? 'TvSeries' : 'Film',
+							year: json.year ?? null
+						}
+					}
+				}
+
+				const data = await getKinoboxPlayers({ id }).then(it => it.data.find(it => 'data' in it))
+
+				// Omdbapi
+				if (data === undefined) {
+					const response = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=${Config.OMDBAPI_TOKEN}`)
+
+					if (response.ok) {
+						const json = await response.json()
+						if (json.Response === 'True') {
+							console.log('OMDBAPI:', json.Title)
+							return {
+								title: json.Title,
+								id,
+								poster: json.Poster === 'N/A' ? null : json.Poster,
+								type: json.Type === 'series' ? 'TvSeries' : 'Film',
+								year: json.Year === 'N/A' ? null : json.Year.split('–')[0] ?? null
+							}
+						}
+					}
+
+					return null
+				}
+
+				console.log('Players:', data.data?.title)
+				return data.data ?? null
 			} catch {
 				return null
 			}
@@ -282,8 +322,9 @@ export const Search: FC<Props> = ({ route }) => {
 			setIsFetchingImdb(false)
 			navigation.push('Movie', { data: { id: item.id, type: item.type }, other: { poster: item.poster, title: item.title, year: item.year } })
 		} else {
-			setIsFetchingImdb(false)
 			ToastAndroid.show('IMDB: Не удалось найти фильм', ToastAndroid.SHORT)
+			setIsFetchingImdb(false)
+			navigation.push('ChangeFilm', { data: { id } })
 		}
 	}
 

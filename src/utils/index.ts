@@ -128,7 +128,8 @@ export const normalizeUrlWithNull = (url: string | null | undefined, other: { is
 	const appendText: string = isKP ? (other.append ? other.append : '') : ''
 
 	if (!url) {
-		return other.isNull + appendText
+		const [height, width] = appendText.replace('/', '').split('x')
+		return other.isNull.replace('{height}', height).replace('{width}', width) + appendText
 	} else if (url.startsWith('//')) {
 		return `https:${url}` + appendText
 	} else if (url.startsWith('http://')) {

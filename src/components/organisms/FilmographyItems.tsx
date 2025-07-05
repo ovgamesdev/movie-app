@@ -152,7 +152,7 @@ export const FilmographyItems: FC<Props> = ({ id: personId, scrollToTop }) => {
 			<FocusableFlatList
 				data={data.docs}
 				renderItem={({ item: { movie, participations }, index, hasTVPreferredFocus, onBlur, onFocus }) => {
-					const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+					const poster = normalizeUrlWithNull(movie.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 					const isOriginalTitle = !!movie.title.russian && movie.title.original !== movie.title.english && !!movie.title.original
 
 					const title = movie.title.russian ?? movie.title.original ?? movie.title.english

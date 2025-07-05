@@ -9,7 +9,7 @@ import BackgroundFetch, { BackgroundFetchConfig, HeadlessEvent } from 'react-nat
 import Config from 'react-native-config'
 
 const config: BackgroundFetchConfig = {
-	minimumFetchInterval: 15,
+	minimumFetchInterval: 60, // 15
 	stopOnTerminate: false,
 	enableHeadless: true,
 	startOnBoot: true,
@@ -209,7 +209,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 }
 
 export const displayNotificationNewFilm = (movie: WatchHistory) => {
-	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 	store.dispatch(
 		noticesActions.displayNotification({
@@ -247,7 +247,7 @@ export const displayNotificationNewFilm = (movie: WatchHistory) => {
 	)
 }
 const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: { total: number; data: NewEpisodesType } }) => {
-	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://via.placeholder.com', append: '/300x450' })
+	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
 	const seasonTitle = newSeriesToString(newSeries.data)
 

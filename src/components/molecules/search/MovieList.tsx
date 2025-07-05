@@ -14,7 +14,7 @@ type Props = {
 export const MovieList: FC<Props> = ({ item, onPress }) => {
 	const { styles } = useStyles(stylesheet)
 
-	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://via.placeholder.com', append: '/64x64' })
+	const cover = normalizeUrlWithNull(item.cover.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/64x64' })
 
 	const handleOnPress = () => {
 		onPress({
