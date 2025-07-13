@@ -1,9 +1,10 @@
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Unsubscribe } from '@reduxjs/toolkit'
 import { getKinoboxPlayers, startAppListening, store } from '@store'
 import { NewEpisodesType, noticesActions, noticesExtraActions, setupNoticesListeners } from '@store/notices'
-import { WatchHistory, WatchHistoryProvider, settingsActions, settingsExtraActions, setupSettingsListeners } from '@store/settings'
-import { delay, isSeries, newSeriesToString, normalizeUrlWithNull, rusToLatin } from '@utils'
+import { settingsActions, settingsExtraActions, setupSettingsListeners, WatchHistory, WatchHistoryProvider } from '@store/settings'
+import { delay, getNoun, isSeries, normalizeUrlWithNull } from '@utils'
 import { useEffect } from 'react'
 import BackgroundFetch, { BackgroundFetchConfig, HeadlessEvent } from 'react-native-background-fetch'
 import Config from 'react-native-config'
@@ -46,6 +47,24 @@ const calculateReleasedEpisodesKodik = ({ seasons, releasedEpisodes, total }: { 
 	return res
 }
 
+const isAllowedTranslation = (title: string, notifyTranslation: string | null | undefined): boolean => {
+	if (!notifyTranslation) {
+		// console.log(`[PASS] Нет notifyTranslation — пропускаем все: "${title}"`)1
+		return true
+	}
+
+	if (notifyTranslation.startsWith('!')) {
+		const banned = notifyTranslation.slice(1)
+		const isBanned = title.includes(banned)
+		// console.log(`[CHECK] Блокируем по "${banned}": "${title}" → ${!isBanned}`)
+		return !isBanned
+	}
+
+	const allowed = title.includes(notifyTranslation)
+	// console.log(`[CHECK] Разрешаем по "${notifyTranslation}": "${title}" → ${allowed}`)
+	return allowed
+}
+
 export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provider, notifyTranslation }: WatchHistory): Promise<{ total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null> => {
 	// TODO add for other providers
 	// console.log('[fetchNewSeries]', { id, releasedEpisodes, provider, notifyTranslation })
@@ -79,7 +98,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 						}
 					}
 
-					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => item.translation.title.includes(notifyTranslation)))
+					const seasons = (!notifyTranslation ? resultsArray : resultsArray.filter((item: KodikItemType) => isAllowedTranslation(item.translation.title, notifyTranslation)))
 						.reduce<KodikItemType[]>((acc, cur) => {
 							const title = [cur.title, cur.title_orig, cur.other_title].filter(it => !!it).join(' / ')
 							const part_match = /(\d+(?=\s+часть))|((?<=часть\s+)\d+)/gi.exec(title)
@@ -129,7 +148,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 				if (typeof seasons === 'object' && Array.isArray(seasons)) {
 					for (const season of seasons) {
 						for (const episode of season.episodes) {
-							if ((notifyTranslation && !(episode.voiceActing as string[]).find(it => it.includes(notifyTranslation))) ?? episode.iframe_url === null) {
+							if ((notifyTranslation && !(episode.voiceActing as string[]).find(title => isAllowedTranslation(title, notifyTranslation))) ?? episode.iframe_url === null) {
 								continue
 							}
 
@@ -180,7 +199,7 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 								}
 							}
 
-							if (notifyTranslation && !episodeTranslations.find(it => it.includes(notifyTranslation))) {
+							if (notifyTranslation && !episodeTranslations.find(title => isAllowedTranslation(title, notifyTranslation))) {
 								continue
 							}
 
@@ -208,188 +227,279 @@ export const fetchNewSeries = async ({ id, type, title, releasedEpisodes, provid
 	}
 }
 
-export const displayNotificationNewFilm = (movie: WatchHistory) => {
-	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
+const formatNewEpisodes = (data: NewEpisodesType): string[] => {
+	return Object.keys(data).map(season => {
+		const episodes = data[season]
+		const count = episodes.length
+		let episodeTitle: string
 
-	store.dispatch(
-		noticesActions.displayNotification({
-			id: `${movie.type}:${movie.id}`,
-			title: 'Новый контент доступен!',
-			body: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`,
-			data: { type: movie.type, id: movie.id, title: movie.title },
-			android: {
-				channelId: 'content-release-channel',
-				style: {
-					type: AndroidStyle.BIGTEXT,
-					text: `Вышел новый ${movie.type === 'Film' ? 'фильм' : movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал'}: ${movie.title}`
-				},
-				largeIcon: poster,
-				pressAction: {
-					id: 'movie',
-					launchActivity: 'default'
-				},
-				actions: [
-					{
-						title: 'Смотреть',
-						pressAction: {
-							id: 'watch',
-							launchActivity: 'default'
-						}
-					}
-				],
-				timestamp: Date.now(),
-				showTimestamp: true
-			},
-			ios: {
-				attachments: [{ url: poster }]
+		if (count === 1) {
+			episodeTitle = `вышла ${episodes[0]} серия`
+		} else {
+			// Для корректного отображения диапазона, если номера идут подряд
+			const first = parseInt(episodes[0], 10)
+			const last = parseInt(episodes[episodes.length - 1], 10)
+			if (last - first === count - 1) {
+				episodeTitle = `вышли ${episodes[0]}-${episodes[episodes.length - 1]} серии`
+			} else {
+				episodeTitle = `вышли серии: ${episodes.join(', ')}`
 			}
-		})
-	)
+		}
+		return `${season} сезон: ${episodeTitle}`
+	})
 }
-const displayNotificationNewEpisode = (movie: WatchHistory, { newSeries }: { newSeries: { total: number; data: NewEpisodesType } }) => {
+
+export const displayNotificationNewFilm = (movie: WatchHistory, options?: { total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null) => {
 	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
 
-	const seasonTitle = newSeriesToString(newSeries.data)
+	const contentType = isSeries(movie.type) ? (movie.type === 'MiniSeries' ? 'мини–сериал' : 'сериал') : 'фильм'
+	// const countInfo = options && options.total > 0 ? ` (вышло ${options.total} ${getNoun(options.total, 'серия', 'серии', 'серий')})` : ''
+	const bodyText = `Вышел новый ${contentType}`
+
+	const filmLines = [`${bodyText}: «${movie.title}»`]
+
+	if (options) {
+		filmLines.push(...formatNewEpisodes(options.data))
+
+		const newTranslationAvailable = movie.notifyTranslation && options.translations.includes(movie.notifyTranslation)
+		if (newTranslationAvailable) {
+			filmLines.push(`Доступна озвучка от ${movie.notifyTranslation}!`)
+		} else {
+			options.translations.forEach(translation => filmLines.push(`Доступна озвучка от ${translation}!`))
+		}
+	}
 
 	store.dispatch(
 		noticesActions.displayNotification({
 			id: `${movie.type}:${movie.id}`,
-			title: 'Новый контент доступен!',
-			body: `Новый эпизод «${movie.title}» ${seasonTitle ? seasonTitle + '.' : ''}`,
-			data: { type: movie.type, id: movie.id, title: movie.title, newSeries: newSeries.data },
+			title: `${bodyText}: «${movie.title}»`,
+			body: 'Нажмите, чтобы посмотреть детали или начать просмотр.',
+			data: { type: movie.type, id: movie.id, title: movie.title, newSeries: options?.data ?? {} },
 			android: {
 				channelId: 'content-release-channel',
 				style: {
-					type: AndroidStyle.BIGTEXT,
-					text: `Новый эпизод «${movie.title}» ${seasonTitle ? seasonTitle + '.' : ''}`
+					type: AndroidStyle.INBOX,
+					lines: filmLines
+					// summary: `${bodyText}: «${movie.title}»`
 				},
 				largeIcon: poster,
-				pressAction: {
-					id: 'movie',
-					launchActivity: 'default'
-				},
+				pressAction: { id: 'movie', launchActivity: 'default' },
 				actions: [
 					{
 						title: 'Смотреть',
-						pressAction: {
-							id: 'watch',
-							launchActivity: 'default'
-						}
+						pressAction: { id: 'watch', launchActivity: 'default' }
 					}
 				],
 				timestamp: Date.now(),
 				showTimestamp: true
-			},
-			ios: {
-				attachments: [{ url: poster }]
 			}
 		})
 	)
 }
 
-let isFinishTask = true
+export const displayNotificationNewEpisode = (movie: WatchHistory, options: { total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider }) => {
+	const poster = normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
+
+	const episodeLines = formatNewEpisodes(options.data)
+
+	const newTranslationAvailable = movie.notifyTranslation && options.translations.includes(movie.notifyTranslation)
+	if (newTranslationAvailable) {
+		episodeLines.push(`Доступна озвучка от ${movie.notifyTranslation}!`)
+	} else {
+		options.translations.forEach(translation => episodeLines.push(`Доступна озвучка от ${translation}!`))
+	}
+
+	const bodyText = `Вышли новые серии «${movie.title}»`
+
+	store.dispatch(
+		noticesActions.displayNotification({
+			id: `${movie.type}:${movie.id}`,
+			title: `Новые серии «${movie.title}»`,
+			body: bodyText,
+			data: { type: movie.type, id: movie.id, title: movie.title, newSeries: options.data },
+			android: {
+				channelId: 'content-release-channel',
+				style: {
+					type: AndroidStyle.INBOX,
+					lines: episodeLines,
+					summary: `Всего ${options.total} ${getNoun(options.total, 'серия', 'серии', 'серий')}`
+				},
+				largeIcon: poster,
+				pressAction: { id: 'movie', launchActivity: 'default' },
+				actions: [
+					{
+						title: 'Смотреть',
+						pressAction: { id: 'watch', launchActivity: 'default' }
+					}
+				],
+				timestamp: Date.now(),
+				showTimestamp: true
+			}
+		})
+	)
+}
+
+const BG_FETCH_STORAGE_KEY = '@BackgroundFetch_processing_queue'
+const taskTimeoutState: { [key: string]: boolean } = {}
+
 export const backgroundTask = async (event: string | HeadlessEvent) => {
 	const taskId = typeof event === 'string' ? event : event.taskId
 	const isTimeout = typeof event === 'string' ? false : event.timeout
 
 	if (isTimeout) {
 		console.log('[BackgroundFetch] Headless TIMEOUT:', taskId)
-		// isFinishTask = true
-		// BackgroundFetch.finish(taskId)
-		// return
-	}
-
-	if (!isFinishTask) {
-		console.log('[BackgroundFetch] continue taskId', taskId)
-		await delay(1000 * 60 * 10)
+		taskTimeoutState[taskId] = true
+		BackgroundFetch.finish(taskId)
 		return
 	}
 
-	console.log('[BackgroundFetch] taskId', taskId)
+	console.log(`[BackgroundFetch] start: ${taskId}`)
 
+	taskTimeoutState[taskId] = false
 	const subscriptions: Unsubscribe[] = []
-	if (store.getState().settings.settings._settings_time === 0) {
-		subscriptions.push(setupSettingsListeners(startAppListening))
-		subscriptions.push(setupNoticesListeners(startAppListening))
-		await store.dispatch(settingsExtraActions.getSettings())
-		await store.dispatch(noticesExtraActions.getNotices())
-	}
 
-	isFinishTask = false
+	try {
+		if (store.getState().settings.settings._settings_time === 0) {
+			subscriptions.push(setupSettingsListeners(startAppListening))
+			subscriptions.push(setupNoticesListeners(startAppListening))
+			await store.dispatch(settingsExtraActions.getSettings())
+			await store.dispatch(noticesExtraActions.getNotices())
+		}
 
-	const data = Object.values(store.getState().settings.settings.watchHistory)
-		.sort((a, b) => b.timestamp - a.timestamp)
-		.filter(it => it.notify)
+		let processingQueue: WatchHistory[] = []
+		const savedQueueJson = await AsyncStorage.getItem(BG_FETCH_STORAGE_KEY)
 
-	let i = 0
-	for (const movie of data) {
-		try {
-			i = i + 1
-			console.log(`[BackgroundFetch] (${i}/${data.length}) id:${movie.id} ${movie.type} "${rusToLatin(movie.title)}"`)
+		if (savedQueueJson) {
+			processingQueue = JSON.parse(savedQueueJson)
+			console.log(`[BackgroundFetch] Resuming with ${processingQueue.length} items from previous session.`)
+		} else {
+			processingQueue = Object.values(store.getState().settings.settings.watchHistory)
+				.sort((a, b) => b.timestamp - a.timestamp)
+				.filter(it => it.notify)
+			console.log(`[BackgroundFetch] Starting new session with ${processingQueue.length} items.`)
+		}
 
-			let movieProvider: WatchHistoryProvider | null = movie.provider
-			if (movie.provider === null || movie.provider.startsWith('provider')) {
-				await delay(500)
-				console.log(`[BackgroundFetch] search provider id:${movie.id}`)
+		if (processingQueue.length === 0) {
+			console.log('[BackgroundFetch] Queue is empty. Finishing task.')
+			await AsyncStorage.removeItem(BG_FETCH_STORAGE_KEY)
+			subscriptions.forEach(unsubscribe => unsubscribe())
+			BackgroundFetch.finish(taskId)
+			return
+		}
 
-				const data = await getKinoboxPlayers(movie).then(it => it.data.filter(it => 'iframeUrl' in it))
-				if (data.length === 0) continue
-				movieProvider = data[0].source
+		await AsyncStorage.setItem(BG_FETCH_STORAGE_KEY, JSON.stringify(processingQueue))
+
+		while (processingQueue.length > 0) {
+			if (taskTimeoutState[taskId]) {
+				console.log('[BackgroundFetch] Timeout detected inside loop. Stopping processing.')
+				break
 			}
 
-			const newWatchHistoryData: Partial<WatchHistory> = {}
+			const movie = processingQueue.shift()!
 
-			if (movie.releasedEpisodes !== undefined) {
-				const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
+			try {
+				console.log(`[BackgroundFetch] Processing (${movie.id}). Remaining: ${processingQueue.length}`)
 
-				if (newSeries && newSeries.total !== movie.releasedEpisodes) {
-					if (newSeries.total > movie.releasedEpisodes) {
-						displayNotificationNewEpisode(movie, { newSeries })
-						newWatchHistoryData.status = 'new'
-						newWatchHistoryData.timestamp = Date.now()
+				let movieProvider = movie.provider
+				if (movie.provider === null || movie.provider.startsWith('provider')) {
+					await delay(500)
+					console.log(`[BackgroundFetch] search provider id:${movie.id}`)
+
+					const data = await getKinoboxPlayers(movie).then(it => it.data.filter(it => 'iframeUrl' in it))
+					if (data.length === 0) {
+						await AsyncStorage.setItem(BG_FETCH_STORAGE_KEY, JSON.stringify(processingQueue))
+						continue
 					}
-					newWatchHistoryData.releasedEpisodes = newSeries.total
-					newWatchHistoryData.provider = newSeries.provider
-
-					store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
+					movieProvider = data[0].source
 				}
-			} else {
-				displayNotificationNewFilm(movie)
-				newWatchHistoryData.status = 'new'
-				newWatchHistoryData.timestamp = Date.now()
 
-				if (isSeries(movie.type)) {
+				const newWatchHistoryData: Partial<WatchHistory> = {}
+
+				if (movie.releasedEpisodes !== undefined) {
 					const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
-					if (newSeries && newSeries.total > 0) {
+
+					if (newSeries && newSeries.total !== movie.releasedEpisodes) {
+						if (newSeries.total > movie.releasedEpisodes) {
+							displayNotificationNewEpisode(movie, newSeries)
+							newWatchHistoryData.status = 'new'
+							newWatchHistoryData.timestamp = Date.now()
+						}
 						newWatchHistoryData.releasedEpisodes = newSeries.total
 						newWatchHistoryData.provider = newSeries.provider
+
+						store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
 					}
 				} else {
-					newWatchHistoryData.notify = false
-					if (movie.notifyTranslation) newWatchHistoryData.notifyTranslation = null
+					let seriesInfo: { total: number; data: NewEpisodesType; translations: string[]; provider: WatchHistoryProvider } | null = null
+					newWatchHistoryData.status = 'new'
+					newWatchHistoryData.timestamp = Date.now()
+
+					if (isSeries(movie.type)) {
+						const newSeries = await fetchNewSeries({ ...movie, provider: movieProvider })
+						if (newSeries && newSeries.total > 0) {
+							newWatchHistoryData.releasedEpisodes = newSeries.total
+							newWatchHistoryData.provider = newSeries.provider
+							seriesInfo = newSeries
+						}
+
+						displayNotificationNewFilm(movie, seriesInfo)
+						store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
+					} else {
+						newWatchHistoryData.notify = false
+						if (movie.notifyTranslation) newWatchHistoryData.notifyTranslation = null
+
+						const moviePlayers = await getKinoboxPlayers(movie, undefined, !movie.notifyTranslation).then(it => it.data.filter(it => 'iframeUrl' in it))
+
+						const data = moviePlayers
+							.map(it => it.translations)
+							.flat()
+							.map(it => it.name)
+							.filter(it => it !== null)
+							.filter(t => isAllowedTranslation(t, movie.notifyTranslation))
+
+						if (data.length || !movie.notifyTranslation) {
+							displayNotificationNewFilm(movie, seriesInfo)
+							store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
+						}
+					}
 				}
 
-				store.dispatch(settingsActions.mergeItem({ watchHistory: { [`${movie.id}`]: newWatchHistoryData } }))
+				await AsyncStorage.setItem(BG_FETCH_STORAGE_KEY, JSON.stringify(processingQueue))
+			} catch (e) {
+				console.error('[BackgroundFetch] Error processing item:', movie.id, e)
+				await AsyncStorage.setItem(BG_FETCH_STORAGE_KEY, JSON.stringify(processingQueue))
 			}
-		} catch (e) {
-			console.error('[BackgroundFetch]:', e)
 		}
-	}
 
-	// Finish.
-	isFinishTask = true
-	subscriptions.forEach(unsubscribe => unsubscribe())
-	BackgroundFetch.finish(taskId)
+		if (processingQueue.length === 0) {
+			console.log('[BackgroundFetch] All items processed. Cleaning up.')
+			await AsyncStorage.removeItem(BG_FETCH_STORAGE_KEY)
+		}
+	} catch (e) {
+		console.error('[BackgroundFetch] General Error:', e)
+	} finally {
+		delete taskTimeoutState[taskId]
+		subscriptions.forEach(unsubscribe => unsubscribe())
+		BackgroundFetch.finish(taskId)
+		console.log('[BackgroundFetch] Headless task finished.', taskId)
+	}
 }
 
 export const useBackgroundFetch = () => {
 	const initBackgroundFetch = async () => {
-		await BackgroundFetch.configure(config, backgroundTask, (taskId: string) => {
-			// Oh No!  Our task took too long to complete and the OS has signalled
-			// that this task must be finished immediately.
-			console.log('[BackgroundFetch] TIMEOUT taskId:', taskId)
-			BackgroundFetch.finish(taskId)
-		})
+		const status = await BackgroundFetch.configure(config, backgroundTask, async (taskId: string) => backgroundTask({ taskId, timeout: true }))
+
+		switch (status) {
+			case BackgroundFetch.STATUS_RESTRICTED as 0:
+				console.log(`BackgroundFetch status: Background fetch updates are unavailable and the user cannot enable them again. For example, this status can occur when parental controls are in effect for the current user.`)
+				break
+			case BackgroundFetch.STATUS_DENIED as 1:
+				console.log(`BackgroundFetch status: The user explicitly disabled background behavior for this app or for the whole system.`)
+				break
+			case BackgroundFetch.STATUS_AVAILABLE as 2:
+				console.log(`BackgroundFetch status: Background fetch is available and enabled.`)
+				break
+		}
 	}
 
 	const initNotifee = async () => {

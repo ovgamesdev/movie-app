@@ -29,7 +29,7 @@ const PersonItem = ({ title, data, isReq = false }: { title: string; data: { ite
 	)
 }
 
-const YearItem = ({ id, title, productionYear, seasons, type, tmdbId }: { id: number; title: string; productionYear: number | null; seasons?: { total: number }; type: MovieType; tmdbId: number | null }) => {
+export const YearItem = ({ id, title, productionYear, seasons, type, tmdbId }: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; title: string; productionYear: number | null; seasons?: { total: number }; type: MovieType; tmdbId: number | null }) => {
 	const { theme } = useStyles()
 
 	const episodesDisabled = tmdbId === null

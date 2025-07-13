@@ -68,7 +68,7 @@ export type RootStackParamList = {
 	Person: { data: { id: number } }
 	Watch: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType } | { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType; title: string; poster: string | null; year: number | null; provider: WatchHistoryProvider | null } }
 	MovieListSlug: { data: { slug: string; filters?: IListSlugFilter } }
-	Episodes: { data: { id: number; type: MovieType; tmdb_id: number } }
+	Episodes: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}`; type: MovieType; tmdb_id: number } }
 
 	ItemMenuModal: { data: WatchHistory; lookAtHistory?: number }
 	ChangeFilm: { data: { id: number | `tt${number}` | `ALLOHA:${string}` | `COLLAPS:${string}` | `KODIK:${string}` }; other?: { type: MovieType; title: string; poster: string | null; year: number | null } }

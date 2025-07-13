@@ -75,17 +75,17 @@ export const SearchHistory = () => {
 			case 'MiniSeries':
 			case 'TvShow':
 			case 'Video': {
-				addItemToSearchHistory(data)
+				requestAnimationFrame(() => addItemToSearchHistory(data))
 				navigation.push('Movie', { data: { id: data.id, type: data.type } })
 				break
 			}
 			case 'Person': {
-				addItemToSearchHistory(data)
+				requestAnimationFrame(() => addItemToSearchHistory(data))
 				navigation.push('Person', { data: { id: data.id } })
 				break
 			}
 			case 'MovieListMeta': {
-				addItemToSearchHistory(data)
+				requestAnimationFrame(() => addItemToSearchHistory(data))
 				const { isFilter, slug, filters } = movieListUrlToFilters(data.url)
 				navigation.push('MovieListSlug', { data: isFilter ? { slug: '', filters } : { slug } })
 				break

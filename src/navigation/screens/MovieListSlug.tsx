@@ -170,7 +170,7 @@ export const MovieListSlug: FC<Props> = ({ route }) => {
 								</View>
 							))}
 						<View style={[(item.__typename === 'PopularMovieListItem' || item.__typename === 'TopMovieListItem' || item.__typename === 'BoxOfficeMovieListItem') && orientation.landscape && { marginLeft: 20 }]}>
-							<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }) }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6}>
+							<ImageBackground source={{ uri: normalizeUrlWithNull(item.movie.poster?.avatarsUrl ?? item.movie.gallery?.posters?.vertical?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }) }} style={{ height: 120, aspectRatio: 667 / 1000 }} borderRadius={6}>
 								{orientation.portrait && <Rating {...item.movie.rating} />}
 							</ImageBackground>
 						</View>

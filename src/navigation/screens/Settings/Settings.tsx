@@ -1,12 +1,13 @@
 import { Button } from '@components/atoms'
 import { UpdateApk, User } from '@components/molecules'
 import { Switch } from '@components/molecules/settings'
-import { useTypedSelector } from '@hooks'
+import { displayNotificationNewEpisode, displayNotificationNewFilm, useTypedSelector } from '@hooks'
 import { SettingsTabParamList, navigation } from '@navigation'
 import notifee from '@notifee/react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { store } from '@store'
 import { type FC } from 'react'
-import { TVFocusGuideView, Text, View } from 'react-native'
+import { TVFocusGuideView, Text, ToastAndroid, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 import { Backup, Logs } from './index'
@@ -90,6 +91,67 @@ export const SettingsScreen: FC = () => {
 				{showDevOptions && <Button text='Logs' onPress={() => navigation.navigate('Logs', undefined)} />}
 				<Button text='Backup' onPress={() => navigation.navigate('Backup', undefined)} />
 				<Button text='Открыть настройки уведомлений' onPress={async () => notifee.openNotificationSettings()} />
+
+				{showDevOptions && (
+					<View style={{ gap: 10, paddingTop: 10 }}>
+						<Text style={styles.text}>TEST</Text>
+						<View style={{ gap: 10, flexDirection: 'row' }}>
+							<Button
+								text='NEW FILM'
+								onPress={async () => {
+									const movies = Object.values(store.getState().settings.settings.watchHistory)
+										.sort((a, b) => b.timestamp - a.timestamp)
+										.filter(it => it.type === 'Film' && !it.provider && it.notify)
+
+									if (movies.length) {
+										const movie = movies[Math.floor(Math.random() * movies.length)]
+										displayNotificationNewFilm(movie)
+									} else {
+										ToastAndroid.show('Не удалось найти', ToastAndroid.SHORT)
+									}
+								}}
+							/>
+							<Button
+								text='NEW SERIES'
+								onPress={async () => {
+									const movies = Object.values(store.getState().settings.settings.watchHistory)
+										.sort((a, b) => b.timestamp - a.timestamp)
+										.filter(it => it.type === 'TvSeries' && !it.provider && it.notify)
+
+									if (movies.length) {
+										const movie = movies[Math.floor(Math.random() * movies.length)]
+										const startWith = [1, 2, 12][Math.floor(Math.random() * [1, 2, 12].length)]
+										const episodesCount = startWith === 12 ? 1 : [1, 2, 4, 6, 12][Math.floor(Math.random() * [1, 2, 4, 6, 12].length)]
+										const episodes = Array.from({ length: episodesCount }, (_, i) => String(startWith + i))
+
+										displayNotificationNewFilm(movie, { total: episodes.length, data: { '1': episodes }, provider: movie.provider ?? 'KODIK', translations: [movie.notifyTranslation ?? 'translation', 'test', 'hello world'] })
+									} else {
+										ToastAndroid.show('Не удалось найти', ToastAndroid.SHORT)
+									}
+								}}
+							/>
+							<Button
+								text='NEW EPISODE'
+								onPress={async () => {
+									const movies = Object.values(store.getState().settings.settings.watchHistory)
+										.sort((a, b) => b.timestamp - a.timestamp)
+										.filter(it => it.type === 'TvSeries' && it.provider && it.notify)
+
+									if (movies.length) {
+										const movie = movies[Math.floor(Math.random() * movies.length)]
+										const startWith = [1, 2, 12][Math.floor(Math.random() * [1, 2, 12].length)]
+										const episodesCount = startWith === 12 ? 1 : [1, 2, 4, 6, 12][Math.floor(Math.random() * [1, 2, 4, 6, 12].length)]
+										const episodes = Array.from({ length: episodesCount }, (_, i) => String(startWith + i))
+
+										displayNotificationNewEpisode(movie, { total: episodes.length, data: { '1': episodes }, provider: movie.provider ?? 'KODIK', translations: [movie.notifyTranslation ?? 'translation', 'test', 'hello world'] })
+									} else {
+										ToastAndroid.show('Не удалось найти', ToastAndroid.SHORT)
+									}
+								}}
+							/>
+						</View>
+					</View>
+				)}
 			</View>
 		</TVFocusGuideView>
 	)
@@ -119,5 +181,9 @@ const stylesheet = createStyleSheet(theme => ({
 	},
 	updateContainer: {
 		paddingBottom: 10
+	},
+	text: {
+		color: theme.colors.text200,
+		fontSize: 14
 	}
 }))

@@ -28,7 +28,7 @@ export const WatchButton: FC<Props> = ({ data }) => {
 			return
 		}
 
-		getKinoboxPlayers(data).then(it => {
+		getKinoboxPlayers(data as { title: string; poster: string | null; year: number | null; id: number | `tt${number}`; type: MovieType }).then(it => {
 			const data = it.data.filter(it => 'iframeUrl' in it)
 			setProviders(it.error ? 'error' : data.length === 0 ? null : data)
 		})

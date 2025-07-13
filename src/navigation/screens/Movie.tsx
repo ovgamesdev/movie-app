@@ -1,12 +1,12 @@
 import { ActivityIndicator, Button, ExpandText, ImageBackground } from '@components/atoms'
 import { CinematicBackdropImage, ProductionStatusText, Rating, Trailer } from '@components/molecules/movie' // /index
 import { FavoritesButton } from '@components/organisms'
-import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton } from '@components/organisms/movie'
-import { useActions, useTypedSelector } from '@hooks'
+import { Encyclopedic, Episodes, OriginalMovies, SequelsPrequels, SimilarMovie, WatchButton, YearItem } from '@components/organisms/movie'
+import { useActions, useTypedDispatch, useTypedSelector } from '@hooks'
 import { RootStackParamList, navigation } from '@navigation'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { store } from '@store'
-import { IFilmBaseInfo, ITvSeriesBaseInfo, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
+import { IFilmBaseInfo, ITvSeriesBaseInfo, kinopoiskApi, useGetFilmBaseInfoQuery, useGetTvSeriesBaseInfoQuery } from '@store/kinopoisk'
 import { BookmarksMovie, SearchHistoryMovie, WatchHistory } from '@store/settings'
 import { formatDate, isSeries, isSeriesData, normalizeUrlWithNull, releaseYearsToString } from '@utils'
 import { FC, useEffect, useState } from 'react'
@@ -22,8 +22,9 @@ export const Movie: FC<Props> = ({ route }) => {
 
 	const insets = useSafeAreaInsets()
 	const isShowNetInfo = useTypedSelector(state => state.safeArea.isShowNetInfo)
+	const dispatch = useTypedDispatch()
 	const { styles, theme } = useStyles(stylesheet)
-	const { updateWatchHistory, updateBookmarks } = useActions()
+	const { updateWatchHistory, updateBookmarks, mergeItem, removeItemByPath } = useActions()
 
 	const { data: dataFilm, isFetching: isFetchingFilm, isError: isErrorFilm, refetch: refetchFilm } = useGetFilmBaseInfoQuery({ filmId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'Film' && route.params.data.type !== 'Video') }) // TODO isSeries
 	const { data: dataTvSeries, isFetching: isFetchingTvSeries, isError: isErrorTvSeries, refetch: refetchTvSeries } = useGetTvSeriesBaseInfoQuery({ tvSeriesId: route.params.data.id as number }, { skip: !isKP || (route.params.data.type !== 'TvSeries' && route.params.data.type !== 'MiniSeries' && route.params.data.type !== 'TvShow') }) // TODO isSeries
@@ -34,8 +35,7 @@ export const Movie: FC<Props> = ({ route }) => {
 	const refetch = async () => (isErrorTvSeries && refetchTvSeries(), isErrorFilm && refetchFilm())
 
 	// TODO to store
-	const [backdropPath, setBackdropPath] = useState<null | string>(null)
-	const [tmdbId, setTmdbId] = useState<null | number>(null)
+	const [providersData, setProvidersData] = useState<{ backdropPath: string | null; external: { tmdbId: number | null; kpId: number | null }; isSeries: boolean | null; detail: { original: string | null; description: string | null; seasons_count: number | null; last_episode: number | null; episodesCount: number | null } | null }>({ backdropPath: null, external: { tmdbId: null, kpId: null }, isSeries: null, detail: null })
 
 	// TODO (id:764810) `Уж не зомби ли это? OVA-1` Not found (kodik series !== kp series)
 
@@ -46,28 +46,32 @@ export const Movie: FC<Props> = ({ route }) => {
 
 			fetch(url)
 				.then(async response => response.json())
-				.then(res => {
+				.then(async res => {
 					if (res?.data) {
 						const isSeries = 'seasons' in res.data
 
-						console.log(`id_tmdb: ${res.data.id_tmdb}, isSeries: ${isSeries}`)
+						// console.log(`id_tmdb: ${res.data.id_tmdb}, isSeries: ${isSeries}`, res)
 
-						setTmdbId(res.data.id_tmdb)
-
-						fetch(`https://api.themoviedb.org/3/${isSeries ? 'tv' : 'movie'}/${res.data.id_tmdb}?api_key=${Config.THEMOVIEDB_TOKEN}`)
+						const backdropPath = await fetch(`https://api.themoviedb.org/3/${isSeries ? 'tv' : 'movie'}/${res.data.id_tmdb}?api_key=${Config.THEMOVIEDB_TOKEN}`)
 							.then(async response => response.json())
 							.then(res => {
-								console.log('themoviedb data:', res.backdrop_path)
+								// console.log('themoviedb data:', res.backdrop_path)
 
 								if ('backdrop_path' in res && typeof res.backdrop_path === 'string') {
-									setBackdropPath(res.backdrop_path)
+									return res.backdrop_path as string
 								}
+
+								return null
 							})
+
+						console.log('data:', res)
+
+						setProvidersData({ external: { tmdbId: res.data.id_tmdb ?? null, kpId: res.data.id_kp ?? null }, backdropPath, isSeries, detail: { original: res.data.original_name ?? null, description: res.data.description, seasons_count: typeof res.data.seasons_count === 'number' ? res.data.seasons_count : null, last_episode: typeof res.data.last_episode === 'number' ? res.data.last_episode : null, episodesCount: Object.keys(res?.data?.seasons ?? {}).reduce((total, key) => total + Object.keys(res?.data?.seasons[key]?.episodes ?? {}).length, 0) } })
 					}
 				})
 		}
 
-		if (isKP) init()
+		init()
 	}, [])
 
 	useEffect(() => {
@@ -93,6 +97,39 @@ export const Movie: FC<Props> = ({ route }) => {
 		updateBookmarks(updateData)
 		updateWatchHistory(updateData)
 	}, [data])
+
+	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
+		const poster = normalizeUrlWithNull(data?.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
+
+		return (
+			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
+				<View style={[style, { top, borderRadius }]}>
+					<ImageBackground source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
+				</View>
+			</View>
+		)
+	}
+
+	const Cover = () => {
+		if (!data?.cover) {
+			return null
+		}
+
+		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/1344x756' })
+
+		return <CinematicBackdropImage source={{ uri: poster }} />
+	}
+
+	const BackdropImage = ({ backdropPath }: { backdropPath: string }) => {
+		const window = Dimensions.get('window')
+		const itemWidth = window.width
+
+		const imageSize = itemWidth <= 500 ? 'w500' : itemWidth <= 780 ? 'w780' : itemWidth <= 1000 ? 'w1000' : itemWidth <= 1280 ? 'w1280' : 'original'
+
+		const backdrop = `https://image.tmdb.org/t/p/${imageSize}${backdropPath}`
+
+		return <CinematicBackdropImage source={{ uri: backdrop }} />
+	}
 
 	if (!isKP) {
 		const data = { ...route.params.data, ...route.params.other }
@@ -121,8 +158,12 @@ export const Movie: FC<Props> = ({ route }) => {
 
 		return (
 			<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
-				<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom), paddingTop: 50 + insets.top }}>
+				<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
+					<View style={styles.portraitCover}>{providersData.backdropPath ? <BackdropImage backdropPath={providersData.backdropPath} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
+
 					<View style={styles.details}>
+						{/* TODO landscapeCover & PosterImage */}
+
 						<View style={styles.detailsInfoWrapper}>
 							<View style={styles.detailsInfoContainer}>
 								<View style={styles.portraitCover}>
@@ -137,23 +178,93 @@ export const Movie: FC<Props> = ({ route }) => {
 										{movie.title} <Text>{isSeries(movie.type) ? `(сериал${movie.year ? ' ' + movie.year : ''})` : movie.year ? `(${movie.year})` : ''}</Text>
 									</Text>
 
-									{/* <Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>
-										{(!!data.title.russian || !!data.title.localized) && data.title.original ? data.title.original + ' ' : ''}
-										{data.restriction.age ? data.restriction.age.replace('age', '') + '+' : ''}
-									</Text> */}
+									<Text style={styles.detailsInfoDescription} selectable={!Platform.isTV}>
+										{providersData.detail && movie.title !== providersData.detail.original ? providersData.detail.original + ' ' : ''}
+										{/* {movie.restriction.age ? movie.restriction.age.replace('age', '') + '+' : ''} */}
+									</Text>
 								</View>
 							</View>
 
 							<View>
-								<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
-									<WatchButton data={movie} />
-									<Button style={{ minHeight: 39.33 }} text='Изменить' onPress={() => navigation.push('ChangeFilm', { data: { id: movie.id }, other: { type: movie.type, poster: normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }), title: movie.title, year: movie.year } })} />
-									<FavoritesButton data={movie} />
-								</TVFocusGuideView>
+								<ScrollView horizontal>
+									<TVFocusGuideView style={styles.buttonsContainer} autoFocus>
+										<WatchButton data={movie} />
+										<Button style={{ minHeight: 39.33 }} text='Изменить' onPress={() => navigation.push('ChangeFilm', { data: { id: movie.id }, other: { type: movie.type, poster: normalizeUrlWithNull(movie.poster, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' }), title: movie.title, year: movie.year } })} />
+										{providersData.external.kpId !== null && (
+											<Button
+												style={{ minHeight: 39.33 }}
+												text='Доступно на KP'
+												onPress={async () => {
+													if (providersData.external.kpId === null) return
+
+													const { data: dataFilm } = providersData.isSeries ? await dispatch(kinopoiskApi.endpoints.getTvSeriesBaseInfo.initiate({ tvSeriesId: providersData.external.kpId })) : { data: undefined }
+													const { data: dataTvSeries } = !providersData.isSeries ? await dispatch(kinopoiskApi.endpoints.getFilmBaseInfo.initiate({ filmId: providersData.external.kpId })) : { data: undefined }
+
+													const _data: IFilmBaseInfo | ITvSeriesBaseInfo | undefined = dataFilm ?? dataTvSeries
+
+													if (_data === undefined) return
+
+													const _movie = { id: _data.id, poster: _data.poster?.avatarsUrl ?? null, title: (_data.title.russian ?? _data.title.localized ?? _data.title.original ?? _data.title.english)!, type: _data.__typename, year: (isSeriesData(_data) ? _data.releaseYears[0]?.start : _data.productionYear) ?? null }
+
+													const watchHistory = store.getState().settings.settings.watchHistory[`${data.id as number | `tt${number}`}`] as WatchHistory | undefined
+
+													const item: WatchHistory = watchHistory
+														? { ...watchHistory, ..._movie }
+														: {
+																..._movie,
+																provider: null,
+																startTimestamp: Date.now(),
+																timestamp: Date.now(),
+																status: 'pause'
+														  }
+
+													console.log('data_new:', item)
+
+													mergeItem({ watchHistory: { [`${item.id as number | `tt${number}`}`]: item } })
+													removeItemByPath(['watchHistory', `${data.id}`])
+													navigation.replace('Movie', { data: { id: item.id, type: item.type } })
+												}}
+											/>
+										)}
+										<FavoritesButton data={movie} />
+									</TVFocusGuideView>
+								</ScrollView>
+
 								<Text style={{ color: theme.colors.text100, fontSize: 16, paddingBottom: 5 }}>Данные недоступны</Text>
 								<Text style={{ color: theme.colors.text200, fontSize: 16 }} selectable>
 									id: {movie.id}
 								</Text>
+								{providersData.detail ? (
+									<>
+										<Text style={styles.sectionTitleAbout}>О {providersData.isSeries ? 'сериале' : 'фильме'}</Text>
+
+										<View style={styles.encyclopedicWrapper}>
+											{typeof movie.year === 'number' && <YearItem id={movie.id} productionYear={movie.year} title='Год производства' tmdbId={providersData.external.tmdbId} type={movie.type} seasons={typeof providersData.detail.seasons_count === 'number' ? { total: providersData.detail.seasons_count } : undefined} />}
+
+											{providersData.detail.seasons_count !== null && providersData.detail.last_episode !== null && providersData.detail.episodesCount !== null && (
+												<Episodes
+													episodeNumber={providersData.detail.last_episode}
+													seasonNumber={providersData.detail.seasons_count}
+													episodesCount={providersData.detail.episodesCount}
+													disabled={providersData.external.tmdbId === null}
+													onPress={() => {
+														providersData.external.tmdbId !== null && navigation.push('Episodes', { data: { id: movie.id, tmdb_id: providersData.external.tmdbId, type: movie.type } })
+													}}
+												/>
+											)}
+										</View>
+
+										<View style={styles.tabsSection}>
+											<Button transparent text='Обзор' />
+										</View>
+
+										{providersData.detail.description && (
+											<ExpandText style={styles.synopsis} containerStyle={styles.containerSynopsis} numberOfLines={7}>
+												{providersData.detail.description}
+											</ExpandText>
+										)}
+									</>
+								) : null}
 							</View>
 						</View>
 					</View>
@@ -192,43 +303,10 @@ export const Movie: FC<Props> = ({ route }) => {
 
 	// console.log('data:', data)
 
-	const PosterImage = ({ width, height, borderRadius, top, style, wrapperStyle }: { width?: number; height?: number; borderRadius?: number; top?: number; style?: StyleProp<ViewStyle>; wrapperStyle?: StyleProp<ViewStyle> }) => {
-		const poster = normalizeUrlWithNull(data.poster?.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/300x450' })
-
-		return (
-			<View style={[wrapperStyle, { width: width ?? 300, height, aspectRatio: height ? undefined : 2 / 3 }]}>
-				<View style={[style, { top, borderRadius }]}>
-					<ImageBackground source={{ uri: poster }} style={{ width: width ?? 300, aspectRatio: 2 / 3 }} borderRadius={borderRadius} />
-				</View>
-			</View>
-		)
-	}
-
-	const Cover = () => {
-		if (!data.cover) {
-			return null
-		}
-
-		const poster = normalizeUrlWithNull(data.cover.image.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/1344x756' })
-
-		return <CinematicBackdropImage source={{ uri: poster }} />
-	}
-
-	const BackdropImage = ({ backdropPath }: { backdropPath: string }) => {
-		const window = Dimensions.get('window')
-		const itemWidth = window.width
-
-		const imageSize = itemWidth <= 500 ? 'w500' : itemWidth <= 780 ? 'w780' : itemWidth <= 1000 ? 'w1000' : itemWidth <= 1280 ? 'w1280' : 'original'
-
-		const backdrop = `https://image.tmdb.org/t/p/${imageSize}${backdropPath}`
-
-		return <CinematicBackdropImage source={{ uri: backdrop }} />
-	}
-
 	return (
 		<TVFocusGuideView style={styles.container} trapFocusLeft trapFocusRight trapFocusUp trapFocusDown>
 			<ScrollView contentContainerStyle={{ paddingBottom: 10 + (isShowNetInfo ? 0 : insets.bottom) }}>
-				<View style={styles.portraitCover}>{data.cover ? <Cover /> : backdropPath ? <BackdropImage backdropPath={backdropPath} /> : data.mainTrailer?.preview ? <CinematicBackdropImage source={{ uri: normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/600x380' }) }} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
+				<View style={styles.portraitCover}>{data.cover ? <Cover /> : providersData.backdropPath ? <BackdropImage backdropPath={providersData.backdropPath} /> : data.mainTrailer?.preview ? <CinematicBackdropImage source={{ uri: normalizeUrlWithNull(data.mainTrailer.preview.avatarsUrl, { isNull: 'https://dummyimage.com/{width}x{height}/eee/aaa', append: '/600x380' }) }} /> : <View style={{ paddingTop: 50 + insets.top }} />}</View>
 
 				<View style={styles.details}>
 					<View style={styles.landscapeCover}>
@@ -267,9 +345,9 @@ export const Movie: FC<Props> = ({ route }) => {
 							<Text style={styles.sectionTitleAbout}>О {isSeries(data.__typename) ? 'сериале' : 'фильме'}</Text>
 
 							<View style={styles.encyclopedicWrapper}>
-								<Encyclopedic data={data} tmdbId={tmdbId} />
+								<Encyclopedic data={data} tmdbId={providersData.external.tmdbId} />
 
-								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} disabled={tmdbId === null} onPress={() => tmdbId !== null && navigation.push('Episodes', { data: { id: data.id, tmdb_id: tmdbId, type: data.__typename } })} />}
+								{'seasons' in data && data.seasons.total > 0 && <Episodes id={data.id} disabled={providersData.external.tmdbId === null} onPress={() => providersData.external.tmdbId !== null && navigation.push('Episodes', { data: { id: data.id, tmdb_id: providersData.external.tmdbId, type: data.__typename } })} />}
 
 								<SequelsPrequels sequelsPrequels={data.sequelsPrequels} />
 							</View>

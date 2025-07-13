@@ -1,5 +1,5 @@
-import { FC, useState } from 'react'
-import { Dimensions, StyleProp, Text, TextLayoutLine, TextProps, TextStyle, View, ViewStyle } from 'react-native'
+import { FC, useMemo, useState } from 'react'
+import { Dimensions, StyleProp, StyleSheet, Text, TextLayoutLine, TextProps, TextStyle, View, ViewStyle } from 'react-native'
 import Svg, { Defs, LinearGradient, Mask, Rect, Stop, Text as TextSvg, Use } from 'react-native-svg'
 import { useStyles } from 'react-native-unistyles'
 import { Button } from '.'
@@ -9,30 +9,21 @@ const x1Values = [0, 0, 0, 26, 40, 50, 57, 63, 66, 70, 72.5, 75, 76.5, 78, 79.5,
 const x0Values = [0, 0, 40, 56, 64, 69, 73, 77, 79, 81, 82.5, 84, 84.5, 86, 86.5, 88, 88.5, 89]
 
 const findX = (px: number, pxValues: number[], xValues: number[]): number => {
-	let px1 = pxValues[0]
-	let x1 = xValues[0]
-	let px2 = pxValues[0]
-	let x2 = xValues[0]
+	if (px <= pxValues[0]) return xValues[0]
+	if (px >= pxValues[pxValues.length - 1]) return xValues[xValues.length - 1]
 
 	for (let i = 1; i < pxValues.length; i++) {
-		if (pxValues[i] <= px) {
-			px1 = pxValues[i - 1]
-			x1 = xValues[i - 1]
-			px2 = pxValues[i]
-			x2 = xValues[i]
-		} else {
-			px2 = pxValues[i]
-			x2 = xValues[i]
-			break
+		if (px < pxValues[i]) {
+			const px1 = pxValues[i - 1]
+			const px2 = pxValues[i]
+			const x1 = xValues[i - 1]
+			const x2 = xValues[i]
+			const deltaPx = px2 - px1 || 1
+			const percentage = ((px - px1) / deltaPx) * 100
+			return x1 + (percentage * (x2 - x1)) / 100
 		}
 	}
-
-	const deltaX = x2 - x1
-	const deltaPx = px2 - px1
-	const percentage = ((px - px1) / deltaPx) * 100
-	const newX = x1 + (percentage * deltaX) / 100
-
-	return newX
+	return xValues[xValues.length - 1]
 }
 
 export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>; textMoreStyle?: StyleProp<TextStyle> }> = ({ children, numberOfLines = 1, containerStyle, style: textStyle, textMoreStyle, ...props }) => {
@@ -40,42 +31,38 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 	const [expandLines, setExpandLines] = useState<TextLayoutLine[] | null>(null)
 
 	const { theme } = useStyles()
+	const dimensionsWindow = useMemo(() => Dimensions.get('window'), [])
 
-	const style: StyleProp<ViewStyle> = {
-		borderWidth: 3,
-		margin: -3
-	}
-
-	if (containerStyle) {
-		const keys = ['borderWidth', 'borderEndWidth', 'borderTopWidth', 'borderLeftWidth', 'borderRightWidth', 'borderStartWidth', 'borderBottomWidth', 'margin', 'marginBottom', 'marginEnd', 'marginHorizontal', 'marginLeft', 'marginRight', 'marginStart', 'marginTop', 'marginVertical']
-
-		for (const key of keys) {
-			const append = (key.startsWith('border') ? style.borderWidth : style.margin) as number
-
-			if (key in containerStyle) {
-				const value = (containerStyle as ViewStyle)[key as keyof ViewStyle]
+	const mergedContainerStyle = useMemo(() => {
+		const baseStyle: ViewStyle = {
+			borderWidth: 3,
+			margin: -3
+		}
+		if (containerStyle) {
+			const flat = StyleSheet.flatten(containerStyle) as ViewStyle
+			for (const key of Object.keys(flat)) {
+				const value = flat[key as keyof ViewStyle]
 				if (typeof value === 'number') {
-					style[key as keyof ViewStyle] = (value + append) as never
+					if (key.startsWith('border')) baseStyle[key as 'borderWidth'] = value + 3
+					if (key.startsWith('margin')) baseStyle[key as 'margin'] = value - 3
 				}
 			}
 		}
-	}
+		return baseStyle
+	}, [containerStyle])
 
 	const isLoadedLines = !!(expandLines && expandLines.length > 0)
-
 	const fontSize: number = textStyle && typeof textStyle === 'object' && 'fontSize' in textStyle ? textStyle.fontSize ?? 14 : 14
 	const fontSizeMore: number = textMoreStyle && typeof textMoreStyle === 'object' && 'fontSize' in textMoreStyle ? textMoreStyle.fontSize ?? fontSize : fontSize
 
-	const dimensionsWindow = Dimensions.get('window')
-
 	// console.log('data:', expandLines)
 
-	const lineHeight = expandLines?.[numberOfLines - 1]?.height
-	const numberOfExpandLines = expandLines && expandLines.length - 1 === numberOfLines ? expandLines.length : numberOfLines
+	const totalLines = expandLines?.length ?? 0
+	const showExpand = totalLines > numberOfLines
 
 	return (
-		<Button padding={0} buttonColor='transparent' style={style} disabled={!(!!numberOfExpandLines && !!expandLines && expandLines.length >= numberOfExpandLines)} onPress={() => setIsExpand(isExpand => !isExpand)}>
-			<Text {...props} style={[textStyle, isLoadedLines && { color: 'transparent', position: 'absolute' }]} onTextLayout={e => expandLines === null && setExpandLines(e.nativeEvent.lines)} numberOfLines={isExpand ? undefined : numberOfLines}>
+		<Button padding={0} buttonColor='transparent' style={mergedContainerStyle} disabled={!showExpand} onPress={() => setIsExpand(isExpand => !isExpand)}>
+			<Text {...props} style={[textStyle, isLoadedLines && { color: 'transparent', position: 'absolute' }]} onTextLayout={e => !expandLines && setExpandLines(e.nativeEvent.lines)} numberOfLines={isExpand ? undefined : numberOfLines}>
 				{children}
 				{/* 00{'\n'}
 				20 00{'\n'}
@@ -97,93 +84,43 @@ export const ExpandText: FC<TextProps & { containerStyle?: StyleProp<ViewStyle>;
 				18 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00{'\n'} */}
 			</Text>
 
-			<View style={isLoadedLines ? undefined : { position: 'absolute' }}>
-				{isLoadedLines && lineHeight ? (
-					isExpand ? (
-						<View style={{}}>
-							<Text style={[textStyle, { lineHeight: lineHeight + 1 }]}>{children}</Text>
-						</View>
-					) : (
-						expandLines.slice(0, numberOfLines).map((expandLine, index) => {
-							const expandLineWidth = expandLine.width < 40 ? 40 : expandLine.width
+			{isLoadedLines
+				? expandLines.slice(0, isExpand ? expandLines.length : numberOfLines).map((line, index) => {
+						const width = Math.max(40, line.width)
+						const isLastLine = index + 1 === numberOfLines && showExpand && !isExpand
 
-							// console.log(expandLines, `isMoreButtonLine: ${index + 1 === numberOfLines} needMoreButton: ${expandLines.length >= numberOfExpandLines}`, { 'expandLines.length': expandLines.length, numberOfExpandLines, index, numberOfLines })
-
-							return expandLines.length >= numberOfExpandLines && index + 1 === numberOfLines ? (
-								// <Text key={index} style={[textStyle, { lineHeight: lineHeight }]}>
-								// 	{expandLine.text.substring(0, expandLine.text.length - 7)}
-								// 	<Text style={[textStyle, { lineHeight: lineHeight, color: theme.colors.text100 }, textMoreStyle]}>{' …ещё'}</Text>
-								// </Text>
-
-								// <View key={index + '_shadow'} style={{ width: 65, height: lineHeight, top: expandLine.y, left: expandLineWidth, position: 'absolute', transform: [{ translateX: -65 }] }}>
-								// 	<Svg height='100%' width='100%'>
-								// 		<Defs>
-								// 			<LinearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='0%'>
-								// 				<Stop offset='0%' stopColor={FROM_COLOR} stopOpacity={0} />
-								// 				<Stop offset='50%' stopColor={FROM_COLOR} />
-								// 			</LinearGradient>
-								// 		</Defs>
-								// 		<Rect width='100%' height='100%' fill='url(#grad)' />
-								// 	</Svg>
-								// </View>
-
-								<View key={index} style={{ width: expandLineWidth, height: lineHeight }}>
-									<Svg width='100%' height='100%' viewBox={`0 0 ${expandLineWidth} ${lineHeight}`}>
-										<Defs>
-											<LinearGradient id='Gradient' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2={expandLineWidth} y2='0'>
-												<Stop offset={`${findX(expandLineWidth, pxValues, x1Values)}%`} stopColor='white' stopOpacity='1' />
-												<Stop offset={`${findX(expandLineWidth, pxValues, x0Values)}%`} stopColor='white' stopOpacity='0' />
-											</LinearGradient>
-											<Mask id='Mask' maskUnits='userSpaceOnUse' x='0' y='0' width={expandLineWidth} height={lineHeight}>
-												<Rect x='0' y='0' width={expandLineWidth} height={lineHeight} fill='url(#Gradient)' />
-											</Mask>
-											<TextSvg
-												//
-												alignmentBaseline='text-top'
-												id='Text'
-												x='0'
-												y='0'
-												fontSize={fontSize * dimensionsWindow.fontScale}>
-												{expandLine.text}
-											</TextSvg>
-											<TextSvg
-												//
-												alignmentBaseline='text-top'
-												id='TextMore'
-												x={expandLineWidth - (fontSizeMore === 14 ? 40 : fontSizeMore === 16 ? 45 : 40)}
-												y='0'
-												fontSize={fontSizeMore * dimensionsWindow.fontScale}>
+						return (
+							<View key={index} style={{ width, height: line.height }}>
+								<Svg width='100%' height='100%' viewBox={`0 0 ${width} ${line.height}`}>
+									<Defs>
+										{isLastLine && (
+											<>
+												<LinearGradient id='Gradient' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2={width} y2='0'>
+													<Stop offset={`${findX(width, pxValues, x1Values)}%`} stopColor='white' stopOpacity='1' />
+													<Stop offset={`${findX(width, pxValues, x0Values)}%`} stopColor='white' stopOpacity='0' />
+												</LinearGradient>
+												<Mask id='Mask' x='0' y='0' width={width} height={line.height}>
+													<Rect width={width} height={line.height} fill='url(#Gradient)' />
+												</Mask>
+											</>
+										)}
+										<TextSvg alignmentBaseline='text-top' id='Text' x='0' y='0' fontSize={fontSize * dimensionsWindow.fontScale}>
+											{line.text}
+										</TextSvg>
+										{isLastLine && (
+											<TextSvg alignmentBaseline='text-top' id='TextMore' x={width - (fontSizeMore === 14 ? 40 : fontSizeMore === 16 ? 45 : 40)} y='0' fontSize={fontSizeMore * dimensionsWindow.fontScale}>
 												{' …ещё'}
 											</TextSvg>
-										</Defs>
-										<Use href='#Text' x='0' y='0' height={lineHeight} fill={`${textStyle && typeof textStyle === 'object' && 'color' in textStyle ? String(textStyle.color) : 'white'}`} mask='url(#Mask)' />
-										<Use href='#TextMore' x='0' y='0' height={lineHeight} fill={`${textMoreStyle && typeof textMoreStyle === 'object' && 'color' in textMoreStyle ? String(textMoreStyle.color) : theme.colors.text100}`} />
-									</Svg>
-								</View>
-							) : (
-								// <Text key={index} style={[textStyle, { lineHeight: lineHeight }]}>
-								// 	{expandLine.text}
-								// </Text>
+										)}
+									</Defs>
 
-								<View key={index} style={{ width: expandLine.width, height: lineHeight }}>
-									<Svg width='100%' height='100%' viewBox={`0 0 ${expandLine.width} ${lineHeight}`}>
-										<TextSvg
-											//
-											alignmentBaseline='text-top'
-											id='Text'
-											x='0'
-											y='0'
-											fontSize={fontSize * dimensionsWindow.fontScale}
-											fill={`${textStyle && typeof textStyle === 'object' && 'color' in textStyle ? String(textStyle.color) : 'white'}`}>
-											{expandLine.text}
-										</TextSvg>
-									</Svg>
-								</View>
-							)
-						})
-					)
-				) : null}
-			</View>
+									<Use href='#Text' fill={`${textStyle && typeof textStyle === 'object' && 'color' in textStyle ? String(textStyle.color) : 'white'}`} mask={isLastLine ? 'url(#Mask)' : undefined} />
+									{isLastLine && <Use href='#TextMore' fill={`${textMoreStyle && typeof textMoreStyle === 'object' && 'color' in textMoreStyle ? String(textMoreStyle.color) : theme.colors.text100}`} />}
+								</Svg>
+							</View>
+						)
+				  })
+				: null}
 		</Button>
 	)
 }

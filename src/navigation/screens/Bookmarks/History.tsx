@@ -13,12 +13,12 @@ import { Animated, InteractionManager, TVFocusGuideView, Text, View } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
-type FilterKeys = 'all' | WatchHistoryStatus
-const filters: Record<FilterKeys, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое', dropped: 'Брошено' }
+type FilterKeys = 'all' | WatchHistoryStatus | '_kp' | '_imdb' | '_other'
+const filters: Record<FilterKeys, string> = { all: 'Все', watch: 'Смотрю', end: 'Просмотрено', pause: 'Пауза', new: 'Новое', dropped: 'Брошено', _kp: 'KP', _imdb: 'IMDB', _other: 'Другое' }
 
 type Props = NativeStackScreenProps<BookmarksTabParamList, 'History'>
 
-export const History: FC<Props> = ({ navigation: nav, route: { params } }) => {
+export const History: FC<Props> = ({ navigation: _, route: { params } }) => {
 	const watchHistory = useTypedSelector(state => state.settings.settings.watchHistory)
 	const insets = useSafeAreaInsets()
 	const bottomTabBarHeight = useBottomTabBarHeight()
@@ -31,7 +31,7 @@ export const History: FC<Props> = ({ navigation: nav, route: { params } }) => {
 
 	const data = Object.values(watchHistory)
 		.sort((a, b) => b.timestamp - a.timestamp)
-		.filter(it => (activeFilter === 'all' ? it : it.status === activeFilter))
+		.filter(it => (activeFilter === 'all' ? it : activeFilter === '_kp' ? typeof it.id === 'number' : activeFilter === '_imdb' ? String(it.id).startsWith('tt') : activeFilter === '_other' ? typeof it.id !== 'number' && !String(it.id).startsWith('tt') : it.status === activeFilter))
 	const barHeight = bottomTabBarHeight + 2 - (isShowNetInfo ? 0 : insets.bottom)
 
 	const scrollY = useRef(new Animated.Value(0)).current

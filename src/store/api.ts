@@ -28,7 +28,9 @@ export interface KodikQuery {
 	lastTime?: number | null
 }
 
-export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }, query?: { kodik?: KodikQuery }): Promise<kinoboxPlayers> => {
+export const getKinoboxPlayers = async ({ id }: { id: number | `tt${number}` }, query?: { kodik?: KodikQuery }, pass?: boolean): Promise<kinoboxPlayers> => {
+	if (pass) return { data: [], error: null }
+
 	const data: (KinoboxPlayersData | ErrorPlayerData)[] = []
 
 	const requests = [

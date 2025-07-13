@@ -35,6 +35,17 @@ export interface IGraphqlMovie {
 	totalDuration: number | null
 	top250: number | null
 	__typename: MovieType
+
+	gallery?: {
+		posters: {
+			vertical: {
+				avatarsUrl: string | null
+			} | null
+			verticalWithRightholderLogo: {
+				avatarsUrl: string | null
+			} | null
+		} | null // TODO test
+	} | null // TODO test
 }
 
 export interface IGraphqlSuggestMovie {

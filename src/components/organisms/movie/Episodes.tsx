@@ -1,21 +1,20 @@
 import { Button } from '@components/atoms'
 import { NavigateNextIcon } from '@icons'
-import { useGetTvSeriesEpisodesQuery } from '@store/kinopoisk'
+import { ITvSeriesEpisodesResults, useGetTvSeriesEpisodesQuery } from '@store/kinopoisk'
 import { getNoun } from '@utils'
 import type { FC } from 'react'
 import { Platform, Text, View } from 'react-native'
 import { createStyleSheet, useStyles } from 'react-native-unistyles'
 
 type Props = {
-	id: number
 	onPress: () => void
 	disabled: boolean
-}
+} & ({ id: number } | { episodeNumber: number; seasonNumber: number; episodesCount: number })
 
-export const Episodes: FC<Props> = ({ id: tvSeriesId, onPress, disabled }) => {
+export const Episodes: FC<Props> = ({ onPress, disabled, ...props }) => {
 	const { styles, theme } = useStyles(stylesheet)
 
-	const { data, isFetching, isError } = useGetTvSeriesEpisodesQuery({ tvSeriesId })
+	const { data: idData, isFetching, isError } = useGetTvSeriesEpisodesQuery({ tvSeriesId: 'id' in props ? props.id : 0 }, { skip: !('id' in props) })
 
 	if (isFetching) {
 		return (
@@ -27,7 +26,11 @@ export const Episodes: FC<Props> = ({ id: tvSeriesId, onPress, disabled }) => {
 		)
 	}
 
-	if (!data?.releasedEpisodes) return null
+	if (!idData?.releasedEpisodes && 'id' in props) return null
+
+	const data: ITvSeriesEpisodesResults = (idData ?? { releasedEpisodes: { items: [{ number: 'episodeNumber' in props ? props.episodeNumber : 0, season: { number: 'seasonNumber' in props ? props.seasonNumber : 0 } }] }, episodesCount: 'episodesCount' in props ? props.episodesCount : 0 }) as ITvSeriesEpisodesResults
+
+	if (!data.releasedEpisodes) return null
 
 	const episodeNumber = data.releasedEpisodes.items[0]?.number
 	const seasonNumber = data.releasedEpisodes.items[0]?.season?.number

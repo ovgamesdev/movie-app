@@ -67,8 +67,10 @@ export const ItemMenuModal: FC<Props> = ({
 
 		if (newWatchHistoryData.notify) {
 			const newSeries = await fetchNewSeries({ ...item, notifyTranslation: translation })
-			if (newSeries && newSeries.total > 0) {
-				newWatchHistoryData.releasedEpisodes = newSeries.total
+			if (newSeries) {
+				if (newSeries.total > 0) {
+					newWatchHistoryData.releasedEpisodes = newSeries.total
+				}
 				newWatchHistoryData.notifyTranslation = translation
 			}
 		} else {
@@ -171,7 +173,7 @@ export const ItemMenuModal: FC<Props> = ({
 						{showDevOptions && item.notify && (
 							<View>
 								<Text style={styles.detailText}>notifyTranslation: {item.notifyTranslation ?? 'Все'}</Text>
-								<Text style={styles.detailText}>releasedEpisodes: {item.releasedEpisodes ?? 'Нет'}</Text>
+								{isSeries(item.type) && <Text style={styles.detailText}>releasedEpisodes: {item.releasedEpisodes ?? 'Нет'}</Text>}
 							</View>
 						)}
 
@@ -189,7 +191,7 @@ export const ItemMenuModal: FC<Props> = ({
 								text='Notifee'
 								onPress={async () => {
 									if (typeof item.id === 'number' || item.id.startsWith('tt')) {
-										if (isSeries(item.type) && !item.notify) {
+										if (!item.notify) {
 											loadTranslations()
 										} else {
 											onClose()
